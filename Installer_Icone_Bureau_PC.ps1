@@ -8,7 +8,7 @@ $Shortcut.TargetPath = "$env:SystemRoot\System32\wscript.exe"
 $Shortcut.Arguments = "`"D:\AndroidProjects\RachelEagles\RachelEagles.vbs`""
 $Shortcut.WorkingDirectory = "D:\AndroidProjects\RachelEagles"
 $Shortcut.IconLocation = "D:\AndroidProjects\RachelEagles\RachelEagles.ico,0"
-$Shortcut.Description = "RachelEagles - Gestion de Tresorerie (The Fraternal Order of Eagles)"
+$Shortcut.Description = "TREASURER'S REPORT - THE FRATERNAL ORDER OF LADY EAGLES GROUP - Financial Record"
 $Shortcut.Save()
 
 # Nettoyer l'ancien raccourci redondant s'il existe
