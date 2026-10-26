@@ -1,6 +1,6 @@
-# Official User Manual — RachelEagles
-**Treasury Management & 3-Month Projected Audit System**  
-*The Fraternal Order of Eagles — Sargo Cambodia Eagles Club & Lady Eagles Group*  
+# Official User Manual — The Fraternal Order of Lady Eagles
+**Foundation to Financial Record — Treasury & Projected Audit System**  
+*The Fraternal Order of Lady Eagles — Sargo Cambodia Eagles Club & Lady Eagles Group*  
 *Version: 2.0 (Hybrid PC & Android)* — *Updated: October 2026*
 
 ---

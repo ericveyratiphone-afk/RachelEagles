@@ -16,8 +16,8 @@ const ADMIN_EMAILS = ['Afamcherie@gmail.com', 'ericveyrat.iphone@gmail.com'];
 const I18N = {
   en: {
     // App header & auth
-    appTitle: "Rachel Eagles - Treasury",
-    subTitle: "The Fraternal Order of Eagles - Sargo Cambodia Eagles Club",
+    appTitle: "The Fraternal Order of Lady Eagles",
+    subTitle: "Foundation to Financial Record",
     currency: "USD ($)",
     loginTitle: "Secure Access - Treasury",
     loginDesc: "Please login to manage the foundation's treasury",
@@ -127,6 +127,12 @@ const I18N = {
     btnCancel: "Cancel",
     btnEdit: "Edit",
     btnDelete: "Delete",
+    calTitle: "Select Date",
+    calSet: "Set",
+    calCancel: "Cancel",
+    calClear: "Clear",
+    calToday: "Today",
+    calYesterday: "Yesterday",
     btnEditAmount: "Edit Amount",
     btnCancelRow: "Cancel Row",
     btnPrint: "Print",
@@ -330,8 +336,8 @@ const I18N = {
   },
   fr: {
     // App header & auth
-    appTitle: "Rachel Eagles - Trésorerie",
-    subTitle: "The Fraternal Order of Eagles - Sargo Cambodia Eagles Club",
+    appTitle: "The Fraternal Order of Lady Eagles",
+    subTitle: "Foundation to Financial Record",
     currency: "USD ($)",
     loginTitle: "Accès Sécurisé - Trésorerie",
     loginDesc: "Veuillez vous identifier pour gérer la trésorerie de la fondation",
@@ -441,6 +447,12 @@ const I18N = {
     btnCancel: "Annuler",
     btnEdit: "Modifier",
     btnDelete: "Supprimer",
+    calTitle: "Choisir une Date",
+    calSet: "Définir",
+    calCancel: "Annuler",
+    calClear: "Effacer",
+    calToday: "Aujourd'hui",
+    calYesterday: "Hier",
     btnEditAmount: "Modifier Montant",
     btnCancelRow: "Annuler Ligne",
     btnPrint: "Imprimer",
@@ -918,6 +930,374 @@ function getTodayDateStr() {
 function formatUSD(num) {
   const val = Number(num) || 0;
   return '$ ' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// ============================================================================
+// COMPOSANT SÉLECTEUR DE DATE BILINGUE OFFICIEL (CALENDRIER INTERACTIF)
+// Traduction stricte garantie : Set / Cancel / Clear (EN) ou Définir / Annuler / Effacer (FR)
+// ============================================================================
+function BilingualDatePicker({
+  value,
+  onChange,
+  required = false,
+  className = "",
+  lang = "en",
+  accentColor = "blue",
+  placeholder = "YYYY-MM-DD",
+  disabled = false,
+  compact = false
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const isFr = lang === 'fr';
+
+  const parseDate = (dStr) => {
+    if (dStr && /^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
+      const parts = dStr.split('-').map(Number);
+      return { y: parts[0], m: parts[1] - 1, d: parts[2] };
+    }
+    const now = new Date();
+    return { y: now.getFullYear(), m: now.getMonth(), d: now.getDate() };
+  };
+
+  const initial = parseDate(value);
+  const [viewYear, setViewYear] = useState(initial.y);
+  const [viewMonth, setViewMonth] = useState(initial.m);
+  const [selectedYMD, setSelectedYMD] = useState(value || '');
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedYMD(value || '');
+      const parsed = parseDate(value);
+      setViewYear(parsed.y);
+      setViewMonth(parsed.m);
+    }
+  }, [isOpen, value]);
+
+  const monthNamesEn = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const monthNamesFr = [
+    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+  ];
+  const monthNames = isFr ? monthNamesFr : monthNamesEn;
+
+  const daysShortEn = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+  const daysShortFr = ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"];
+  const daysShort = isFr ? daysShortFr : daysShortEn;
+
+  const formatStr = (y, m, d) => {
+    const mm = String(m + 1).padStart(2, '0');
+    const dd = String(d).padStart(2, '0');
+    return `${y}-${mm}-${dd}`;
+  };
+
+  const today = new Date();
+  const todayStr = formatStr(today.getFullYear(), today.getMonth(), today.getDate());
+
+  const daysGrid = useMemo(() => {
+    const firstDay = new Date(viewYear, viewMonth, 1).getDay(); // 0 is Sun
+    const startOffset = (firstDay + 6) % 7; // Mon = 0, Sun = 6
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const prevMonthDays = new Date(viewYear, viewMonth, 0).getDate();
+
+    const cells = [];
+    for (let i = startOffset - 1; i >= 0; i--) {
+      const d = prevMonthDays - i;
+      let pm = viewMonth - 1;
+      let py = viewYear;
+      if (pm < 0) { pm = 11; py--; }
+      cells.push({ day: d, month: pm, year: py, isCurrentMonth: false, ymd: formatStr(py, pm, d) });
+    }
+    for (let i = 1; i <= daysInMonth; i++) {
+      cells.push({ day: i, month: viewMonth, year: viewYear, isCurrentMonth: true, ymd: formatStr(viewYear, viewMonth, i) });
+    }
+    const remaining = (7 - (cells.length % 7)) % 7;
+    for (let i = 1; i <= remaining; i++) {
+      let nm = viewMonth + 1;
+      let ny = viewYear;
+      if (nm > 11) { nm = 0; ny++; }
+      cells.push({ day: i, month: nm, year: ny, isCurrentMonth: false, ymd: formatStr(ny, nm, i) });
+    }
+    return cells;
+  }, [viewYear, viewMonth]);
+
+  const handlePrevMonth = (e) => {
+    e.stopPropagation();
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear(y => y - 1);
+    } else {
+      setViewMonth(m => m - 1);
+    }
+  };
+
+  const handleNextMonth = (e) => {
+    e.stopPropagation();
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear(y => y + 1);
+    } else {
+      setViewMonth(m => m + 1);
+    }
+  };
+
+  const handleClear = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onChange('');
+    setIsOpen(false);
+  };
+
+  const handleCancel = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(false);
+  };
+
+  const handleSet = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onChange(selectedYMD || todayStr);
+    setIsOpen(false);
+  };
+
+  const handleQuickToday = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedYMD(todayStr);
+    const parsed = parseDate(todayStr);
+    setViewYear(parsed.y);
+    setViewMonth(parsed.m);
+  };
+
+  const handleQuickYesterday = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    const yStr = formatStr(d.getFullYear(), d.getMonth(), d.getDate());
+    setSelectedYMD(yStr);
+    const parsed = parseDate(yStr);
+    setViewYear(parsed.y);
+    setViewMonth(parsed.m);
+  };
+
+  const setBtnColor = accentColor === 'red'
+    ? 'bg-red-600 hover:bg-red-700 text-white'
+    : (accentColor === 'green' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white');
+
+  const yearOptions = [];
+  for (let y = 2020; y <= 2035; y++) yearOptions.push(y);
+
+  return (
+    <div className={`relative ${compact ? 'inline-block' : 'w-full'}`}>
+      <div
+        onClick={() => !disabled && setIsOpen(true)}
+        className={`flex items-center justify-between cursor-pointer bg-slate-50 border border-slate-300 rounded-lg transition hover:border-slate-400 select-none ${
+          compact ? 'px-2 py-1 text-xs' : 'px-3 py-2 text-sm'
+        } ${className}`}
+        title={isFr ? "Cliquez pour ouvrir le calendrier" : "Click to open calendar"}
+      >
+        <div className="flex items-center gap-2 overflow-hidden">
+          <i className={`fa-solid fa-calendar-day ${accentColor === 'red' ? 'text-red-600' : accentColor === 'green' ? 'text-green-600' : 'text-blue-600'}`}></i>
+          <span className={`font-mono font-medium ${value ? 'text-slate-800' : 'text-slate-400'}`}>
+            {value || placeholder}
+          </span>
+        </div>
+        <button
+          type="button"
+          tabIndex={-1}
+          className="text-slate-400 hover:text-slate-600 ml-1.5 focus:outline-none"
+        >
+          <i className="fa-solid fa-calendar-days"></i>
+        </button>
+      </div>
+
+      <input
+        type="text"
+        value={value || ''}
+        required={required}
+        onChange={(e) => onChange(e.target.value)}
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-3 overflow-y-auto"
+          onClick={() => setIsOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* EN-TÊTE MODALE */}
+            <div className="bg-gradient-to-r from-blue-900 to-indigo-950 text-white px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <i className="fa-solid fa-calendar-days text-amber-400 text-lg"></i>
+                <div>
+                  <h4 className="font-black text-sm tracking-wide">
+                    {isFr ? "Choisir une Date" : "Select Date"}
+                  </h4>
+                  <p className="text-[10px] text-blue-200">
+                    {selectedYMD ? selectedYMD : (isFr ? "Aucune date sélectionnée" : "No date selected")}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition text-sm font-bold"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* NAVIGATION MOIS / ANNÉE */}
+            <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 flex items-center justify-center transition shadow-xs"
+                title={isFr ? "Mois précédent" : "Previous month"}
+              >
+                <i className="fa-solid fa-chevron-left text-xs"></i>
+              </button>
+
+              <div className="flex items-center gap-1.5 flex-1 justify-center">
+                <select
+                  value={viewMonth}
+                  onChange={(e) => setViewMonth(parseInt(e.target.value, 10))}
+                  className="bg-white border border-slate-200 text-slate-800 font-bold text-xs rounded-lg px-2 py-1.5 focus:outline-none"
+                >
+                  {monthNames.map((mName, mIdx) => (
+                    <option key={mIdx} value={mIdx}>{mName}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={viewYear}
+                  onChange={(e) => setViewYear(parseInt(e.target.value, 10))}
+                  className="bg-white border border-slate-200 text-slate-800 font-bold text-xs rounded-lg px-2 py-1.5 focus:outline-none"
+                >
+                  {yearOptions.map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 flex items-center justify-center transition shadow-xs"
+                title={isFr ? "Mois suivant" : "Next month"}
+              >
+                <i className="fa-solid fa-chevron-right text-xs"></i>
+              </button>
+            </div>
+
+            {/* RACCOURCIS RAPIDES : AUJOURD'HUI / HIER */}
+            <div className="px-3 pt-2.5 pb-1 flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleQuickToday}
+                  className="px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-[11px] border border-blue-200 transition"
+                >
+                  <i className="fa-solid fa-bullseye mr-1"></i>
+                  {isFr ? "Aujourd'hui" : "Today"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleQuickYesterday}
+                  className="px-2 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold text-[11px] border border-slate-200 transition"
+                >
+                  <i className="fa-solid fa-arrow-rotate-left mr-1"></i>
+                  {isFr ? "Hier" : "Yesterday"}
+                </button>
+              </div>
+              <span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                {selectedYMD || "----/--/--"}
+              </span>
+            </div>
+
+            {/* GRILLE DES JOURS */}
+            <div className="p-3">
+              <div className="grid grid-cols-7 gap-1 text-center mb-1">
+                {daysShort.map((dName, idx) => (
+                  <div key={idx} className="text-[11px] font-black uppercase text-slate-500 py-1">
+                    {dName}
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-1 text-center">
+                {daysGrid.map((cell, idx) => {
+                  const isSelected = selectedYMD === cell.ymd;
+                  const isToday = todayStr === cell.ymd;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setSelectedYMD(cell.ymd)}
+                      className={`h-9 w-full rounded-lg text-xs font-bold transition flex items-center justify-center relative ${
+                        isSelected
+                          ? (accentColor === 'red' ? 'bg-red-600 text-white shadow-sm ring-2 ring-red-400' : (accentColor === 'green' ? 'bg-green-600 text-white shadow-sm ring-2 ring-green-400' : 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-400'))
+                          : (cell.isCurrentMonth
+                              ? (isToday ? 'bg-amber-100 text-amber-900 font-black border border-amber-300' : 'text-slate-700 hover:bg-slate-100')
+                              : 'text-slate-300 hover:bg-slate-50')
+                      }`}
+                    >
+                      {cell.day}
+                      {isToday && !isSelected && (
+                        <span className="absolute bottom-1 w-1 h-1 rounded-full bg-amber-600"></span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* LES 3 BOUTONS DEMANDÉS : EFFACER, ANNULER, DÉFINIR */}
+            <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={handleClear}
+                className="px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-black transition flex items-center gap-1.5"
+                title={isFr ? "Effacer la date" : "Clear date"}
+              >
+                <i className="fa-solid fa-trash-can text-[11px]"></i>
+                <span>{isFr ? "Effacer" : "Clear"}</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold transition flex items-center gap-1.5"
+                >
+                  <i className="fa-solid fa-xmark text-[11px]"></i>
+                  <span>{isFr ? "Annuler" : "Cancel"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSet}
+                  className={`px-4 py-2 rounded-xl ${setBtnColor} text-xs font-black shadow-sm transition flex items-center gap-1.5`}
+                >
+                  <i className="fa-solid fa-check text-[11px]"></i>
+                  <span>{isFr ? "Définir" : "Set"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ============================================================================
@@ -1837,16 +2217,39 @@ function RachelEaglesApp() {
       <div className="min-h-screen flex items-center justify-center bg-slate-900 p-4 relative overflow-hidden">
         <div className="watermark-bg" style={{ opacity: 0.12, filter: 'invert(1)' }}></div>
 
-        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative z-10 border border-slate-100">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative z-10 border border-slate-100">
+          {/* SELECTEUR DE LANGUE SUR L'ECRAN DE CONNEXION (ANGLAIS PAR DEFAUT) */}
+          <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              {lang === 'en' ? 'Language' : 'Langue'}
+            </span>
+            <div className="inline-flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-300">
+              <button
+                type="button"
+                onClick={() => { setLang('en'); localStorage.setItem('RE_LANG', 'en'); }}
+                className={`px-2.5 py-0.5 text-xs font-bold rounded transition ${lang === 'en' ? 'bg-blue-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                English
+              </button>
+              <button
+                type="button"
+                onClick={() => { setLang('fr'); localStorage.setItem('RE_LANG', 'fr'); }}
+                className={`px-2.5 py-0.5 text-xs font-bold rounded transition ${lang === 'fr' ? 'bg-blue-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                Français
+              </button>
+            </div>
+          </div>
+
           <div className="text-center mb-6">
             <div className="flex justify-center items-center gap-3 mb-3">
               <img src="logo1.png" alt="Eagles Logo" className="w-16 h-16 object-contain" />
               <img src="logo2.png" alt="Philippine Eagles" className="w-16 h-16 object-contain" />
               <img src="logo3.png" alt="Sargo Eagles" className="w-16 h-16 object-contain" />
             </div>
-            <h1 className="text-2xl font-black text-blue-900 tracking-tight">RACHEL EAGLES</h1>
-            <p className="text-xs uppercase font-bold tracking-widest text-amber-600 mt-1">The Fraternal Order of Eagles</p>
-            <p className="text-sm text-slate-500 mt-2">{t.loginDesc}</p>
+            <h1 className="text-xl sm:text-2xl font-black text-blue-900 tracking-tight leading-tight">The Fraternal Order of Lady Eagles</h1>
+            <p className="text-xs uppercase font-extrabold tracking-widest text-amber-600 mt-1.5">Foundation to Financial Record</p>
+            <p className="text-xs sm:text-sm text-slate-500 mt-2">{t.loginDesc}</p>
           </div>
 
           {loginErrorMsg && (
@@ -1867,7 +2270,7 @@ function RachelEaglesApp() {
                   value={loginUser}
                   onChange={(e) => setLoginUser(e.target.value)}
                   className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                  placeholder="ex: tresorier"
+                  placeholder={lang === 'fr' ? "ex: tresorier" : "e.g.: treasurer"}
                 />
               </div>
             </div>
@@ -2686,13 +3089,12 @@ function RachelEaglesApp() {
 
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">{t.date}</label>
-                    <input
-                      type="date"
-                      lang={lang === 'en' ? 'en' : 'fr'}
-                      required
+                    <BilingualDatePicker
                       value={debitForm.date}
-                      onChange={(e) => setDebitForm(p => ({ ...p, date: e.target.value }))}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-600 focus:outline-none"
+                      onChange={(newDate) => setDebitForm(p => ({ ...p, date: newDate }))}
+                      required
+                      lang={lang}
+                      accentColor="red"
                     />
                   </div>
                 </div>
@@ -2982,13 +3384,12 @@ function RachelEaglesApp() {
 
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">{t.date}</label>
-                    <input
-                      type="date"
-                      lang={lang === 'en' ? 'en' : 'fr'}
-                      required
+                    <BilingualDatePicker
                       value={creditForm.date}
-                      onChange={(e) => setCreditForm(p => ({ ...p, date: e.target.value }))}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-600 focus:outline-none"
+                      onChange={(newDate) => setCreditForm(p => ({ ...p, date: newDate }))}
+                      required
+                      lang={lang}
+                      accentColor="green"
                     />
                   </div>
                 </div>
@@ -3413,20 +3814,20 @@ function RachelEaglesApp() {
                     {filterMode === 'range' && (
                       <div className="flex items-center gap-2 text-xs">
                         <label className="text-slate-500 font-semibold">{t.fromDate}:</label>
-                        <input
-                          type="date"
-                          lang={lang === 'en' ? 'en' : 'fr'}
+                        <BilingualDatePicker
                           value={filterDateFrom}
-                          onChange={(e) => setFilterDateFrom(e.target.value)}
-                          className="px-2 py-1 bg-slate-50 border border-slate-300 rounded text-xs"
+                          onChange={(d) => setFilterDateFrom(d)}
+                          lang={lang}
+                          compact
+                          accentColor="blue"
                         />
                         <label className="text-slate-500 font-semibold">{t.toDate}:</label>
-                        <input
-                          type="date"
-                          lang={lang === 'en' ? 'en' : 'fr'}
+                        <BilingualDatePicker
                           value={filterDateTo}
-                          onChange={(e) => setFilterDateTo(e.target.value)}
-                          className="px-2 py-1 bg-slate-50 border border-slate-300 rounded text-xs"
+                          onChange={(d) => setFilterDateTo(d)}
+                          lang={lang}
+                          compact
+                          accentColor="blue"
                         />
                       </div>
                     )}
@@ -3434,12 +3835,12 @@ function RachelEaglesApp() {
                     {filterMode === 'single' && (
                       <div className="flex items-center gap-2 text-xs">
                         <label className="text-slate-500 font-semibold">{t.date}:</label>
-                        <input
-                          type="date"
-                          lang={lang === 'en' ? 'en' : 'fr'}
+                        <BilingualDatePicker
                           value={filterDateSingle}
-                          onChange={(e) => setFilterDateSingle(e.target.value)}
-                          className="px-2 py-1 bg-slate-50 border border-slate-300 rounded text-xs"
+                          onChange={(d) => setFilterDateSingle(d)}
+                          lang={lang}
+                          compact
+                          accentColor="blue"
                         />
                       </div>
                     )}
@@ -3657,23 +4058,21 @@ function RachelEaglesApp() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase text-slate-600 mb-1">{t.zipDateFromLabel}</label>
-                  <input
-                    type="date"
-                    lang={lang === 'en' ? 'en' : 'fr'}
+                  <BilingualDatePicker
                     value={zipDateFrom}
-                    onChange={(e) => setZipDateFrom(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm"
+                    onChange={(d) => setZipDateFrom(d)}
+                    lang={lang}
+                    accentColor="blue"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold uppercase text-slate-600 mb-1">{t.zipDateToLabel}</label>
-                  <input
-                    type="date"
-                    lang={lang === 'en' ? 'en' : 'fr'}
+                  <BilingualDatePicker
                     value={zipDateTo}
-                    onChange={(e) => setZipDateTo(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm"
+                    onChange={(d) => setZipDateTo(d)}
+                    lang={lang}
+                    accentColor="blue"
                   />
                 </div>
               </div>
@@ -4494,23 +4893,21 @@ function StatView5Component({ transactions, families, formatUSD, triggerOfficial
 
           <div>
             <label className="block text-xs font-bold uppercase text-slate-600 mb-1">{t.fromDate} :</label>
-            <input
-              type="date"
-              lang={lang === 'en' ? 'en' : 'fr'}
+            <BilingualDatePicker
               value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm"
+              onChange={(d) => setDateFrom(d)}
+              lang={lang}
+              accentColor="blue"
             />
           </div>
 
           <div>
             <label className="block text-xs font-bold uppercase text-slate-600 mb-1">{t.toDate} :</label>
-            <input
-              type="date"
-              lang={lang === 'en' ? 'en' : 'fr'}
+            <BilingualDatePicker
               value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm"
+              onChange={(d) => setDateTo(d)}
+              lang={lang}
+              accentColor="blue"
             />
           </div>
         </div>

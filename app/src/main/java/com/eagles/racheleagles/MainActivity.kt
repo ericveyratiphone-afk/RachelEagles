@@ -28,8 +28,15 @@ class MainActivity : ComponentActivity() {
         private set
 
     override fun attachBaseContext(newBase: Context) {
-        baseActivityContext = newBase
-        super.attachBaseContext(newBase)
+        val prefs = newBase.getSharedPreferences("RachelEaglesPrefs", Context.MODE_PRIVATE)
+        val lang = prefs.getString("APP_LANG", "en") ?: "en"
+        val locale = java.util.Locale(lang)
+        java.util.Locale.setDefault(locale)
+        val config = android.content.res.Configuration(newBase.resources.configuration)
+        config.setLocale(locale)
+        val localizedContext = newBase.createConfigurationContext(config)
+        baseActivityContext = localizedContext
+        super.attachBaseContext(localizedContext)
     }
 
     fun applyAppLocale(languageCode: String) {

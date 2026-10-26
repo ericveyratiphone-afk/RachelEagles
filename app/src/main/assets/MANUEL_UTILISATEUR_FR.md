@@ -1,6 +1,6 @@
-# Manuel Utilisateur Officiel — RachelEagles
-**Application de Gestion de Trésorerie & Audit Prévisionnel**  
-*The Fraternal Order of Eagles — Sargo Cambodia Eagles Club & Lady Eagles Group*  
+# Manuel Utilisateur Officiel — The Fraternal Order of Lady Eagles
+**Foundation to Financial Record — Trésorerie & Audit Prévisionnel**  
+*The Fraternal Order of Lady Eagles — Sargo Cambodia Eagles Club & Lady Eagles Group*  
 *Version : 2.0 (Hybride PC & Android)* — *Date de mise à jour : Octobre 2026*
 
 ---
