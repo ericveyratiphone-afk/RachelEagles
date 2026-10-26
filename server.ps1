@@ -75,10 +75,13 @@ while ($listener.IsListening) {
         $request = $context.Request
         $response = $context.Response
 
-        # CORS Headers
+        # CORS & Cache Headers
         $response.AddHeader("Access-Control-Allow-Origin", "*")
         $response.AddHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         $response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept")
+        $response.AddHeader("Cache-Control", "no-cache, no-store, must-revalidate")
+        $response.AddHeader("Pragma", "no-cache")
+        $response.AddHeader("Expires", "0")
 
         if ($request.HttpMethod -eq "OPTIONS") {
             $response.StatusCode = 200
