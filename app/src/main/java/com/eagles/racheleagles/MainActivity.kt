@@ -65,6 +65,7 @@ class MainActivity : ComponentActivity() {
         applyAppLocale(initialLang)
 
         super.onCreate(savedInstanceState)
+        WebView.setWebContentsDebuggingEnabled(true)
 
         webView = WebView(this)
         setContentView(webView)

@@ -4913,121 +4913,178 @@ function StatView2Component({
     '#db2777', '#0891b2', '#ea580c', '#4f46e5', '#84cc16'
   ];
 
+  const [chartReady, setChartReady] = useState(() => typeof window !== 'undefined' && !!window.Chart);
+
+  useEffect(() => {
+    if (chartReady) return;
+    const interval = setInterval(() => {
+      if (typeof window !== 'undefined' && window.Chart) {
+        setChartReady(true);
+        clearInterval(interval);
+      }
+    }, 100);
+    const timeout = setTimeout(() => clearInterval(interval), 4000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [chartReady]);
+
   useEffect(() => {
     if (!window.Chart) return;
 
-    if (barCanvasRef.current) {
-      if (barChartInstance.current) barChartInstance.current.destroy();
-      const ctx = barCanvasRef.current.getContext('2d');
-      const unitLabel = displayMode === 'amount' ? '($ USD)' : '(%)';
+    try {
+      if (barCanvasRef.current) {
+        if (barChartInstance.current) {
+          try { barChartInstance.current.destroy(); } catch (_) {}
+          barChartInstance.current = null;
+        }
+        if (window.Chart.getChart) {
+          try {
+            const ex = window.Chart.getChart(barCanvasRef.current);
+            if (ex) ex.destroy();
+          } catch (_) {}
+        }
+        const ctx = barCanvasRef.current.getContext('2d');
+        const unitLabel = displayMode === 'amount' ? '($ USD)' : '(%)';
 
-      barChartInstance.current = new window.Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: groupedData.labels,
-          datasets: [
-            {
-              label: `${t.credit} ${unitLabel}`,
-              data: groupedData.credits,
-              backgroundColor: '#16a34a'
-            },
-            {
-              label: `${t.debit} ${unitLabel}`,
-              data: groupedData.debits,
-              backgroundColor: '#dc2626'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const val = context.raw || 0;
-                  if (displayMode === 'percent') {
-                    return ` ${context.dataset.label}: ${val}%`;
-                  }
-                  return ` ${context.dataset.label}: ${formatUSD(val)}`;
-                }
+        barChartInstance.current = new window.Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: groupedData.labels,
+            datasets: [
+              {
+                label: `${t.credit} ${unitLabel}`,
+                data: groupedData.credits,
+                backgroundColor: '#16a34a'
+              },
+              {
+                label: `${t.debit} ${unitLabel}`,
+                data: groupedData.debits,
+                backgroundColor: '#dc2626'
               }
-            }
+            ]
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                callback: function(value) {
-                  return displayMode === 'amount' ? `$ ${value}` : `${value} %`;
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const val = context.raw || 0;
+                    if (displayMode === 'percent') {
+                      return ` ${context.dataset.label}: ${val}%`;
+                    }
+                    return ` ${context.dataset.label}: ${formatUSD(val)}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return displayMode === 'amount' ? `$ ${value}` : `${value} %`;
+                  }
                 }
               }
             }
           }
+        });
+      }
+
+      if (pieCanvasRef.current) {
+        if (pieChartInstance.current) {
+          try { pieChartInstance.current.destroy(); } catch (_) {}
+          pieChartInstance.current = null;
         }
-      });
-    }
+        if (window.Chart.getChart) {
+          try {
+            const ex = window.Chart.getChart(pieCanvasRef.current);
+            if (ex) ex.destroy();
+          } catch (_) {}
+        }
+        const ctx = pieCanvasRef.current.getContext('2d');
+        const pieLabels = displayMode === 'amount'
+          ? [`${t.credit}: ${formatUSD(totalCredits)} (${creditPct}%)`, `${t.debit}: ${formatUSD(totalDebits)} (${debitPct}%)`]
+          : [`${t.credit}: ${creditPct}% (${formatUSD(totalCredits)})`, `${t.debit}: ${debitPct}% (${formatUSD(totalDebits)})`];
 
-    if (pieCanvasRef.current) {
-      if (pieChartInstance.current) pieChartInstance.current.destroy();
-      const ctx = pieCanvasRef.current.getContext('2d');
-      const pieLabels = displayMode === 'amount'
-        ? [`${t.credit}: ${formatUSD(totalCredits)} (${creditPct}%)`, `${t.debit}: ${formatUSD(totalDebits)} (${debitPct}%)`]
-        : [`${t.credit}: ${creditPct}% (${formatUSD(totalCredits)})`, `${t.debit}: ${debitPct}% (${formatUSD(totalDebits)})`];
+        const pieData = displayMode === 'amount'
+          ? [totalCredits, totalDebits]
+          : [Number(creditPct), Number(debitPct)];
 
-      const pieData = displayMode === 'amount'
-        ? [totalCredits, totalDebits]
-        : [Number(creditPct), Number(debitPct)];
-
-      pieChartInstance.current = new window.Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: pieLabels,
-          datasets: [{
-            data: pieData,
-            backgroundColor: ['#16a34a', '#dc2626']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom' }
+        pieChartInstance.current = new window.Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: pieLabels,
+            datasets: [{
+              data: pieData,
+              backgroundColor: ['#16a34a', '#dc2626']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom' }
+            }
           }
+        });
+      }
+
+      if (familyPieCanvasRef.current && familyDebitsBreakdown.count > 0) {
+        if (familyPieChartInstance.current) {
+          try { familyPieChartInstance.current.destroy(); } catch (_) {}
+          familyPieChartInstance.current = null;
         }
-      });
-    }
+        if (window.Chart.getChart) {
+          try {
+            const ex = window.Chart.getChart(familyPieCanvasRef.current);
+            if (ex) ex.destroy();
+          } catch (_) {}
+        }
+        const ctx = familyPieCanvasRef.current.getContext('2d');
 
-    if (familyPieCanvasRef.current && familyDebitsBreakdown.count > 0) {
-      if (familyPieChartInstance.current) familyPieChartInstance.current.destroy();
-      const ctx = familyPieCanvasRef.current.getContext('2d');
-
-      familyPieChartInstance.current = new window.Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: familyDebitsBreakdown.labels,
-          datasets: [{
-            data: familyDebitsBreakdown.data,
-            backgroundColor: familyColors.slice(0, familyDebitsBreakdown.labels.length)
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom' }
+        familyPieChartInstance.current = new window.Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: familyDebitsBreakdown.labels,
+            datasets: [{
+              data: familyDebitsBreakdown.data,
+              backgroundColor: familyColors.slice(0, familyDebitsBreakdown.labels.length)
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom' }
+            }
           }
-        }
-      });
+        });
+      }
+    } catch (chartErr) {
+      console.warn("Chart render warning in StatView2:", chartErr);
     }
 
     return () => {
-      if (barChartInstance.current) barChartInstance.current.destroy();
-      if (pieChartInstance.current) pieChartInstance.current.destroy();
-      if (familyPieChartInstance.current) familyPieChartInstance.current.destroy();
+      if (barChartInstance.current) {
+        try { barChartInstance.current.destroy(); } catch (_) {}
+        barChartInstance.current = null;
+      }
+      if (pieChartInstance.current) {
+        try { pieChartInstance.current.destroy(); } catch (_) {}
+        pieChartInstance.current = null;
+      }
+      if (familyPieChartInstance.current) {
+        try { familyPieChartInstance.current.destroy(); } catch (_) {}
+        familyPieChartInstance.current = null;
+      }
     };
-  }, [groupedData, totalCredits, totalDebits, creditPct, debitPct, displayMode, familyDebitsBreakdown, lang]);
+  }, [chartReady, groupedData, totalCredits, totalDebits, creditPct, debitPct, displayMode, familyDebitsBreakdown, lang]);
 
   return (
     <div className="space-y-6 fade-in">
@@ -5251,59 +5308,93 @@ function StatView3Component({ transactions, activeFilterDescription, families, f
     return { labels, debits, percentages, map };
   }, [transactions, families, totalDebits]);
 
+  const [chartReady, setChartReady] = useState(() => typeof window !== 'undefined' && !!window.Chart);
+
+  useEffect(() => {
+    if (chartReady) return;
+    const interval = setInterval(() => {
+      if (typeof window !== 'undefined' && window.Chart) {
+        setChartReady(true);
+        clearInterval(interval);
+      }
+    }, 100);
+    const timeout = setTimeout(() => clearInterval(interval), 4000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [chartReady]);
+
   useEffect(() => {
     if (!window.Chart || !familyCanvasRef.current) return;
-    if (familyChartInstance.current) familyChartInstance.current.destroy();
 
-    const ctx = familyCanvasRef.current.getContext('2d');
-    const unitLabel = displayMode === 'amount' ? '($ USD)' : '(%)';
-    const chartData = displayMode === 'amount' ? familyStats.debits : familyStats.percentages;
+    try {
+      if (familyChartInstance.current) {
+        try { familyChartInstance.current.destroy(); } catch (_) {}
+        familyChartInstance.current = null;
+      }
+      if (window.Chart.getChart) {
+        try {
+          const ex = window.Chart.getChart(familyCanvasRef.current);
+          if (ex) ex.destroy();
+        } catch (_) {}
+      }
 
-    familyChartInstance.current = new window.Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: familyStats.labels.map(l => formatItemLabel(l, lang)),
-        datasets: [
-          {
-            label: `${t.debit} ${unitLabel}`,
-            data: chartData,
-            backgroundColor: '#d97706'
-          }
-        ]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const idx = context.dataIndex;
-                const amt = familyStats.debits[idx];
-                const pct = familyStats.percentages[idx];
-                return ` ${formatUSD(amt)} (${pct}%)`;
+      const ctx = familyCanvasRef.current.getContext('2d');
+      const unitLabel = displayMode === 'amount' ? '($ USD)' : '(%)';
+      const chartData = displayMode === 'amount' ? familyStats.debits : familyStats.percentages;
+
+      familyChartInstance.current = new window.Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: familyStats.labels.map(l => formatItemLabel(l, lang)),
+          datasets: [
+            {
+              label: `${t.debit} ${unitLabel}`,
+              data: chartData,
+              backgroundColor: '#d97706'
+            }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const idx = context.dataIndex;
+                  const amt = familyStats.debits[idx];
+                  const pct = familyStats.percentages[idx];
+                  return ` ${formatUSD(amt)} (${pct}%)`;
+                }
               }
             }
-          }
-        },
-        scales: {
-          x: {
-            ticks: {
-              callback: function(value) {
-                return displayMode === 'amount' ? `$ ${value}` : `${value} %`;
+          },
+          scales: {
+            x: {
+              ticks: {
+                callback: function(value) {
+                  return displayMode === 'amount' ? `$ ${value}` : `${value} %`;
+                }
               }
             }
           }
         }
-      }
-    });
+      });
+    } catch (err) {
+      console.warn("Chart render warning in StatView3:", err);
+    }
 
     return () => {
-      if (familyChartInstance.current) familyChartInstance.current.destroy();
+      if (familyChartInstance.current) {
+        try { familyChartInstance.current.destroy(); } catch (_) {}
+        familyChartInstance.current = null;
+      }
     };
-  }, [familyStats, displayMode, lang]);
+  }, [chartReady, familyStats, displayMode, lang]);
 
   return (
     <div className="space-y-6 fade-in">
@@ -5420,58 +5511,92 @@ function StatView4Component({ transactions, activeFilterDescription, families, f
     return { labels, values, percentages };
   }, [transactions, totalDebits, lang]);
 
+  const [chartReady, setChartReady] = useState(() => typeof window !== 'undefined' && !!window.Chart);
+
+  useEffect(() => {
+    if (chartReady) return;
+    const interval = setInterval(() => {
+      if (typeof window !== 'undefined' && window.Chart) {
+        setChartReady(true);
+        clearInterval(interval);
+      }
+    }, 100);
+    const timeout = setTimeout(() => clearInterval(interval), 4000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [chartReady]);
+
   useEffect(() => {
     if (!window.Chart || !catCanvasRef.current) return;
-    if (catChartInstance.current) catChartInstance.current.destroy();
 
-    const ctx = catCanvasRef.current.getContext('2d');
-    const unitLabel = displayMode === 'amount' ? '($ USD)' : '(%)';
-    const chartData = displayMode === 'amount' ? catStats.values : catStats.percentages;
+    try {
+      if (catChartInstance.current) {
+        try { catChartInstance.current.destroy(); } catch (_) {}
+        catChartInstance.current = null;
+      }
+      if (window.Chart.getChart) {
+        try {
+          const ex = window.Chart.getChart(catCanvasRef.current);
+          if (ex) ex.destroy();
+        } catch (_) {}
+      }
 
-    catChartInstance.current = new window.Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: catStats.labels,
-        datasets: [
-          {
-            label: `${t.debit} ${unitLabel}`,
-            data: chartData,
-            backgroundColor: '#0284c7'
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const idx = context.dataIndex;
-                const amt = catStats.values[idx];
-                const pct = catStats.percentages[idx];
-                return ` ${formatUSD(amt)} (${pct}%)`;
+      const ctx = catCanvasRef.current.getContext('2d');
+      const unitLabel = displayMode === 'amount' ? '($ USD)' : '(%)';
+      const chartData = displayMode === 'amount' ? catStats.values : catStats.percentages;
+
+      catChartInstance.current = new window.Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: catStats.labels,
+          datasets: [
+            {
+              label: `${t.debit} ${unitLabel}`,
+              data: chartData,
+              backgroundColor: '#0284c7'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const idx = context.dataIndex;
+                  const amt = catStats.values[idx];
+                  const pct = catStats.percentages[idx];
+                  return ` ${formatUSD(amt)} (${pct}%)`;
+                }
               }
             }
-          }
-        },
-        scales: {
-          y: {
-            ticks: {
-              callback: function(value) {
-                return displayMode === 'amount' ? `$ ${value}` : `${value} %`;
+          },
+          scales: {
+            y: {
+              ticks: {
+                callback: function(value) {
+                  return displayMode === 'amount' ? `$ ${value}` : `${value} %`;
+                }
               }
             }
           }
         }
-      }
-    });
+      });
+    } catch (err) {
+      console.warn("Chart render warning in StatView4:", err);
+    }
 
     return () => {
-      if (catChartInstance.current) catChartInstance.current.destroy();
+      if (catChartInstance.current) {
+        try { catChartInstance.current.destroy(); } catch (_) {}
+        catChartInstance.current = null;
+      }
     };
-  }, [catStats, displayMode, lang]);
+  }, [chartReady, catStats, displayMode, lang]);
 
   return (
     <div className="space-y-6 fade-in">
@@ -5528,9 +5653,33 @@ function StatView4Component({ transactions, activeFilterDescription, families, f
         </div>
       </div>
 
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-        <div style={{ height: '350px' }}>
-          <canvas id="chart-view4-cat" ref={catCanvasRef}></canvas>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div style={{ height: '350px' }}>
+            <canvas id="chart-view4-cat" ref={catCanvasRef}></canvas>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+          <h4 className="text-xs font-bold uppercase text-slate-600 mb-3">{t.categoryBreakdownTitle}</h4>
+          <table className="w-full text-left table-compact">
+            <thead>
+              <tr>
+                <th>{t.colCategory || t.category}</th>
+                <th className="text-right">{t.colAmount || t.totalDebits}</th>
+                <th className="text-right">Part (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {catStats.labels.map((name, i) => (
+                <tr key={i}>
+                  <td className="font-bold text-slate-800">{name}</td>
+                  <td className="text-right font-black text-sky-700">{formatUSD(catStats.values[i])}</td>
+                  <td className="text-right font-bold text-slate-600">{catStats.percentages[i]}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -5559,43 +5708,77 @@ function StatView5Component({ transactions, activeFilterDescription, families, f
     });
   }, [transactions, selectedFamilies, filterType, dateFrom, dateTo]);
 
+  const [chartReady, setChartReady] = useState(() => typeof window !== 'undefined' && !!window.Chart);
+
+  useEffect(() => {
+    if (chartReady) return;
+    const interval = setInterval(() => {
+      if (typeof window !== 'undefined' && window.Chart) {
+        setChartReady(true);
+        clearInterval(interval);
+      }
+    }, 100);
+    const timeout = setTimeout(() => clearInterval(interval), 4000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [chartReady]);
+
   useEffect(() => {
     if (!window.Chart || !customCanvasRef.current) return;
-    if (customChartInstance.current) customChartInstance.current.destroy();
 
-    const datesMap = {};
-    customFilteredTx.forEach(tx => {
-      const k = tx.date;
-      if (!datesMap[k]) datesMap[k] = { debit: 0, credit: 0 };
-      if (tx.type === 'debit') datesMap[k].debit += Number(tx.amount) || 0;
-      if (tx.type === 'credit') datesMap[k].credit += Number(tx.amount) || 0;
-    });
-
-    const labels = Object.keys(datesMap).sort();
-    const debits = labels.map(l => datesMap[l].debit);
-    const credits = labels.map(l => datesMap[l].credit);
-
-    const ctx = customCanvasRef.current.getContext('2d');
-    customChartInstance.current = new window.Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [
-          { label: `${t.credit} ($)`, data: credits, backgroundColor: '#16a34a' },
-          { label: `${t.debit} ($)`, data: debits, backgroundColor: '#dc2626' }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } }
+    try {
+      if (customChartInstance.current) {
+        try { customChartInstance.current.destroy(); } catch (_) {}
+        customChartInstance.current = null;
       }
-    });
+      if (window.Chart.getChart) {
+        try {
+          const ex = window.Chart.getChart(customCanvasRef.current);
+          if (ex) ex.destroy();
+        } catch (_) {}
+      }
+
+      const datesMap = {};
+      customFilteredTx.forEach(tx => {
+        const k = tx.date;
+        if (!datesMap[k]) datesMap[k] = { debit: 0, credit: 0 };
+        if (tx.type === 'debit') datesMap[k].debit += Number(tx.amount) || 0;
+        if (tx.type === 'credit') datesMap[k].credit += Number(tx.amount) || 0;
+      });
+
+      const labels = Object.keys(datesMap).sort();
+      const debits = labels.map(l => datesMap[l].debit);
+      const credits = labels.map(l => datesMap[l].credit);
+
+      const ctx = customCanvasRef.current.getContext('2d');
+      customChartInstance.current = new window.Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: `${t.credit} ($)`, data: credits, backgroundColor: '#16a34a' },
+            { label: `${t.debit} ($)`, data: debits, backgroundColor: '#dc2626' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } }
+        }
+      });
+    } catch (err) {
+      console.warn("Chart render warning in StatView5:", err);
+    }
 
     return () => {
-      if (customChartInstance.current) customChartInstance.current.destroy();
+      if (customChartInstance.current) {
+        try { customChartInstance.current.destroy(); } catch (_) {}
+        customChartInstance.current = null;
+      }
     };
-  }, [customFilteredTx, lang]);
+  }, [chartReady, customFilteredTx, lang]);
 
   return (
     <div className="space-y-6 fade-in">
