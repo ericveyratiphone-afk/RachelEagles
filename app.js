@@ -6529,6 +6529,15 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
     document.body.removeChild(link);
   };
 
+  const exportManualPdf = () => {
+    if (window.AndroidNative && typeof window.AndroidNative.printPdf === 'function') {
+      const manualUrl = isFr ? 'export_manual_pdf.html?lang=fr&print=true' : 'export_manual_pdf.html?lang=en&print=true';
+      window.location.href = manualUrl;
+    } else {
+      window.open(`export_manual_pdf.html?lang=${lang}&print=true`, '_blank');
+    }
+  };
+
   const isFr = lang === 'fr';
 
   return (
@@ -6567,6 +6576,16 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
                 FR
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={() => downloadFile(isFr ? 'MANUEL_UTILISATEUR_FR.pdf' : 'USER_MANUAL_EN.pdf')}
+              className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm transition"
+              title={isFr ? "Télécharger le Manuel en PDF" : "Download Manual as PDF"}
+            >
+              <i className="fa-solid fa-file-pdf"></i>
+              <span className="hidden sm:inline">PDF</span>
+            </button>
 
             <button
               type="button"
@@ -6836,14 +6855,32 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
 
         {/* PIED DE MODALE */}
         <div className="bg-slate-50 border-t border-slate-200 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => downloadFile(isFr ? 'MANUEL_UTILISATEUR_FR.pdf' : 'USER_MANUAL_EN.pdf')}
+              className="px-3.5 py-1.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+            >
+              <i className="fa-solid fa-file-pdf"></i>
+              <span>{isFr ? "Télécharger le Manuel (PDF)" : "Download Manual (PDF)"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={exportManualPdf}
+              className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+            >
+              <i className="fa-solid fa-print"></i>
+              <span>{isFr ? "Imprimer / Exporter (PDF)" : "Print / Export (PDF)"}</span>
+            </button>
+
             <button
               type="button"
               onClick={() => downloadFile(isFr ? 'MANUEL_UTILISATEUR_FR.md' : 'USER_MANUAL_EN.md')}
-              className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-lg border border-slate-300 flex items-center gap-1.5 shadow-2xs transition cursor-pointer"
+              className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-600 font-bold rounded-lg border border-slate-300 flex items-center gap-1.5 shadow-2xs transition cursor-pointer"
             >
-              <i className="fa-solid fa-download text-blue-700"></i>
-              <span>{isFr ? "Télécharger le Manuel (.md)" : "Download Manual (.md)"}</span>
+              <i className="fa-solid fa-file-lines text-slate-500"></i>
+              <span>{isFr ? "Version Markdown (.md)" : "Markdown Version (.md)"}</span>
             </button>
           </div>
 
