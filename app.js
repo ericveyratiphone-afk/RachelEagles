@@ -4357,12 +4357,6 @@ function RachelEaglesApp() {
                 t={t}
                 lang={lang}
               />
-                families={families}
-                formatUSD={formatUSD}
-                triggerOfficialPdfExport={triggerOfficialPdfExport}
-                t={t}
-                lang={lang}
-              />
             )}
 
             {/* VUE 6 : PRÉVISIONS 3 MOIS & CONSEILS D'OPTIMISATION */}
