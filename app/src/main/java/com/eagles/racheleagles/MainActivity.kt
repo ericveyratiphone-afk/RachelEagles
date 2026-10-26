@@ -130,7 +130,7 @@ class MainActivity : ComponentActivity() {
                     selectAll()
                 }
                 AlertDialog.Builder(this@MainActivity)
-                    .setTitle("Rachel Eagles")
+                    .setTitle("TREASURER'S REPORT")
                     .setMessage(message ?: "")
                     .setView(input)
                     .setPositiveButton("OK") { _, _ -> result?.confirm(input.text.toString()) }
@@ -142,7 +142,7 @@ class MainActivity : ComponentActivity() {
 
             override fun onJsAlert(view: WebView?, url: String?, message: String?, result: JsResult?): Boolean {
                 AlertDialog.Builder(this@MainActivity)
-                    .setTitle("Rachel Eagles")
+                    .setTitle("TREASURER'S REPORT")
                     .setMessage(message ?: "")
                     .setPositiveButton("OK") { _, _ -> result?.confirm() }
                     .setOnCancelListener { result?.cancel() }
@@ -152,7 +152,7 @@ class MainActivity : ComponentActivity() {
 
             override fun onJsConfirm(view: WebView?, url: String?, message: String?, result: JsResult?): Boolean {
                 AlertDialog.Builder(this@MainActivity)
-                    .setTitle("Rachel Eagles")
+                    .setTitle("TREASURER'S REPORT")
                     .setMessage(message ?: "")
                     .setPositiveButton("OK") { _, _ -> result?.confirm() }
                     .setNegativeButton("Cancel") { _, _ -> result?.cancel() }
@@ -245,8 +245,8 @@ class MainActivity : ComponentActivity() {
                         ?: (activity.baseActivityContext?.getSystemService(Context.PRINT_SERVICE) as? PrintManager)
 
                     if (printManager != null) {
-                        val rawName = jobTitle ?: "RachelEagles_Rapport_Tresorerie"
-                        val safeName = rawName.replace(Regex("[^a-zA-Z0-9_ -]"), "_").trim().ifBlank { "RachelEagles_Document" }
+                        val rawName = jobTitle ?: "Treasurers_Report_Financial_Record"
+                        val safeName = rawName.replace(Regex("[^a-zA-Z0-9_ -]"), "_").trim().ifBlank { "Treasurers_Report_Document" }
                         val printAdapter = webView.createPrintDocumentAdapter(safeName)
                         val printAttributes = PrintAttributes.Builder()
                             .setColorMode(PrintAttributes.COLOR_MODE_COLOR)
@@ -351,7 +351,7 @@ class MainActivity : ComponentActivity() {
                 val sendIntent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, message ?: "")
-                    putExtra(Intent.EXTRA_SUBJECT, title ?: "Rapport RachelEagles")
+                    putExtra(Intent.EXTRA_SUBJECT, title ?: "TREASURER'S REPORT - Financial Record")
                     type = "text/plain"
                 }
                 val shareIntent = Intent.createChooser(sendIntent, title ?: "Partager via")

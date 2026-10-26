@@ -21,7 +21,7 @@ const I18N = {
     subTitle: "Financial Record",
     currency: "USD ($)",
     loginTitle: "Secure Access - Treasury",
-    loginDesc: "Please login to manage the foundation's treasury",
+    loginDesc: "Please login to manage the Financial Record treasury",
     username: "Username",
     password: "Password",
     btnLogin: "Login",
@@ -36,7 +36,7 @@ const I18N = {
     
     // Password Recovery Modal
     recoveryTitle: "Password Recovery",
-    recoverySubtitle: "Reset procedure for Rachel Eagles Treasury",
+    recoverySubtitle: "Reset procedure for TREASURER'S REPORT - Financial Record",
     recoveryEmailsNotice: "Verification codes and reset notifications are sent to the authorized administrator emails:",
     btnSendEmailCode: "Generate & Send Reset Code via Email",
     codeSentNotice: "A 6-digit reset code has been generated and pre-filled in your email client for:",
@@ -316,7 +316,7 @@ const I18N = {
     pdfGeneratedOn: "Generated on",
     pdfCurrencyNote: "Currency: USD ($)",
     pdfOfficialDoc: "Official Internal Treasury Document",
-    pdfOrgName: "The Fraternal Order of Eagles",
+    pdfOrgName: "THE FRATERNAL ORDER OF LADY EAGLES GROUP",
     pdfTreasurerTitle: "The Treasurer",
     pdfSignatureLabel: "(Signature & Date)",
     pdfFamCol: "Family / Category / Reason",
@@ -375,7 +375,7 @@ const I18N = {
     subTitle: "Financial Record",
     currency: "USD ($)",
     loginTitle: "Accès Sécurisé - Trésorerie",
-    loginDesc: "Veuillez vous identifier pour gérer la trésorerie de la fondation",
+    loginDesc: "Veuillez vous identifier pour accéder à la trésorerie Financial Record",
     username: "Identifiant",
     password: "Mot de passe",
     btnLogin: "Se connecter",
@@ -390,7 +390,7 @@ const I18N = {
 
     // Modal récupération
     recoveryTitle: "Récupération du Mot de Passe",
-    recoverySubtitle: "Procédure officielle de sécurité Rachel Eagles",
+    recoverySubtitle: "Procédure officielle de sécurité TREASURER'S REPORT",
     recoveryEmailsNotice: "Les codes de vérification et alertes sont envoyés aux emails administrateurs autorisés :",
     btnSendEmailCode: "Générer & Envoyer le code par Email",
     codeSentNotice: "Un code à 6 chiffres a été généré et préparé dans votre boîte email pour :",
@@ -671,7 +671,7 @@ const I18N = {
     pdfGeneratedOn: "Édité le",
     pdfCurrencyNote: "Devise : USD ($)",
     pdfOfficialDoc: "Document officiel de trésorerie interne",
-    pdfOrgName: "The Fraternal Order of Eagles",
+    pdfOrgName: "THE FRATERNAL ORDER OF LADY EAGLES GROUP",
     pdfTreasurerTitle: "Le Trésorier / La Trésorière",
     pdfSignatureLabel: "(Signature & Date)",
     pdfFamCol: "Famille / Catégorie / Raison",
@@ -1526,14 +1526,14 @@ function RachelEaglesApp() {
     setResetErrorMsg('');
 
     const recipients = ADMIN_EMAILS.join(',');
-    const subject = encodeURIComponent("Rachel Eagles Treasury - Password Reset Verification Code");
+    const subject = encodeURIComponent("TREASURER'S REPORT - Password Reset Verification Code");
     const body = encodeURIComponent(
-      `Hello,\n\nA request has been made to reset the treasurer password for the Rachel Eagles Treasury Application.\n\n` +
+      `Hello,\n\nA request has been made to reset the treasurer password for the TREASURER'S REPORT Financial Record.\n\n` +
       `Your 6-digit verification code is:\n\n>>> ${code} <<<\n\n` +
       `Enter this code in the application to set your new password.\n\n` +
       `Authorized administrators: ${ADMIN_EMAILS.join(', ')}\n` +
       `Date: ${new Date().toLocaleString()}\n` +
-      `The Fraternal Order of Eagles`
+      `THE FRATERNAL ORDER OF LADY EAGLES GROUP`
     );
 
     // Ouvre le client de messagerie
@@ -2210,9 +2210,9 @@ function RachelEaglesApp() {
     });
 
     const backupPayload = {
-      app: "RachelEagles",
-      version: "1.0",
-      foundation: "The Fraternal Order of Eagles / Sargo Cambodia Eagles Club",
+      app: "TREASURER'S REPORT",
+      version: "2.0",
+      foundation: "THE FRATERNAL ORDER OF LADY EAGLES GROUP",
       exportDate: new Date().toISOString(),
       dateRange: { from: zipDateFrom || 'All', to: zipDateTo || 'All' },
       transactionsCount: txToSave.length,
@@ -2237,7 +2237,7 @@ function RachelEaglesApp() {
   </style>
 </head>
 <body>
-  <h1>The Fraternal Order of Eagles - ${t.appTitle}</h1>
+  <h1>THE FRATERNAL ORDER OF LADY EAGLES GROUP - ${t.appTitle}</h1>
   <p>${t.pdfGeneratedOn} ${new Date().toLocaleDateString()} | ${t.period}: ${zipDateFrom || 'Start'} ${t.toDate.toLowerCase()} ${zipDateTo || 'End'}</p>
   <table>
     <thead><tr><th>${t.date}</th><th>${t.type}</th><th>${t.pdfFamCol}</th><th>${t.pdfRefCol}</th><th>${t.amount}</th></tr></thead>
@@ -4709,8 +4709,8 @@ function RachelEaglesApp() {
             <img src="footer_banner.jpg" alt="Footer Banner" className="h-8 object-contain" />
           </div>
           <div className="text-center sm:text-right">
-            <p className="font-semibold text-slate-700">The Fraternal Order of Eagles &bull; Philippine Eagles</p>
-            <p className="text-[11px] text-slate-400">Application RachelEagles V1.0</p>
+            <p className="font-semibold text-slate-700">THE FRATERNAL ORDER OF LADY EAGLES GROUP &bull; Philippine Eagles</p>
+            <p className="text-[11px] text-slate-400">TREASURER'S REPORT - Financial Record V2.0</p>
           </div>
         </div>
       </footer>
@@ -6038,7 +6038,7 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
               <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-500 text-blue-950">
                 AUDIT OFFICIEL
               </span>
-              <span className="text-xs text-blue-200">The Fraternal Order of Eagles</span>
+              <span className="text-xs text-blue-200">THE FRATERNAL ORDER OF LADY EAGLES GROUP</span>
             </div>
             <h3 className="text-lg sm:text-xl font-black mt-1">
               {t.auditReportTitle}
@@ -6551,7 +6551,7 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
                 <span>{isFr ? "Manuel d'Utilisation Officiel" : "Official User Manual & Guide"}</span>
                 <span className="text-[10px] uppercase px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black">v2.0</span>
               </h3>
-              <p className="text-[11px] text-blue-200 font-medium">The Fraternal Order of Eagles &bull; Sargo Cambodia Eagles</p>
+              <p className="text-[11px] text-blue-200 font-medium">THE FRATERNAL ORDER OF LADY EAGLES GROUP &bull; Sargo Cambodia Eagles</p>
             </div>
           </div>
 
@@ -6676,8 +6676,8 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
                 </h4>
                 <p>
                   {isFr
-                    ? "RachelEagles est l'application officielle de trésorerie conçue pour The Fraternal Order of Eagles (Sargo Cambodia Eagles Club & Lady Eagles Group). Elle permet une gestion financière rigoureuse, transparente et conforme, consultable à tout moment en français et en anglais."
-                    : "RachelEagles is the official treasury application designed for The Fraternal Order of Eagles (Sargo Cambodia Eagles Club & Lady Eagles Group). It enables rigorous, transparent, and compliant financial governance, accessible in English and French."}
+                    ? "TREASURER'S REPORT est l'application officielle de trésorerie conçue pour THE FRATERNAL ORDER OF LADY EAGLES GROUP (Financial Record). Elle permet une gestion financière rigoureuse, transparente et conforme, consultable à tout moment en français et en anglais."
+                    : "TREASURER'S REPORT is the official treasury application designed for THE FRATERNAL ORDER OF LADY EAGLES GROUP (Financial Record). It enables rigorous, transparent, and compliant financial governance, accessible in English and French."}
                 </p>
               </div>
 
