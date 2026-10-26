@@ -16,8 +16,9 @@ const ADMIN_EMAILS = ['Afamcherie@gmail.com', 'ericveyrat.iphone@gmail.com'];
 const I18N = {
   en: {
     // App header & auth
-    appTitle: "The Fraternal Order of Lady Eagles",
-    subTitle: "Foundation to Financial Record",
+    appTitle: "TREASURER'S REPORT",
+    orgTitle: "THE FRATERNAL ORDER OF LADY EAGLES GROUP",
+    subTitle: "Financial Record",
     currency: "USD ($)",
     loginTitle: "Secure Access - Treasury",
     loginDesc: "Please login to manage the foundation's treasury",
@@ -133,6 +134,39 @@ const I18N = {
     calClear: "Clear",
     calToday: "Today",
     calYesterday: "Yesterday",
+
+    // Stats filters & display modes
+    statsFilterTitle: "Filters & Period Selection",
+    filterModeRange: "Date Range",
+    filterModeSingle: "Single Date",
+    filterModeMonth: "Year / Month",
+    filterModeAll: "All History",
+    filterTypeLabel: "Type:",
+    filterAllTypes: "All (Credits & Debits)",
+    filterDebitsOnly: "Debits (Expenses) Only",
+    filterCreditsOnly: "Credits (Incomes) Only",
+    filterFamilyLabel: "Family:",
+    filterAllFamilies: "All Families",
+    filterCategoryLabel: "Category:",
+    filterAllCategories: "All Categories",
+    filterPersonLabel: "Person / Member:",
+    filterAllPersons: "All Persons",
+    btnResetStatsFilters: "Reset Filters",
+    activeFilterBadge: "Active Filter:",
+    filteredCountLabel: "Matching:",
+    displayModeLabel: "Display Mode:",
+    modeAmounts: "Amounts ($ USD)",
+    modePercentages: "Percentages (%)",
+    chartView2BarTitle: "Debit vs Credit Histogram",
+    chartView2GlobalPieTitle: "Global Proportion (Credit vs Debit)",
+    chartView2FamilyPieTitle: "Expense Breakdown by Family",
+    chartView3Title: "Expense Distribution by Family",
+    chartView4Title: "Expense Distribution by Category",
+    inAmounts: "Amounts ($)",
+    inPercentages: "Percentages (%)",
+    unitAmountDesc: "Values displayed in USD ($)",
+    unitPercentDesc: "Values displayed in percent (%)",
+    noTransactionsFiltered: "No transactions match the selected filter criteria.",
     btnEditAmount: "Edit Amount",
     btnCancelRow: "Cancel Row",
     btnPrint: "Print",
@@ -336,8 +370,9 @@ const I18N = {
   },
   fr: {
     // App header & auth
-    appTitle: "The Fraternal Order of Lady Eagles",
-    subTitle: "Foundation to Financial Record",
+    appTitle: "TREASURER'S REPORT",
+    orgTitle: "THE FRATERNAL ORDER OF LADY EAGLES GROUP",
+    subTitle: "Financial Record",
     currency: "USD ($)",
     loginTitle: "Accès Sécurisé - Trésorerie",
     loginDesc: "Veuillez vous identifier pour gérer la trésorerie de la fondation",
@@ -453,6 +488,39 @@ const I18N = {
     calClear: "Effacer",
     calToday: "Aujourd'hui",
     calYesterday: "Hier",
+
+    // Stats filters & display modes
+    statsFilterTitle: "Filtres & Sélection de Période",
+    filterModeRange: "Période (Du / Au)",
+    filterModeSingle: "Date Unique",
+    filterModeMonth: "Année / Mois",
+    filterModeAll: "Tout l'historique",
+    filterTypeLabel: "Type :",
+    filterAllTypes: "Tous (Crédits & Débits)",
+    filterDebitsOnly: "Débits (Dépenses) uniquement",
+    filterCreditsOnly: "Crédits (Recettes) uniquement",
+    filterFamilyLabel: "Famille :",
+    filterAllFamilies: "Toutes les familles",
+    filterCategoryLabel: "Catégorie :",
+    filterAllCategories: "Toutes les catégories",
+    filterPersonLabel: "Membre / Personne :",
+    filterAllPersons: "Tous les membres",
+    btnResetStatsFilters: "Réinitialiser les filtres",
+    activeFilterBadge: "Filtre actif :",
+    filteredCountLabel: "Correspondance :",
+    displayModeLabel: "Mode d'affichage :",
+    modeAmounts: "Montants ($ USD)",
+    modePercentages: "Pourcentages (%)",
+    chartView2BarTitle: "Histogramme Débits vs Crédits",
+    chartView2GlobalPieTitle: "Proportion Globale (Crédits vs Débits)",
+    chartView2FamilyPieTitle: "Répartition des Dépenses par Famille",
+    chartView3Title: "Répartition des Dépenses par Famille",
+    chartView4Title: "Répartition des Dépenses par Catégorie",
+    inAmounts: "Montants ($)",
+    inPercentages: "Pourcentages (%)",
+    unitAmountDesc: "Valeurs affichées en USD ($)",
+    unitPercentDesc: "Valeurs affichées en pourcentages (%)",
+    noTransactionsFiltered: "Aucune transaction ne correspond aux critères de filtrage sélectionnés.",
     btnEditAmount: "Modifier Montant",
     btnCancelRow: "Annuler Ligne",
     btnPrint: "Imprimer",
@@ -1891,29 +1959,115 @@ function RachelEaglesApp() {
   const netBalance = totalCredits - totalDebits;
 
   // ==========================================================================
-  // FILTRAGE JOURNAL (VUE 1)
+  // HISTORIQUE CLASSE PAR DATE (LES PLUS RÉCENTES EN PREMIER)
   // ==========================================================================
-  const [filterMode, setFilterMode] = useState('range');
-  const [filterDateSingle, setFilterDateSingle] = useState(getTodayDateStr());
-  const [filterDateFrom, setFilterDateFrom] = useState(() => {
+  const sortedTransactions = useMemo(() => {
+    return [...transactions].sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : (b.id > a.id ? 1 : -1)));
+  }, [transactions]);
+
+  const sortedDebits = useMemo(() => {
+    return sortedTransactions.filter(tx => tx.type === 'debit');
+  }, [sortedTransactions]);
+
+  const sortedCredits = useMemo(() => {
+    return sortedTransactions.filter(tx => tx.type === 'credit');
+  }, [sortedTransactions]);
+
+  // ==========================================================================
+  // FILTRAGE STATISTIQUES GLOBAL (POUR TOUTES LES SOUS-VUES DE STATS)
+  // ==========================================================================
+  const [statsFilterMode, setStatsFilterMode] = useState('all'); // 'all', 'range', 'single', 'month'
+  const [statsFilterDateSingle, setStatsFilterDateSingle] = useState(getTodayDateStr());
+  const [statsFilterDateFrom, setStatsFilterDateFrom] = useState(() => {
     const d = new Date();
     d.setDate(1);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
   });
-  const [filterDateTo, setFilterDateTo] = useState(getTodayDateStr());
+  const [statsFilterDateTo, setStatsFilterDateTo] = useState(getTodayDateStr());
+  const [statsFilterYear, setStatsFilterYear] = useState(() => String(new Date().getFullYear()));
+  const [statsFilterMonth, setStatsFilterMonth] = useState(() => String(new Date().getMonth() + 1).padStart(2, '0'));
+  const [statsFilterType, setStatsFilterType] = useState('all'); // 'all', 'debit', 'credit'
+  const [statsFilterFamily, setStatsFilterFamily] = useState('all');
+  const [statsFilterCategory, setStatsFilterCategory] = useState('all');
+  const [statsFilterPerson, setStatsFilterPerson] = useState('all');
 
-  const filteredJournalTransactions = useMemo(() => {
+  const filteredStatsTransactions = useMemo(() => {
     return transactions.filter(tx => {
-      if (filterMode === 'all') return true;
-      if (filterMode === 'single') return tx.date === filterDateSingle;
-      if (filterMode === 'range') {
-        if (filterDateFrom && tx.date < filterDateFrom) return false;
-        if (filterDateTo && tx.date > filterDateTo) return false;
-        return true;
+      // 1. Filtrage Date
+      if (statsFilterMode === 'single') {
+        if (statsFilterDateSingle && tx.date !== statsFilterDateSingle) return false;
+      } else if (statsFilterMode === 'range') {
+        if (statsFilterDateFrom && tx.date < statsFilterDateFrom) return false;
+        if (statsFilterDateTo && tx.date > statsFilterDateTo) return false;
+      } else if (statsFilterMode === 'month') {
+        if (statsFilterYear && !tx.date.startsWith(statsFilterYear)) return false;
+        if (statsFilterMonth && statsFilterMonth !== 'all' && tx.date.substring(5, 7) !== statsFilterMonth) return false;
       }
+
+      // 2. Filtrage Type
+      if (statsFilterType !== 'all') {
+        if (tx.type !== statsFilterType) return false;
+      }
+
+      // 3. Filtrage Famille
+      if (statsFilterFamily !== 'all') {
+        if (tx.family !== statsFilterFamily) return false;
+      }
+
+      // 4. Filtrage Catégorie
+      if (statsFilterCategory !== 'all') {
+        if (tx.category !== statsFilterCategory) return false;
+      }
+
+      // 5. Filtrage Personne / Membre
+      if (statsFilterPerson !== 'all') {
+        if (tx.person !== statsFilterPerson) return false;
+      }
+
       return true;
     }).sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
-  }, [transactions, filterMode, filterDateSingle, filterDateFrom, filterDateTo]);
+  }, [
+    transactions,
+    statsFilterMode,
+    statsFilterDateSingle,
+    statsFilterDateFrom,
+    statsFilterDateTo,
+    statsFilterYear,
+    statsFilterMonth,
+    statsFilterType,
+    statsFilterFamily,
+    statsFilterCategory,
+    statsFilterPerson
+  ]);
+
+  const activeFilterDescription = useMemo(() => {
+    const parts = [];
+    if (statsFilterMode === 'all') {
+      parts.push(lang === 'fr' ? "Tout l'historique" : "All history");
+    } else if (statsFilterMode === 'single') {
+      parts.push(`${lang === 'fr' ? 'Date' : 'Date'}: ${statsFilterDateSingle}`);
+    } else if (statsFilterMode === 'range') {
+      parts.push(`${lang === 'fr' ? 'Du' : 'From'} ${statsFilterDateFrom || '...'} ${lang === 'fr' ? 'au' : 'to'} ${statsFilterDateTo || '...'}`);
+    } else if (statsFilterMode === 'month') {
+      const mNamesEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const mNamesFr = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
+      const mLabel = statsFilterMonth === 'all'
+        ? (lang === 'fr' ? 'Tous les mois' : 'All months')
+        : (lang === 'fr' ? mNamesFr[parseInt(statsFilterMonth, 10) - 1] : mNamesEn[parseInt(statsFilterMonth, 10) - 1]);
+      parts.push(`${mLabel} ${statsFilterYear}`);
+    }
+
+    if (statsFilterType === 'debit') parts.push(lang === 'fr' ? "Débits" : "Debits");
+    if (statsFilterType === 'credit') parts.push(lang === 'fr' ? "Crédits" : "Credits");
+
+    if (statsFilterFamily !== 'all') parts.push(`${lang === 'fr' ? 'Famille' : 'Family'}: ${statsFilterFamily}`);
+    if (statsFilterCategory !== 'all') parts.push(`${lang === 'fr' ? 'Catégorie' : 'Category'}: ${statsFilterCategory}`);
+    if (statsFilterPerson !== 'all') parts.push(`${lang === 'fr' ? 'Membre' : 'Member'}: ${statsFilterPerson}`);
+
+    return parts.join(' • ');
+  }, [lang, statsFilterMode, statsFilterDateSingle, statsFilterDateFrom, statsFilterDateTo, statsFilterYear, statsFilterMonth, statsFilterType, statsFilterFamily, statsFilterCategory, statsFilterPerson]);
+
+  const filteredJournalTransactions = filteredStatsTransactions;
 
   // ==========================================================================
   // MOTEUR D'IMPRESSION & EXPORT PDF OFFICIEL
@@ -2247,8 +2401,9 @@ function RachelEaglesApp() {
               <img src="logo2.png" alt="Philippine Eagles" className="w-16 h-16 object-contain" />
               <img src="logo3.png" alt="Sargo Eagles" className="w-16 h-16 object-contain" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-blue-900 tracking-tight leading-tight">The Fraternal Order of Lady Eagles</h1>
-            <p className="text-xs uppercase font-extrabold tracking-widest text-amber-600 mt-1.5">Foundation to Financial Record</p>
+            <h1 className="text-xl sm:text-2xl font-black text-blue-900 tracking-tight leading-tight uppercase">TREASURER'S REPORT</h1>
+            <h2 className="text-xs sm:text-sm font-black text-slate-800 tracking-wider uppercase mt-1">THE FRATERNAL ORDER OF LADY EAGLES GROUP</h2>
+            <p className="text-xs uppercase font-extrabold tracking-widest text-amber-600 mt-1">Financial Record</p>
             <p className="text-xs sm:text-sm text-slate-500 mt-2">{t.loginDesc}</p>
           </div>
 
@@ -2708,7 +2863,7 @@ function RachelEaglesApp() {
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-4">
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <div className="flex items-center gap-1.5 sm:gap-2">
               {bannerLogosConfig.showLogo1 && (
                 <img src="logo1.png" alt="Philippine Eagles Emblem" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" title="Philippine Eagles Emblem" />
@@ -2719,6 +2874,11 @@ function RachelEaglesApp() {
               {bannerLogosConfig.showLogo3 && (
                 <img src="logo3.png" alt="Sargo Cambodia Eagles" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" title="Sargo Cambodia Eagles" />
               )}
+            </div>
+            <div className="hidden sm:block leading-tight">
+              <h1 className="text-xs sm:text-sm font-black text-blue-900 tracking-tight uppercase">TREASURER'S REPORT</h1>
+              <p className="text-[10px] font-black uppercase text-slate-800 tracking-wider">THE FRATERNAL ORDER OF LADY EAGLES GROUP</p>
+              <p className="text-[9px] font-extrabold uppercase text-amber-600 tracking-widest">Financial Record</p>
             </div>
           </div>
 
@@ -2996,7 +3156,7 @@ function RachelEaglesApp() {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.slice(0, 8).map(tx => (
+                    {sortedTransactions.slice(0, 10).map(tx => (
                       <tr key={tx.id}>
                         <td className="font-semibold text-slate-700 whitespace-nowrap">{tx.date}</td>
                         <td className="w-28 text-center whitespace-nowrap">
@@ -3275,7 +3435,7 @@ function RachelEaglesApp() {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.filter(tx => tx.type === 'debit').slice(0, 15).map(tx => (
+                    {sortedDebits.map(tx => (
                       <tr key={tx.id}>
                         <td className="font-semibold text-slate-700 whitespace-nowrap">{tx.date}</td>
                         <td className="text-xs uppercase text-slate-500 whitespace-nowrap text-center font-bold">
@@ -3534,7 +3694,7 @@ function RachelEaglesApp() {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.filter(tx => tx.type === 'credit').slice(0, 15).map(tx => (
+                    {sortedCredits.map(tx => (
                       <tr key={tx.id}>
                         <td className="font-semibold text-slate-700 whitespace-nowrap">{tx.date}</td>
                         <td className="text-xs uppercase text-slate-500 whitespace-nowrap text-center font-bold">
@@ -3785,118 +3945,286 @@ function RachelEaglesApp() {
               ))}
             </div>
 
-            {/* VUE 1 : JOURNAL */}
-            {statSubView === 'view1' && (
-              <div className="space-y-4 fade-in">
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex rounded-lg border border-slate-300 p-0.5 bg-slate-50 text-xs font-bold">
-                      <button
-                        onClick={() => setFilterMode('range')}
-                        className={`px-3 py-1.5 rounded-md ${filterMode === 'range' ? 'bg-white shadow text-blue-900' : 'text-slate-600'}`}
-                      >
-                        {t.dateRange}
-                      </button>
-                      <button
-                        onClick={() => setFilterMode('single')}
-                        className={`px-3 py-1.5 rounded-md ${filterMode === 'single' ? 'bg-white shadow text-blue-900' : 'text-slate-600'}`}
-                      >
-                        {t.singleDate}
-                      </button>
-                      <button
-                        onClick={() => setFilterMode('all')}
-                        className={`px-3 py-1.5 rounded-md ${filterMode === 'all' ? 'bg-white shadow text-blue-900' : 'text-slate-600'}`}
-                      >
-                        {t.allHistory}
-                      </button>
-                    </div>
+            {/* BARRE DE FILTRAGE UNIFIEE DU MODULE STATISTIQUES */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-2.5 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <i className="fa-solid fa-filter text-amber-600"></i>
+                  <span className="text-xs font-black uppercase text-slate-700 tracking-wider">
+                    {t.statsFilterTitle}
+                  </span>
+                </div>
 
-                    {filterMode === 'range' && (
-                      <div className="flex items-center gap-2 text-xs">
-                        <label className="text-slate-500 font-semibold">{t.fromDate}:</label>
-                        <BilingualDatePicker
-                          value={filterDateFrom}
-                          onChange={(d) => setFilterDateFrom(d)}
-                          lang={lang}
-                          compact
-                          accentColor="blue"
-                        />
-                        <label className="text-slate-500 font-semibold">{t.toDate}:</label>
-                        <BilingualDatePicker
-                          value={filterDateTo}
-                          onChange={(d) => setFilterDateTo(d)}
-                          lang={lang}
-                          compact
-                          accentColor="blue"
-                        />
-                      </div>
-                    )}
-
-                    {filterMode === 'single' && (
-                      <div className="flex items-center gap-2 text-xs">
-                        <label className="text-slate-500 font-semibold">{t.date}:</label>
-                        <BilingualDatePicker
-                          value={filterDateSingle}
-                          onChange={(d) => setFilterDateSingle(d)}
-                          lang={lang}
-                          compact
-                          accentColor="blue"
-                        />
-                      </div>
-                    )}
-                  </div>
-
+                <div className="flex items-center gap-2">
+                  {(statsFilterMode !== 'all' || statsFilterType !== 'all' || statsFilterFamily !== 'all' || statsFilterCategory !== 'all' || statsFilterPerson !== 'all') && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatsFilterMode('all');
+                        setStatsFilterType('all');
+                        setStatsFilterFamily('all');
+                        setStatsFilterCategory('all');
+                        setStatsFilterPerson('all');
+                      }}
+                      className="text-xs text-red-600 hover:text-red-800 font-bold flex items-center gap-1 transition"
+                    >
+                      <i className="fa-solid fa-rotate-left text-[11px]"></i>
+                      <span>{t.btnResetStatsFilters}</span>
+                    </button>
+                  )}
+                  
                   <button
+                    type="button"
                     onClick={() => {
-                      const periodStr = filterMode === 'all'
-                        ? t.allHistory
-                        : filterMode === 'single'
-                        ? `${t.singleDate}: ${filterDateSingle}`
-                        : `${t.fromDate} ${filterDateFrom} ${t.toDate.toLowerCase()} ${filterDateTo}`;
                       triggerOfficialPdfExport(
-                        t.pdfComparisonTitle,
-                        `${t.pdfPeriodPrefix} ${periodStr}`,
-                        filteredJournalTransactions
+                        `${t.navStats} - ${statSubView === 'view1' ? t.statView1 : statSubView === 'view2' ? t.statView2 : statSubView === 'view3' ? t.statView3 : statSubView === 'view4' ? t.statView4 : t.statView5}`,
+                        `${t.activeFilterBadge} ${activeFilterDescription}`,
+                        filteredStatsTransactions,
+                        statSubView === 'view2' ? 'chart-view2-bar' : statSubView === 'view3' ? 'chart-view3-fam' : statSubView === 'view4' ? 'chart-view4-cat' : null
                       );
                     }}
-                    className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
+                    className="px-3.5 py-1.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition"
+                    title={t.btnExportPdf}
                   >
                     <i className="fa-solid fa-file-pdf"></i>
                     <span>{t.btnExportPdf}</span>
                   </button>
                 </div>
+              </div>
 
+              {/* LIGNE 1 : SÉLECTEUR DE MODE DE PÉRIODE */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex rounded-lg border border-slate-300 p-0.5 bg-slate-50 text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setStatsFilterMode('all')}
+                    className={`px-3 py-1.5 rounded-md transition ${statsFilterMode === 'all' ? 'bg-blue-900 text-white shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    {t.filterModeAll}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStatsFilterMode('range')}
+                    className={`px-3 py-1.5 rounded-md transition ${statsFilterMode === 'range' ? 'bg-blue-900 text-white shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    {t.filterModeRange}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStatsFilterMode('single')}
+                    className={`px-3 py-1.5 rounded-md transition ${statsFilterMode === 'single' ? 'bg-blue-900 text-white shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    {t.filterModeSingle}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStatsFilterMode('month')}
+                    className={`px-3 py-1.5 rounded-md transition ${statsFilterMode === 'month' ? 'bg-blue-900 text-white shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    {t.filterModeMonth}
+                  </button>
+                </div>
+
+                {/* SÉLECTEURS DE DATE DYNAMIQUES SELON LE MODE */}
+                {statsFilterMode === 'range' && (
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <label className="text-slate-500 font-semibold">{t.fromDate}:</label>
+                    <BilingualDatePicker
+                      value={statsFilterDateFrom}
+                      onChange={(d) => setStatsFilterDateFrom(d)}
+                      lang={lang}
+                      compact
+                      accentColor="blue"
+                    />
+                    <label className="text-slate-500 font-semibold">{t.toDate}:</label>
+                    <BilingualDatePicker
+                      value={statsFilterDateTo}
+                      onChange={(d) => setStatsFilterDateTo(d)}
+                      lang={lang}
+                      compact
+                      accentColor="blue"
+                    />
+                  </div>
+                )}
+
+                {statsFilterMode === 'single' && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <label className="text-slate-500 font-semibold">{t.date}:</label>
+                    <BilingualDatePicker
+                      value={statsFilterDateSingle}
+                      onChange={(d) => setStatsFilterDateSingle(d)}
+                      lang={lang}
+                      compact
+                      accentColor="blue"
+                    />
+                  </div>
+                )}
+
+                {statsFilterMode === 'month' && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <select
+                      value={statsFilterMonth}
+                      onChange={(e) => setStatsFilterMonth(e.target.value)}
+                      className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:outline-none"
+                    >
+                      <option value="all">{lang === 'fr' ? 'Tous les mois' : 'All Months'}</option>
+                      {[
+                        { num: '01', fr: 'Janvier', en: 'January' },
+                        { num: '02', fr: 'Février', en: 'February' },
+                        { num: '03', fr: 'Mars', en: 'March' },
+                        { num: '04', fr: 'Avril', en: 'April' },
+                        { num: '05', fr: 'Mai', en: 'May' },
+                        { num: '06', fr: 'Juin', en: 'June' },
+                        { num: '07', fr: 'Juillet', en: 'July' },
+                        { num: '08', fr: 'Août', en: 'August' },
+                        { num: '09', fr: 'Septembre', en: 'September' },
+                        { num: '10', fr: 'Octobre', en: 'October' },
+                        { num: '11', fr: 'Novembre', en: 'November' },
+                        { num: '12', fr: 'Décembre', en: 'December' }
+                      ].map(m => (
+                        <option key={m.num} value={m.num}>{lang === 'fr' ? m.fr : m.en}</option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={statsFilterYear}
+                      onChange={(e) => setStatsFilterYear(e.target.value)}
+                      className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:outline-none"
+                    >
+                      {[2024, 2025, 2026, 2027, 2028].map(y => (
+                        <option key={y} value={String(y)}>{y}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              {/* LIGNE 2 : SÉLECTEURS TYPE / FAMILLE / CATÉGORIE / PERSONNE */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 pt-1">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">{t.filterTypeLabel}</label>
+                  <select
+                    value={statsFilterType}
+                    onChange={(e) => setStatsFilterType(e.target.value)}
+                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none"
+                  >
+                    <option value="all">{t.filterAllTypes}</option>
+                    <option value="debit">{t.filterDebitsOnly}</option>
+                    <option value="credit">{t.filterCreditsOnly}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">{t.filterFamilyLabel}</label>
+                  <select
+                    value={statsFilterFamily}
+                    onChange={(e) => {
+                      setStatsFilterFamily(e.target.value);
+                      setStatsFilterCategory('all');
+                    }}
+                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none"
+                  >
+                    <option value="all">{t.filterAllFamilies}</option>
+                    {sortedFamilies.map(f => (
+                      <option key={f.id} value={f.name}>{formatItemLabel(f.name, lang)}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">{t.filterCategoryLabel}</label>
+                  <select
+                    value={statsFilterCategory}
+                    onChange={(e) => setStatsFilterCategory(e.target.value)}
+                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none"
+                  >
+                    <option value="all">{t.filterAllCategories}</option>
+                    {(statsFilterFamily !== 'all'
+                      ? (families.find(f => f.name === statsFilterFamily)?.categories || [])
+                      : Array.from(new Set(families.flatMap(f => f.categories || []))).sort()
+                    ).map((c, i) => (
+                      <option key={i} value={c}>{formatItemLabel(c, lang)}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">{t.filterPersonLabel}</label>
+                  <select
+                    value={statsFilterPerson}
+                    onChange={(e) => setStatsFilterPerson(e.target.value)}
+                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none"
+                  >
+                    <option value="all">{t.filterAllPersons}</option>
+                    {sortedMembers.map((m, i) => (
+                      <option key={i} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* BANDEAU RECAPITULATIF DU FILTRE ACTIF */}
+              <div className="bg-slate-50 rounded-xl px-3 py-2 border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-1.5 text-slate-600 font-medium">
+                  <span className="font-bold text-slate-700">{t.activeFilterBadge}</span>
+                  <span className="bg-blue-100 text-blue-900 font-bold px-2 py-0.5 rounded border border-blue-200">
+                    {activeFilterDescription}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3 font-bold">
+                  <span className="text-slate-600">
+                    {filteredStatsTransactions.length} transaction(s)
+                  </span>
+                  <span className="text-green-700">
+                    + {formatUSD(filteredStatsTransactions.filter(tx => tx.type === 'credit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0))}
+                  </span>
+                  <span className="text-red-600">
+                    - {formatUSD(filteredStatsTransactions.filter(tx => tx.type === 'debit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0))}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* VUE 1 : JOURNAL & GRAND LIVRE */}
+            {statSubView === 'view1' && (
+              <div className="space-y-4 fade-in">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                     <span className="text-xs text-slate-500 font-bold uppercase">{t.totalCredits}</span>
                     <p className="text-xl font-black text-green-700 mt-1">
-                      {formatUSD(filteredJournalTransactions.filter(tx => tx.type === 'credit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0))}
+                      {formatUSD(filteredStatsTransactions.filter(tx => tx.type === 'credit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0))}
                     </p>
                   </div>
                   <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                     <span className="text-xs text-slate-500 font-bold uppercase">{t.totalDebits}</span>
                     <p className="text-xl font-black text-red-600 mt-1">
-                      {formatUSD(filteredJournalTransactions.filter(tx => tx.type === 'debit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0))}
+                      {formatUSD(filteredStatsTransactions.filter(tx => tx.type === 'debit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0))}
                     </p>
                   </div>
                   <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                     <span className="text-xs text-slate-500 font-bold uppercase">{t.periodBalance}</span>
                     <p className="text-xl font-black text-blue-900 mt-1">
                       {formatUSD(
-                        filteredJournalTransactions.filter(tx => tx.type === 'credit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0) -
-                        filteredJournalTransactions.filter(tx => tx.type === 'debit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0)
+                        filteredStatsTransactions.filter(tx => tx.type === 'credit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0) -
+                        filteredStatsTransactions.filter(tx => tx.type === 'debit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0)
                       )}
                     </p>
                   </div>
                 </div>
 
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="p-4 border-b border-slate-200 flex justify-between items-center">
-                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
-                      {t.journalTableTitle}
-                    </h3>
-                    <span className="text-xs text-slate-400">
-                      {filteredJournalTransactions.length}
+                  <div className="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+                        {t.journalTableTitle}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        {t.activeFilterBadge} {activeFilterDescription}
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md border border-slate-200">
+                      {filteredStatsTransactions.length} transaction(s)
                     </span>
                   </div>
 
@@ -3907,6 +4235,7 @@ function RachelEaglesApp() {
                           <th className="whitespace-nowrap">{t.colDate || t.date}</th>
                           <th className="w-28 text-center whitespace-nowrap">{t.colType || t.type}</th>
                           <th>{t.colFamilyCategory || t.pdfFamCol}</th>
+                          <th className="whitespace-nowrap">{t.colPerson}</th>
                           <th className="whitespace-nowrap">{t.colRef || t.refInvoice}</th>
                           <th>{t.colRemark || t.remark}</th>
                           <th className="text-right whitespace-nowrap">{t.colAmount || t.amount}</th>
@@ -3914,7 +4243,7 @@ function RachelEaglesApp() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredJournalTransactions.map(tx => (
+                        {filteredStatsTransactions.map(tx => (
                           <tr key={tx.id}>
                             <td className="font-semibold text-slate-700 whitespace-nowrap">{tx.date}</td>
                             <td className="w-28 text-center whitespace-nowrap">
@@ -3926,28 +4255,29 @@ function RachelEaglesApp() {
                               {tx.type === 'debit' ? (
                                 <div>
                                   <div>{formatItemLabel(tx.family, lang)} <span className="text-slate-400">&rsaquo;</span> {formatItemLabel(tx.category, lang)}</div>
-                                  {tx.person && (
-                                    <div className="text-[11px] text-blue-800 font-semibold mt-0.5 flex items-center gap-1">
-                                      <i className="fa-solid fa-user text-[9px] text-slate-400"></i>
-                                      <span>{tx.person}</span>
-                                    </div>
-                                  )}
                                 </div>
                               ) : (
                                 <div>
                                   <div>{formatItemLabel(tx.reason, lang)}</div>
-                                  {tx.person && (
-                                    <div className="text-[11px] text-green-800 font-semibold mt-0.5 flex items-center gap-1">
-                                      <i className="fa-solid fa-user text-[9px] text-slate-400"></i>
-                                      <span>{tx.person}</span>
-                                    </div>
-                                  )}
                                 </div>
+                              )}
+                            </td>
+                            <td className="text-xs font-semibold text-slate-700 whitespace-nowrap">
+                              {tx.person ? (
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border ${
+                                  tx.type === 'credit' ? 'text-green-900 bg-green-50 border-green-100' : 'text-blue-900 bg-blue-50 border-blue-100'
+                                }`}>
+                                  <i className="fa-solid fa-user text-[10px]"></i>
+                                  <span>{tx.person}</span>
+                                </span>
+                              ) : (
+                                <span className="text-slate-300 italic text-xs">-</span>
                               )}
                             </td>
                             <td className="text-xs text-slate-500 whitespace-nowrap">{tx.refInvoice || '-'}</td>
                             <td className="text-xs text-slate-500 italic">{tx.remark || '-'}</td>
                             <td className={`text-right font-black whitespace-nowrap ${tx.type === 'credit' ? 'text-green-700' : 'text-red-600'}`}>
+                              {tx.type === 'credit' ? '+ ' : '- '}
                               {formatUSD(tx.amount)}
                             </td>
                             <td className="text-center whitespace-nowrap">
@@ -3977,10 +4307,12 @@ function RachelEaglesApp() {
               </div>
             )}
 
-            {/* VUE 2 : HISTOGRAMME DÉBITS/CRÉDITS + CAMEMBERT */}
+            {/* VUE 2 : HISTOGRAMME DÉBITS/CRÉDITS + CAMEMBERTS */}
             {statSubView === 'view2' && (
               <StatView2Component
-                transactions={transactions}
+                transactions={filteredStatsTransactions}
+                activeFilterDescription={activeFilterDescription}
+                families={families}
                 formatUSD={formatUSD}
                 triggerOfficialPdfExport={triggerOfficialPdfExport}
                 t={t}
@@ -3991,7 +4323,8 @@ function RachelEaglesApp() {
             {/* VUE 3 : RÉPARTITION PAR FAMILLE */}
             {statSubView === 'view3' && (
               <StatView3Component
-                transactions={transactions}
+                transactions={filteredStatsTransactions}
+                activeFilterDescription={activeFilterDescription}
                 families={families}
                 formatUSD={formatUSD}
                 triggerOfficialPdfExport={triggerOfficialPdfExport}
@@ -4003,7 +4336,8 @@ function RachelEaglesApp() {
             {/* VUE 4 : RÉPARTITION PAR CATÉGORIE */}
             {statSubView === 'view4' && (
               <StatView4Component
-                transactions={transactions}
+                transactions={filteredStatsTransactions}
+                activeFilterDescription={activeFilterDescription}
                 families={families}
                 formatUSD={formatUSD}
                 triggerOfficialPdfExport={triggerOfficialPdfExport}
@@ -4015,7 +4349,14 @@ function RachelEaglesApp() {
             {/* VUE 5 : DONNÉES CHOISIES (SUR-MESURE) */}
             {statSubView === 'view5' && (
               <StatView5Component
-                transactions={transactions}
+                transactions={filteredStatsTransactions}
+                activeFilterDescription={activeFilterDescription}
+                families={families}
+                formatUSD={formatUSD}
+                triggerOfficialPdfExport={triggerOfficialPdfExport}
+                t={t}
+                lang={lang}
+              />
                 families={families}
                 formatUSD={formatUSD}
                 triggerOfficialPdfExport={triggerOfficialPdfExport}
@@ -4472,14 +4813,41 @@ function RachelEaglesApp() {
 }
 
 // ============================================================================
-// COMPOSANT VUE 2 : HISTOGRAMME DÉBITS/CRÉDITS + CAMEMBERT GLOBAL (%)
+// COMPOSANT VUE 2 : HISTOGRAMME DÉBITS/CRÉDITS + CAMEMBERTS STATISTIQUES
+// Affiche le nom du filtre actif et sélecteur d'unité (Montants $ ou Pourcentages %)
 // ============================================================================
-function StatView2Component({ transactions, formatUSD, triggerOfficialPdfExport, t, lang }) {
+function StatView2Component({
+  transactions,
+  activeFilterDescription,
+  families,
+  formatUSD,
+  triggerOfficialPdfExport,
+  t,
+  lang
+}) {
   const [groupBy, setGroupBy] = useState('day');
+  const [displayMode, setDisplayMode] = useState('amount'); // 'amount' | 'percent'
+  const isFr = lang === 'fr';
+
   const barCanvasRef = useRef(null);
   const pieCanvasRef = useRef(null);
+  const familyPieCanvasRef = useRef(null);
+
   const barChartInstance = useRef(null);
   const pieChartInstance = useRef(null);
+  const familyPieChartInstance = useRef(null);
+
+  const totalCredits = useMemo(() => {
+    return transactions.filter(tItem => tItem.type === 'credit').reduce((s, tItem) => s + (Number(tItem.amount) || 0), 0);
+  }, [transactions]);
+
+  const totalDebits = useMemo(() => {
+    return transactions.filter(tItem => tItem.type === 'debit').reduce((s, tItem) => s + (Number(tItem.amount) || 0), 0);
+  }, [transactions]);
+
+  const totalBoth = totalCredits + totalDebits;
+  const creditPct = totalBoth > 0 ? ((totalCredits / totalBoth) * 100).toFixed(1) : '0.0';
+  const debitPct = totalBoth > 0 ? ((totalDebits / totalBoth) * 100).toFixed(1) : '0.0';
 
   const groupedData = useMemo(() => {
     const datesMap = {};
@@ -4493,18 +4861,63 @@ function StatView2Component({ transactions, formatUSD, triggerOfficialPdfExport,
     });
 
     const sortedKeys = Object.keys(datesMap).sort();
+
+    const creditsData = sortedKeys.map(k => {
+      const c = datesMap[k].credit;
+      const d = datesMap[k].debit;
+      if (displayMode === 'percent') {
+        const sum = c + d;
+        return sum > 0 ? Number(((c / sum) * 100).toFixed(1)) : 0;
+      }
+      return c;
+    });
+
+    const debitsData = sortedKeys.map(k => {
+      const c = datesMap[k].credit;
+      const d = datesMap[k].debit;
+      if (displayMode === 'percent') {
+        const sum = c + d;
+        return sum > 0 ? Number(((d / sum) * 100).toFixed(1)) : 0;
+      }
+      return d;
+    });
+
     return {
       labels: sortedKeys,
-      credits: sortedKeys.map(k => datesMap[k].credit),
-      debits: sortedKeys.map(k => datesMap[k].debit)
+      credits: creditsData,
+      debits: debitsData,
+      rawMap: datesMap
     };
-  }, [transactions, groupBy]);
+  }, [transactions, groupBy, displayMode]);
 
-  const totalCredits = transactions.filter(tItem => tItem.type === 'credit').reduce((s, tItem) => s + (Number(tItem.amount) || 0), 0);
-  const totalDebits = transactions.filter(tItem => tItem.type === 'debit').reduce((s, tItem) => s + (Number(tItem.amount) || 0), 0);
-  const totalBoth = totalCredits + totalDebits;
-  const creditPct = totalBoth > 0 ? ((totalCredits / totalBoth) * 100).toFixed(1) : 0;
-  const debitPct = totalBoth > 0 ? ((totalDebits / totalBoth) * 100).toFixed(1) : 0;
+  // Répartition des débits par famille pour le 2ème camembert
+  const familyDebitsBreakdown = useMemo(() => {
+    const map = {};
+    transactions.filter(tx => tx.type === 'debit' && tx.family).forEach(tx => {
+      const fam = tx.family;
+      map[fam] = (map[fam] || 0) + (Number(tx.amount) || 0);
+    });
+    const sorted = Object.entries(map).sort((a, b) => b[1] - a[1]);
+    const labels = sorted.map(([fam, amt]) => {
+      const pct = totalDebits > 0 ? ((amt / totalDebits) * 100).toFixed(1) : '0.0';
+      const labelName = formatItemLabel(fam, lang);
+      return displayMode === 'amount'
+        ? `${labelName}: ${formatUSD(amt)} (${pct}%)`
+        : `${labelName}: ${pct}% (${formatUSD(amt)})`;
+    });
+    const data = sorted.map(([_, amt]) => {
+      if (displayMode === 'percent') {
+        return totalDebits > 0 ? Number(((amt / totalDebits) * 100).toFixed(1)) : 0;
+      }
+      return amt;
+    });
+    return { labels, data, count: sorted.length };
+  }, [transactions, totalDebits, displayMode, lang]);
+
+  const familyColors = [
+    '#2563eb', '#d97706', '#059669', '#dc2626', '#7c3aed',
+    '#db2777', '#0891b2', '#ea580c', '#4f46e5', '#84cc16'
+  ];
 
   useEffect(() => {
     if (!window.Chart) return;
@@ -4512,18 +4925,20 @@ function StatView2Component({ transactions, formatUSD, triggerOfficialPdfExport,
     if (barCanvasRef.current) {
       if (barChartInstance.current) barChartInstance.current.destroy();
       const ctx = barCanvasRef.current.getContext('2d');
+      const unitLabel = displayMode === 'amount' ? '($ USD)' : '(%)';
+
       barChartInstance.current = new window.Chart(ctx, {
         type: 'bar',
         data: {
           labels: groupedData.labels,
           datasets: [
             {
-              label: `${t.credit} ($)`,
+              label: `${t.credit} ${unitLabel}`,
               data: groupedData.credits,
               backgroundColor: '#16a34a'
             },
             {
-              label: `${t.debit} ($)`,
+              label: `${t.debit} ${unitLabel}`,
               data: groupedData.debits,
               backgroundColor: '#dc2626'
             }
@@ -4532,7 +4947,30 @@ function StatView2Component({ transactions, formatUSD, triggerOfficialPdfExport,
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { position: 'top' } }
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const val = context.raw || 0;
+                  if (displayMode === 'percent') {
+                    return ` ${context.dataset.label}: ${val}%`;
+                  }
+                  return ` ${context.dataset.label}: ${formatUSD(val)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return displayMode === 'amount' ? `$ ${value}` : `${value} %`;
+                }
+              }
+            }
+          }
         }
       });
     }
@@ -4540,19 +4978,52 @@ function StatView2Component({ transactions, formatUSD, triggerOfficialPdfExport,
     if (pieCanvasRef.current) {
       if (pieChartInstance.current) pieChartInstance.current.destroy();
       const ctx = pieCanvasRef.current.getContext('2d');
+      const pieLabels = displayMode === 'amount'
+        ? [`${t.credit}: ${formatUSD(totalCredits)} (${creditPct}%)`, `${t.debit}: ${formatUSD(totalDebits)} (${debitPct}%)`]
+        : [`${t.credit}: ${creditPct}% (${formatUSD(totalCredits)})`, `${t.debit}: ${debitPct}% (${formatUSD(totalDebits)})`];
+
+      const pieData = displayMode === 'amount'
+        ? [totalCredits, totalDebits]
+        : [Number(creditPct), Number(debitPct)];
+
       pieChartInstance.current = new window.Chart(ctx, {
         type: 'pie',
         data: {
-          labels: [`${t.credit} (${creditPct}%)`, `${t.debit} (${debitPct}%)`],
+          labels: pieLabels,
           datasets: [{
-            data: [totalCredits, totalDebits],
+            data: pieData,
             backgroundColor: ['#16a34a', '#dc2626']
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom' } }
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    if (familyPieCanvasRef.current && familyDebitsBreakdown.count > 0) {
+      if (familyPieChartInstance.current) familyPieChartInstance.current.destroy();
+      const ctx = familyPieCanvasRef.current.getContext('2d');
+
+      familyPieChartInstance.current = new window.Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: familyDebitsBreakdown.labels,
+          datasets: [{
+            data: familyDebitsBreakdown.data,
+            backgroundColor: familyColors.slice(0, familyDebitsBreakdown.labels.length)
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
         }
       });
     }
@@ -4560,64 +5031,194 @@ function StatView2Component({ transactions, formatUSD, triggerOfficialPdfExport,
     return () => {
       if (barChartInstance.current) barChartInstance.current.destroy();
       if (pieChartInstance.current) pieChartInstance.current.destroy();
+      if (familyPieChartInstance.current) familyPieChartInstance.current.destroy();
     };
-  }, [groupedData, totalCredits, totalDebits, creditPct, debitPct, lang]);
+  }, [groupedData, totalCredits, totalDebits, creditPct, debitPct, displayMode, familyDebitsBreakdown, lang]);
 
   return (
     <div className="space-y-6 fade-in">
+      {/* BANDEAU INDICATEUR : NOM DU FILTRE ACTIF + SÉLECTEURS UNITÉ & GROUPEMENT */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-bold uppercase text-slate-600">{t.groupBy}</label>
-          <button
-            onClick={() => setGroupBy('day')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold ${groupBy === 'day' ? 'bg-blue-900 text-white' : 'bg-slate-100 text-slate-600'}`}
-          >
-            {t.day}
-          </button>
-          <button
-            onClick={() => setGroupBy('month')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold ${groupBy === 'month' ? 'bg-blue-900 text-white' : 'bg-slate-100 text-slate-600'}`}
-          >
-            {t.month}
-          </button>
+        <div className="flex items-center gap-2 text-xs">
+          <i className="fa-solid fa-filter text-amber-600"></i>
+          <span className="font-bold text-slate-700">{t.activeFilterBadge}</span>
+          <span className="bg-blue-50 text-blue-900 border border-blue-200 px-2.5 py-1 rounded-md font-extrabold shadow-2xs">
+            {activeFilterDescription || (isFr ? "Tout l'historique" : "All history")}
+          </span>
+          <span className="text-slate-500 font-semibold hidden sm:inline">
+            ({transactions.length} transaction(s))
+          </span>
         </div>
 
-        <button
-          onClick={() => triggerOfficialPdfExport(t.statView2, `${t.groupBy} ${groupBy === 'day' ? t.day : t.month}`, transactions, 'chart-view2-bar')}
-          className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
-        >
-          <i className="fa-solid fa-file-pdf"></i>
-          <span>{t.btnExportPdf}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Toggle Montant / Pourcentage */}
+          <div className="flex items-center gap-1.5 bg-slate-100 p-0.5 rounded-lg border border-slate-300 text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => setDisplayMode('amount')}
+              className={`px-3 py-1.5 rounded-md transition ${
+                displayMode === 'amount'
+                  ? 'bg-blue-900 text-white shadow-xs font-black'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <i className="fa-solid fa-dollar-sign mr-1"></i>
+              <span>{t.modeAmounts}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDisplayMode('percent')}
+              className={`px-3 py-1.5 rounded-md transition ${
+                displayMode === 'percent'
+                  ? 'bg-blue-900 text-white shadow-xs font-black'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <i className="fa-solid fa-percent mr-1"></i>
+              <span>{t.modePercentages}</span>
+            </button>
+          </div>
+
+          {/* Group By Jour / Mois */}
+          <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-300 text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => setGroupBy('day')}
+              className={`px-2.5 py-1.5 rounded-md transition ${
+                groupBy === 'day' ? 'bg-white text-blue-900 shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {t.day}
+            </button>
+            <button
+              type="button"
+              onClick={() => setGroupBy('month')}
+              className={`px-2.5 py-1.5 rounded-md transition ${
+                groupBy === 'month' ? 'bg-white text-blue-900 shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {t.month}
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => triggerOfficialPdfExport(
+              `${t.chartView2BarTitle} - ${displayMode === 'amount' ? t.inAmounts : t.inPercentages}`,
+              `${t.activeFilterBadge} ${activeFilterDescription}`,
+              transactions,
+              'chart-view2-bar'
+            )}
+            className="px-3.5 py-1.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition"
+            title={t.btnExportPdf}
+          >
+            <i className="fa-solid fa-file-pdf"></i>
+            <span>{t.btnExportPdf}</span>
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <i className="fa-solid fa-chart-column text-blue-700"></i>
-            <span>{t.statView2} ({groupBy === 'day' ? t.day : t.month})</span>
-          </h3>
-          <div style={{ height: '320px' }}>
-            <canvas id="chart-view2-bar" ref={barCanvasRef}></canvas>
-          </div>
+      {transactions.length === 0 ? (
+        <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 shadow-sm space-y-2">
+          <i className="fa-solid fa-filter-circle-xmark text-slate-300 text-4xl mb-2"></i>
+          <p className="text-slate-600 font-bold text-sm">{t.noTransactionsFiltered}</p>
+          <p className="text-xs text-slate-400">{t.activeFilterBadge} {activeFilterDescription}</p>
         </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-2">
-              <i className="fa-solid fa-chart-pie text-amber-600"></i>
-              <span>{t.credit} / {t.debit} (%)</span>
-            </h3>
-            <div className="flex justify-around my-2 text-xs font-bold">
-              <span className="text-green-700">{t.credit} : {creditPct}%</span>
-              <span className="text-red-600">{t.debit} : {debitPct}%</span>
+      ) : (
+        <>
+          {/* HISTOGRAMME */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-2 border-b border-slate-100">
+              <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <i className="fa-solid fa-chart-column text-blue-700"></i>
+                <span>{t.chartView2BarTitle}</span>
+                <span className="text-amber-700 font-extrabold normal-case">
+                  ({displayMode === 'amount' ? t.inAmounts : t.inPercentages})
+                </span>
+              </h3>
+              <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                {activeFilterDescription}
+              </span>
+            </div>
+            <div style={{ height: '340px' }}>
+              <canvas id="chart-view2-bar" ref={barCanvasRef}></canvas>
             </div>
           </div>
-          <div style={{ height: '240px' }} className="my-auto">
-            <canvas ref={pieCanvasRef}></canvas>
+
+          {/* SECTION LES CAMEMBERTS STATISTIQUES */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Camembert Global Crédits vs Débits */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <i className="fa-solid fa-chart-pie text-amber-600"></i>
+                    <span>{t.chartView2GlobalPieTitle}</span>
+                  </h3>
+                  <span className="text-xs font-bold text-amber-700">
+                    {displayMode === 'amount' ? t.inAmounts : t.inPercentages}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 my-2 text-xs font-bold text-center">
+                  <div className="p-2 rounded-lg bg-green-50 border border-green-200 text-green-800">
+                    <span className="block text-[10px] uppercase text-green-600 font-extrabold">{t.credit}</span>
+                    <span className="text-sm font-black">{creditPct}%</span>
+                    <span className="block text-[11px] text-green-700">{formatUSD(totalCredits)}</span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-red-50 border border-red-200 text-red-800">
+                    <span className="block text-[10px] uppercase text-red-600 font-extrabold">{t.debit}</span>
+                    <span className="text-sm font-black">{debitPct}%</span>
+                    <span className="block text-[11px] text-red-700">{formatUSD(totalDebits)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ height: '260px' }} className="my-auto">
+                <canvas id="chart-view2-pie" ref={pieCanvasRef}></canvas>
+              </div>
+
+              <p className="text-center text-[11px] text-slate-400 mt-2 font-medium">
+                {t.activeFilterBadge} {activeFilterDescription}
+              </p>
+            </div>
+
+            {/* Camembert Répartition des Dépenses par Famille */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <i className="fa-solid fa-layer-group text-blue-600"></i>
+                    <span>{t.chartView2FamilyPieTitle}</span>
+                  </h3>
+                  <span className="text-xs font-bold text-amber-700">
+                    {displayMode === 'amount' ? t.inAmounts : t.inPercentages}
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-500 mb-2">
+                  {isFr ? "Total des dépenses analysées :" : "Total expenses analyzed:"}{" "}
+                  <strong className="text-red-600 font-black">{formatUSD(totalDebits)}</strong>
+                </p>
+              </div>
+
+              {familyDebitsBreakdown.count === 0 ? (
+                <div className="py-12 text-center text-xs text-slate-400 font-medium">
+                  {isFr ? "Aucune dépense enregistrée sur cette sélection." : "No expenses recorded in this selection."}
+                </div>
+              ) : (
+                <div style={{ height: '260px' }} className="my-auto">
+                  <canvas id="chart-view2-family-pie" ref={familyPieCanvasRef}></canvas>
+                </div>
+              )}
+
+              <p className="text-center text-[11px] text-slate-400 mt-2 font-medium">
+                {t.activeFilterBadge} {activeFilterDescription}
+              </p>
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }
@@ -4625,9 +5226,15 @@ function StatView2Component({ transactions, formatUSD, triggerOfficialPdfExport,
 // ============================================================================
 // COMPOSANT VUE 3 : RÉPARTITION PAR FAMILLE
 // ============================================================================
-function StatView3Component({ transactions, families, formatUSD, triggerOfficialPdfExport, t, lang }) {
+function StatView3Component({ transactions, activeFilterDescription, families, formatUSD, triggerOfficialPdfExport, t, lang }) {
+  const [displayMode, setDisplayMode] = useState('amount'); // 'amount' | 'percent'
+  const isFr = lang === 'fr';
   const familyCanvasRef = useRef(null);
   const familyChartInstance = useRef(null);
+
+  const totalDebits = useMemo(() => {
+    return transactions.filter(tItem => tItem.type === 'debit').reduce((s, tItem) => s + (Number(tItem.amount) || 0), 0);
+  }, [transactions]);
 
   const familyStats = useMemo(() => {
     const map = {};
@@ -4643,26 +5250,29 @@ function StatView3Component({ transactions, families, formatUSD, triggerOfficial
       }
     });
 
-    const labels = Object.keys(map);
+    const labels = Object.keys(map).sort((a, b) => map[b].debit - map[a].debit);
     const debits = labels.map(l => map[l].debit);
-    const credits = labels.map(l => map[l].credit);
+    const percentages = labels.map(l => totalDebits > 0 ? Number(((map[l].debit / totalDebits) * 100).toFixed(1)) : 0);
 
-    return { labels, debits, credits, map };
-  }, [transactions, families]);
+    return { labels, debits, percentages, map };
+  }, [transactions, families, totalDebits]);
 
   useEffect(() => {
     if (!window.Chart || !familyCanvasRef.current) return;
     if (familyChartInstance.current) familyChartInstance.current.destroy();
 
     const ctx = familyCanvasRef.current.getContext('2d');
+    const unitLabel = displayMode === 'amount' ? '($ USD)' : '(%)';
+    const chartData = displayMode === 'amount' ? familyStats.debits : familyStats.percentages;
+
     familyChartInstance.current = new window.Chart(ctx, {
       type: 'bar',
       data: {
-        labels: familyStats.labels,
+        labels: familyStats.labels.map(l => formatItemLabel(l, lang)),
         datasets: [
           {
-            label: `${t.debit} ($)`,
-            data: familyStats.debits,
+            label: `${t.debit} ${unitLabel}`,
+            data: chartData,
             backgroundColor: '#d97706'
           }
         ]
@@ -4671,30 +5281,89 @@ function StatView3Component({ transactions, families, formatUSD, triggerOfficial
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } }
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const idx = context.dataIndex;
+                const amt = familyStats.debits[idx];
+                const pct = familyStats.percentages[idx];
+                return ` ${formatUSD(amt)} (${pct}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              callback: function(value) {
+                return displayMode === 'amount' ? `$ ${value}` : `${value} %`;
+              }
+            }
+          }
+        }
       }
     });
 
     return () => {
       if (familyChartInstance.current) familyChartInstance.current.destroy();
     };
-  }, [familyStats, lang]);
+  }, [familyStats, displayMode, lang]);
 
   return (
     <div className="space-y-6 fade-in">
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h3 className="font-bold text-slate-800 text-sm uppercase">{t.familyBreakdownTitle}</h3>
-          <p className="text-xs text-slate-500">{t.familyBreakdownSub}</p>
+          <div className="flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 text-sm uppercase">{t.familyBreakdownTitle}</h3>
+            <span className="text-xs font-bold text-amber-700">
+              ({displayMode === 'amount' ? t.inAmounts : t.inPercentages})
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {t.activeFilterBadge} {activeFilterDescription}
+          </p>
         </div>
 
-        <button
-          onClick={() => triggerOfficialPdfExport(t.familyBreakdownTitle, t.pdfOfficialDoc, transactions, 'chart-view3-fam')}
-          className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
-        >
-          <i className="fa-solid fa-file-pdf"></i>
-          <span>{t.btnExportPdf}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Toggle Montant / Pourcentage */}
+          <div className="flex items-center gap-1.5 bg-slate-100 p-0.5 rounded-lg border border-slate-300 text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => setDisplayMode('amount')}
+              className={`px-3 py-1 rounded-md transition ${
+                displayMode === 'amount' ? 'bg-blue-900 text-white shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <i className="fa-solid fa-dollar-sign mr-1"></i>
+              <span>{t.modeAmounts}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDisplayMode('percent')}
+              className={`px-3 py-1 rounded-md transition ${
+                displayMode === 'percent' ? 'bg-blue-900 text-white shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <i className="fa-solid fa-percent mr-1"></i>
+              <span>{t.modePercentages}</span>
+            </button>
+          </div>
+
+          <button
+            onClick={() => triggerOfficialPdfExport(
+              `${t.familyBreakdownTitle} - ${displayMode === 'amount' ? t.inAmounts : t.inPercentages}`,
+              `${t.activeFilterBadge} ${activeFilterDescription}`,
+              transactions,
+              'chart-view3-fam'
+            )}
+            className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
+          >
+            <i className="fa-solid fa-file-pdf"></i>
+            <span>{t.btnExportPdf}</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -4711,6 +5380,7 @@ function StatView3Component({ transactions, families, formatUSD, triggerOfficial
               <tr>
                 <th>{t.colFamily || t.family}</th>
                 <th className="text-right">{t.colAmount || t.totalDebits}</th>
+                <th className="text-right">Part (%)</th>
               </tr>
             </thead>
             <tbody>
@@ -4718,6 +5388,7 @@ function StatView3Component({ transactions, families, formatUSD, triggerOfficial
                 <tr key={i}>
                   <td className="font-bold text-slate-800">{formatItemLabel(name, lang)}</td>
                   <td className="text-right font-black text-red-600">{formatUSD(familyStats.debits[i])}</td>
+                  <td className="text-right font-bold text-slate-600">{familyStats.percentages[i]}%</td>
                 </tr>
               ))}
             </tbody>
@@ -4731,36 +5402,46 @@ function StatView3Component({ transactions, families, formatUSD, triggerOfficial
 // ============================================================================
 // COMPOSANT VUE 4 : RÉPARTITION PAR CATÉGORIE
 // ============================================================================
-function StatView4Component({ transactions, families, formatUSD, triggerOfficialPdfExport, t, lang }) {
+function StatView4Component({ transactions, activeFilterDescription, families, formatUSD, triggerOfficialPdfExport, t, lang }) {
+  const [displayMode, setDisplayMode] = useState('amount'); // 'amount' | 'percent'
+  const isFr = lang === 'fr';
   const catCanvasRef = useRef(null);
   const catChartInstance = useRef(null);
+
+  const totalDebits = useMemo(() => {
+    return transactions.filter(tItem => tItem.type === 'debit').reduce((s, tItem) => s + (Number(tItem.amount) || 0), 0);
+  }, [transactions]);
 
   const catStats = useMemo(() => {
     const map = {};
     transactions.filter(tItem => tItem.type === 'debit' && tItem.category).forEach(tx => {
-      const key = `${tx.category} (${tx.family || ''})`;
+      const key = `${formatItemLabel(tx.category, lang)} (${formatItemLabel(tx.family, lang) || ''})`;
       map[key] = (map[key] || 0) + (Number(tx.amount) || 0);
     });
 
     const labels = Object.keys(map).sort((a, b) => map[b] - map[a]);
     const values = labels.map(l => map[l]);
+    const percentages = labels.map(l => totalDebits > 0 ? Number(((map[l] / totalDebits) * 100).toFixed(1)) : 0);
 
-    return { labels, values };
-  }, [transactions]);
+    return { labels, values, percentages };
+  }, [transactions, totalDebits, lang]);
 
   useEffect(() => {
     if (!window.Chart || !catCanvasRef.current) return;
     if (catChartInstance.current) catChartInstance.current.destroy();
 
     const ctx = catCanvasRef.current.getContext('2d');
+    const unitLabel = displayMode === 'amount' ? '($ USD)' : '(%)';
+    const chartData = displayMode === 'amount' ? catStats.values : catStats.percentages;
+
     catChartInstance.current = new window.Chart(ctx, {
       type: 'bar',
       data: {
         labels: catStats.labels,
         datasets: [
           {
-            label: `${t.debit} ($)`,
-            data: catStats.values,
+            label: `${t.debit} ${unitLabel}`,
+            data: chartData,
             backgroundColor: '#0284c7'
           }
         ]
@@ -4768,30 +5449,89 @@ function StatView4Component({ transactions, families, formatUSD, triggerOfficial
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } }
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const idx = context.dataIndex;
+                const amt = catStats.values[idx];
+                const pct = catStats.percentages[idx];
+                return ` ${formatUSD(amt)} (${pct}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            ticks: {
+              callback: function(value) {
+                return displayMode === 'amount' ? `$ ${value}` : `${value} %`;
+              }
+            }
+          }
+        }
       }
     });
 
     return () => {
       if (catChartInstance.current) catChartInstance.current.destroy();
     };
-  }, [catStats, lang]);
+  }, [catStats, displayMode, lang]);
 
   return (
     <div className="space-y-6 fade-in">
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h3 className="font-bold text-slate-800 text-sm uppercase">{t.categoryBreakdownTitle}</h3>
-          <p className="text-xs text-slate-500">{t.categoryBreakdownSub}</p>
+          <div className="flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 text-sm uppercase">{t.categoryBreakdownTitle}</h3>
+            <span className="text-xs font-bold text-amber-700">
+              ({displayMode === 'amount' ? t.inAmounts : t.inPercentages})
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {t.activeFilterBadge} {activeFilterDescription}
+          </p>
         </div>
 
-        <button
-          onClick={() => triggerOfficialPdfExport(t.categoryBreakdownTitle, t.pdfOfficialDoc, transactions, 'chart-view4-cat')}
-          className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
-        >
-          <i className="fa-solid fa-file-pdf"></i>
-          <span>{t.btnExportPdf}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Toggle Montant / Pourcentage */}
+          <div className="flex items-center gap-1.5 bg-slate-100 p-0.5 rounded-lg border border-slate-300 text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => setDisplayMode('amount')}
+              className={`px-3 py-1 rounded-md transition ${
+                displayMode === 'amount' ? 'bg-blue-900 text-white shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <i className="fa-solid fa-dollar-sign mr-1"></i>
+              <span>{t.modeAmounts}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDisplayMode('percent')}
+              className={`px-3 py-1 rounded-md transition ${
+                displayMode === 'percent' ? 'bg-blue-900 text-white shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <i className="fa-solid fa-percent mr-1"></i>
+              <span>{t.modePercentages}</span>
+            </button>
+          </div>
+
+          <button
+            onClick={() => triggerOfficialPdfExport(
+              `${t.categoryBreakdownTitle} - ${displayMode === 'amount' ? t.inAmounts : t.inPercentages}`,
+              `${t.activeFilterBadge} ${activeFilterDescription}`,
+              transactions,
+              'chart-view4-cat'
+            )}
+            className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
+          >
+            <i className="fa-solid fa-file-pdf"></i>
+            <span>{t.btnExportPdf}</span>
+          </button>
+        </div>
       </div>
 
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
@@ -4806,7 +5546,7 @@ function StatView4Component({ transactions, families, formatUSD, triggerOfficial
 // ============================================================================
 // COMPOSANT VUE 5 : DONNÉES CHOISIES PAR LE GESTIONNAIRE (SUR-MESURE)
 // ============================================================================
-function StatView5Component({ transactions, families, formatUSD, triggerOfficialPdfExport, t, lang }) {
+function StatView5Component({ transactions, activeFilterDescription, families, formatUSD, triggerOfficialPdfExport, t, lang }) {
   const [selectedFamilies, setSelectedFamilies] = useState(() => families.map(f => f.name));
   const [filterType, setFilterType] = useState('all');
   const [dateFrom, setDateFrom] = useState('');
