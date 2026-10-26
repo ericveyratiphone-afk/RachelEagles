@@ -1,0 +1,173 @@
+/* ==========================================================================
+   RACHEL EAGLES - FEUILLE DE STYLE OFFICIELLE
+   The Fraternal Order of Eagles / Sargo Cambodia Eagles Club
+   ========================================================================== */
+
+:root {
+  --eagles-blue: #1e3a8a;
+  --eagles-blue-dark: #172554;
+  --eagles-gold: #d97706;
+  --eagles-gold-light: #fef3c7;
+  --debit-red: #dc2626;
+  --credit-green: #16a34a;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Filigrane (Watermark) d'Aigle central pour chaque menu et vue */
+.watermark-container {
+  position: relative;
+  min-height: 100vh;
+}
+
+.watermark-bg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 520px;
+  height: 520px;
+  max-width: 85vw;
+  max-height: 85vh;
+  background-image: url('logo2.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.055;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Animations et transitions douces */
+.fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Badges personnalisés */
+.badge-debit {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.badge-credit {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+/* Scrollbars modernes */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Tableau stylisé */
+.table-compact th {
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+  background-color: #f1f5f9;
+}
+
+.table-compact td {
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.table-compact tr:hover td {
+  background-color: #f8fafc;
+}
+
+/* ==========================================================================
+   STYLES D'IMPRESSION & EXPORT PDF OFFICIEL EAGLES
+   ========================================================================== */
+
+#print-section {
+  display: none;
+}
+
+@media print {
+  /* Masquer tous les composants applicatifs */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Afficher uniquement la section imprimable officielle */
+  #print-section, #print-section * {
+    visibility: visible;
+  }
+
+  #print-section {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 10mm 15mm;
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  /* Watermark lors de l'impression */
+  .print-watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 450px;
+    height: 450px;
+    background-image: url('logo2.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.09 !important;
+    pointer-events: none;
+    z-index: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Saut de page propre */
+  .page-break {
+    page-break-after: always;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+}

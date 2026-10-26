@@ -1,0 +1,22 @@
+{
+  "short_name": "RachelEagles",
+  "name": "Rachel Eagles - Gestion de Trésorerie",
+  "description": "Application officielle de gestion de trésorerie pour fondation The Fraternal Order of Eagles",
+  "icons": [
+    {
+      "src": "logo1.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo1.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#1E3A8A",
+  "theme_color": "#1E3A8A",
+  "display": "standalone",
+  "orientation": "any"
+}

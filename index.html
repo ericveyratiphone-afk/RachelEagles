@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1E3A8A" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>RachelEagles - Gestion de Trésorerie</title>
+
+  <!-- PWA Manifest & Icônes -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="shortcut icon" type="image/x-icon" href="RachelEagles.ico" />
+  <link rel="icon" type="image/x-icon" href="RachelEagles.ico" />
+  <link rel="apple-touch-icon" href="logo1.png" />
+
+  <!-- Police Google Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            eagles: {
+              navy: '#1E3A8A',
+              dark: '#172554',
+              gold: '#D97706',
+              goldlight: '#FEF3C7',
+              accent: '#B45309'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Styles personnalisés & Styles Impression PDF Officiel -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Chart.js pour les graphiques statistiques -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- React 18 & Babel Standalone -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased selection:bg-blue-800 selection:text-white">
+  <div id="root"></div>
+
+  <!-- Application Logic -->
+  <script type="text/babel" src="app.js"></script>
+</body>
+</html>
