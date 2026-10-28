@@ -1,58 +1,48 @@
 param(
-    [switch]$NoBrowser
+    [switch]$NoBrowser,
+    [int]$Port = 8085
 )
 
-$port = 8085
 $root = "D:\AndroidProjects\RachelEagles"
 $stateFile = Join-Path $root "RachelEagles_sync_data.json"
 
-$listener = New-Object System.Net.HttpListener
-$listener.Prefixes.Add("http://localhost:$port/")
-$listener.Prefixes.Add("http://127.0.0.1:$port/")
-
-# Détection de l'IP Wi-Fi / Réseau Local pour le smartphone Android
-$lanIp = $null
+# Détection de l'adresse IP Wi-Fi / Réseau Local
+$lanIp = "127.0.0.1"
 try {
-    $lanIp = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { 
+    $foundIp = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { 
         $_.InterfaceAlias -notmatch 'Loopback' -and 
         $_.IPAddress -notmatch '^169\.254' -and 
         $_.IPAddress -notmatch '^127\.' 
     } | Select-Object -First 1).IPAddress
+    if ($foundIp) { $lanIp = $foundIp }
+} catch {}
 
-    if ($lanIp) {
-        $listener.Prefixes.Add("http://${lanIp}:$port/")
-    }
-} catch {
-    Write-Host "Note: Accès IP Wi-Fi direct non privilégié, écoute sur localhost." -ForegroundColor Yellow
-}
-
+# Démarrage du serveur TCP HTTP (Accessible depuis PC, Smartphone et Tablette)
+$listener = $null
 try {
+    $listener = New-Object System.Net.Sockets.TcpListener([System.Net.IPAddress]::Any, $Port)
     $listener.Start()
 } catch {
-    # Fallback sur localhost uniquement
-    $listener = New-Object System.Net.HttpListener
-    $listener.Prefixes.Add("http://localhost:$port/")
-    $listener.Prefixes.Add("http://127.0.0.1:$port/")
-    $listener.Start()
+    Write-Host "[ERREUR] Impossible de démarrer le serveur sur le port $Port : $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
 }
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "   SERVEUR RACHEL EAGLES ACTIF (PC & SMARTPHONE ANDROID)" -ForegroundColor Green
+Write-Host "   SERVEUR SYNCHRONISATION RACHEL EAGLES (PC & MOBILE)" -ForegroundColor Green
 Write-Host "   The Fraternal Order of Eagles - Sargo Cambodia Eagles" -ForegroundColor White
 Write-Host "----------------------------------------------------------" -ForegroundColor DarkCyan
-Write-Host "   -> Sur ce PC      : http://localhost:$port/index.html" -ForegroundColor Yellow
-if ($lanIp) {
-    Write-Host "   -> Sur Smartphone : http://${lanIp}:$port/index.html" -ForegroundColor Yellow
-}
-Write-Host "   (Tapez cette adresse dans le navigateur de votre tel)" -ForegroundColor Gray
+Write-Host "   -> Sur ce PC           : http://localhost:$Port/index.html" -ForegroundColor Yellow
+Write-Host "   -> Sur Smartphone/Tab  : http://${lanIp}:$Port/index.html" -ForegroundColor Yellow
+Write-Host "   -> Point d'accès Synchro: http://${lanIp}:$Port/api/state" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
+Write-Host "Prêt pour la synchronisation bidirectionnelle avec le PC." -ForegroundColor Gray
 Write-Host "Appuyez sur CTRL+C pour arrêter le serveur à tout moment." -ForegroundColor Gray
 Write-Host ""
 
 # Ouvrir le navigateur PC automatiquement si non désactivé
 if (-not $NoBrowser) {
     try {
-        Start-Process "http://localhost:$port/index.html"
+        Start-Process "http://localhost:$Port/index.html"
     } catch {}
 }
 
@@ -65,80 +55,149 @@ $mimeTypes = @{
     ".png"  = "image/png"
     ".jpg"  = "image/jpeg"
     ".jpeg" = "image/jpeg"
-    ".jfif" = "image/jpeg"
     ".ico"  = "image/x-icon"
+    ".pdf"  = "application/pdf"
 }
 
-while ($listener.IsListening) {
+function Send-HttpResponse {
+    param(
+        [System.IO.Stream]$Stream,
+        [int]$StatusCode = 200,
+        [string]$StatusText = "OK",
+        [string]$ContentType = "text/plain; charset=utf-8",
+        [byte[]]$Body = @()
+    )
+    $headers = "HTTP/1.1 $StatusCode $StatusText`r`n" +
+               "Content-Type: $ContentType`r`n" +
+               "Content-Length: $($Body.Length)`r`n" +
+               "Access-Control-Allow-Origin: *`r`n" +
+               "Access-Control-Allow-Methods: GET, POST, OPTIONS`r`n" +
+               "Access-Control-Allow-Headers: *`r`n" +
+               "Cache-Control: no-cache, no-store, must-revalidate`r`n" +
+               "Connection: close`r`n`r`n"
+    $hdrBytes = [System.Text.Encoding]::ASCII.GetBytes($headers)
+    $Stream.Write($hdrBytes, 0, $hdrBytes.Length)
+    if ($Body.Length -gt 0) {
+        $Stream.Write($Body, 0, $Body.Length)
+    }
+    $Stream.Flush()
+}
+
+while ($true) {
     try {
-        $context = $listener.GetContext()
-        $request = $context.Request
-        $response = $context.Response
+        $client = $listener.AcceptTcpClient()
+        $stream = $client.GetStream()
+        $stream.ReadTimeout = 5000
+        $stream.WriteTimeout = 5000
 
-        # CORS & Cache Headers
-        $response.AddHeader("Access-Control-Allow-Origin", "*")
-        $response.AddHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        $response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept")
-        $response.AddHeader("Cache-Control", "no-cache, no-store, must-revalidate")
-        $response.AddHeader("Pragma", "no-cache")
-        $response.AddHeader("Expires", "0")
+        $reader = New-Object System.IO.StreamReader($stream, [System.Text.Encoding]::UTF8)
+        $reqLine = $reader.ReadLine()
 
-        if ($request.HttpMethod -eq "OPTIONS") {
-            $response.StatusCode = 200
-            $response.OutputStream.Close()
+        if ([string]::IsNullOrWhiteSpace($reqLine)) {
+            $client.Close()
             continue
         }
 
-        $localPath = $request.Url.LocalPath.TrimStart('/')
+        $parts = $reqLine -split ' '
+        if ($parts.Length -lt 2) {
+            $client.Close()
+            continue
+        }
 
-        # API de synchronisation
-        if ($localPath -eq "api/state") {
-            if ($request.HttpMethod -eq "GET") {
+        $method = $parts[0].ToUpper()
+        $rawUrl = $parts[1]
+        $path = $rawUrl.Split('?')[0].TrimStart('/')
+        if ([string]::IsNullOrEmpty($path)) { $path = "index.html" }
+
+        # Lecture des en-têtes
+        $headers = @{}
+        $contentLength = 0
+        while (($headerLine = $reader.ReadLine()) -and $headerLine.Length -gt 0) {
+            $hParts = $headerLine -split ':', 2
+            if ($hParts.Length -eq 2) {
+                $hName = $hParts[0].Trim().ToLower()
+                $hVal = $hParts[1].Trim()
+                $headers[$hName] = $hVal
+                if ($hName -eq "content-length") {
+                    [int]::TryParse($hVal, [ref]$contentLength) | Out-Null
+                }
+            }
+        }
+
+        # Gérer CORS Preflight
+        if ($method -eq "OPTIONS") {
+            Send-HttpResponse -Stream $stream -StatusCode 200 -StatusText "OK" -ContentType "text/plain"
+            $client.Close()
+            continue
+        }
+
+        # API: Ping / Info du serveur
+        if ($path -eq "api/ping" -or $path -eq "api/info") {
+            $info = @{
+                status = "ok"
+                app = "RachelEagles"
+                serverIp = $lanIp
+                port = $Port
+                hostname = $env:COMPUTERNAME
+                timestamp = (Get-Date -Format "o")
+                version = "3.0-light"
+            } | ConvertTo-Json -Compress
+            $bytes = [System.Text.Encoding]::UTF8.GetBytes($info)
+            Send-HttpResponse -Stream $stream -ContentType "application/json; charset=utf-8" -Body $bytes
+            $client.Close()
+            continue
+        }
+
+        # API: Synchronisation d'état (GET & POST)
+        if ($path -eq "api/state") {
+            if ($method -eq "GET") {
                 if (Test-Path $stateFile) {
                     $bytes = [System.IO.File]::ReadAllBytes($stateFile)
-                    $response.ContentType = "application/json; charset=utf-8"
-                    $response.ContentLength64 = $bytes.Length
-                    $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                    Send-HttpResponse -Stream $stream -ContentType "application/json; charset=utf-8" -Body $bytes
                 } else {
-                    $empty = [System.Text.Encoding]::UTF8.GetBytes('{"transactions":[],"families":[]}')
-                    $response.ContentType = "application/json; charset=utf-8"
-                    $response.ContentLength64 = $empty.Length
-                    $response.OutputStream.Write($empty, 0, $empty.Length)
+                    $empty = [System.Text.Encoding]::UTF8.GetBytes('{"transactions":[],"members":[],"families":[]}')
+                    Send-HttpResponse -Stream $stream -ContentType "application/json; charset=utf-8" -Body $empty
                 }
-            } elseif ($request.HttpMethod -eq "POST") {
-                $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
-                $body = $reader.ReadToEnd()
-                $reader.Close()
-                if (-not [string]::IsNullOrWhiteSpace($body)) {
-                    [System.IO.File]::WriteAllText($stateFile, $body, [System.Text.Encoding]::UTF8)
-                    Write-Host "[SYNC] Données synchronisées avec succès le $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Green
+            } elseif ($method -eq "POST") {
+                $bodyBytes = New-Object byte[] $contentLength
+                $totalRead = 0
+                while ($totalRead -lt $contentLength) {
+                    $read = $stream.Read($bodyBytes, $totalRead, $contentLength - $totalRead)
+                    if ($read -le 0) { break }
+                    $totalRead += $read
                 }
-                $ok = [System.Text.Encoding]::UTF8.GetBytes('{"status":"ok"}')
-                $response.ContentType = "application/json; charset=utf-8"
-                $response.ContentLength64 = $ok.Length
-                $response.OutputStream.Write($ok, 0, $ok.Length)
+                $bodyText = [System.Text.Encoding]::UTF8.GetString($bodyBytes, 0, $totalRead)
+                if (-not [string]::IsNullOrWhiteSpace($bodyText)) {
+                    [System.IO.File]::WriteAllText($stateFile, $bodyText, [System.Text.Encoding]::UTF8)
+                    Write-Host "[SYNC] Données reçues et sauvegardées ($totalRead octets) le $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Green
+                }
+                $ok = [System.Text.Encoding]::UTF8.GetBytes('{"status":"ok","updatedAt":"' + (Get-Date -Format 'o') + '"}')
+                Send-HttpResponse -Stream $stream -ContentType "application/json; charset=utf-8" -Body $ok
             }
-            $response.OutputStream.Close()
+            $client.Close()
             continue
         }
 
-        # Service des fichiers statiques
-        if ([string]::IsNullOrEmpty($localPath)) { $localPath = "index.html" }
-        $filePath = Join-Path $root $localPath
+        # Distribution des fichiers statiques
+        $decodedPath = $path
+        try {
+            $decodedPath = [System.Uri]::UnescapeDataString($path)
+        } catch {}
+        if (-not $decodedPath) { $decodedPath = $path }
+        $filePath = Join-Path $root $decodedPath
 
         if (Test-Path $filePath -PathType Leaf) {
             $ext = [System.IO.Path]::GetExtension($filePath).ToLower()
             $contentType = if ($mimeTypes.ContainsKey($ext)) { $mimeTypes[$ext] } else { "application/octet-stream" }
-            $response.ContentType = $contentType
             $bytes = [System.IO.File]::ReadAllBytes($filePath)
-            $response.ContentLength64 = $bytes.Length
-            $response.OutputStream.Write($bytes, 0, $bytes.Length)
+            Send-HttpResponse -Stream $stream -ContentType $contentType -Body $bytes
         } else {
-            $response.StatusCode = 404
+            $notFound = [System.Text.Encoding]::UTF8.GetBytes("404 Not Found")
+            Send-HttpResponse -Stream $stream -StatusCode 404 -StatusText "Not Found" -Body $notFound
         }
-        $response.OutputStream.Close()
+
+        $client.Close()
     } catch {
-        # Ignorer les déconnexions client et continuer la boucle d'écoute
-        try { if ($response) { $response.OutputStream.Close() } } catch {}
+        try { if ($client) { $client.Close() } } catch {}
     }
 }

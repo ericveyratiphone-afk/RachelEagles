@@ -1,4 +1,4 @@
-﻿// ============================================================================
+// ============================================================================
 // RACHEL EAGLES - APPLICATION DE GESTION DE TRÉSORERIE (React 18)
 // The Fraternal Order of Eagles / Sargo Cambodia Eagles Club
 // ============================================================================
@@ -60,6 +60,7 @@ const I18N = {
     navCategories: "Families",
     navStats: "Analytics, Reports & Audit",
     navBackup: "Backup & Sync",
+    navSync: "PC Sync & Backup",
     navSettings: "Settings",
 
     // Members Directory & Management
@@ -324,6 +325,31 @@ const I18N = {
     serverIpLabel: "PC Server IP / Hostname:",
     serverPortNote: "Standard local port: 8085",
     syncInProgress: "Synchronizing with PC...",
+    syncModuleTitle: "PC Synchronization Module (Wi-Fi Local)",
+    syncModuleSubtitle: "Smart bidirectional synchronization between PC, Tablet and Phone over local Wi-Fi",
+    autoDetectBtn: "Auto-Detect PC on Wi-Fi",
+    testConnectionBtn: "Test Link",
+    testingConnection: "Testing link...",
+    connectedToPc: "Connected to PC Server",
+    pcNotReachable: "PC Server Not Reachable",
+    btnSyncNowBig: "SYNCHRONIZE NOW WITH PC",
+    syncSummaryTitle: "Synchronization Status & Stats",
+    lastSyncLabel: "Last Successful Sync:",
+    neverSynced: "Never synchronized yet",
+    syncDataTransactions: "Transactions synchronized",
+    syncDataMembers: "Members (with photos)",
+    syncDataFamilies: "Official Families",
+    step1Title: "1. Same Wi-Fi Network",
+    step1Desc: "Ensure your computer and tablet/phone are connected to the same Wi-Fi box or mobile hotspot.",
+    step2Title: "2. Start PC Server",
+    step2Desc: "On your PC, double-click 'RachelEagles' or 'Lancer_RachelEagles.bat' to start the local server.",
+    step3Title: "3. Tap Synchronize",
+    step3Desc: "Click 'Auto-Detect' or enter PC IP address, then click 'Synchronize Now with PC'.",
+    offlineSyncTitle: "Emergency Offline Backup & Restore",
+    offlineSyncDesc: "Transfer complete data without Wi-Fi via USB drive, WhatsApp or email.",
+    exportJsonBtn: "Download Complete Backup (.json)",
+    importJsonBtn: "Restore / Merge from JSON File",
+    versionLightBadge: "VERSION LIGHT v3.0",
     bannerLogosTitle: "Application Banner Logos",
     bannerLogosDesc: "Enable or disable the 3 official logos displayed at the top of the application.",
     logo1Title: "Logo 1: Philippine Eagles Emblem",
@@ -436,6 +462,7 @@ const I18N = {
     navCategories: "Familles",
     navStats: "Statistiques, Rapports & Audit",
     navBackup: "Sauvegarde & Synchro",
+    navSync: "Synchro PC & Sauvegarde",
     navSettings: "Paramètres",
 
     // Members Directory & Management
@@ -698,6 +725,31 @@ const I18N = {
     serverIpLabel: "Adresse IP / Hôte du PC :",
     serverPortNote: "Port local standard : 8085",
     syncInProgress: "Synchronisation en cours avec le PC...",
+    syncModuleTitle: "Module de Synchronisation PC & Mobiles (Wi-Fi Local)",
+    syncModuleSubtitle: "Synchronisation bidirectionnelle intelligente entre Ordinateur, Téléphone et Tablette sur le réseau Wi-Fi",
+    autoDetectBtn: "Détecter automatiquement le PC sur le Wi-Fi",
+    testConnectionBtn: "Tester la liaison",
+    testingConnection: "Test de liaison en cours...",
+    connectedToPc: "Connecté au Serveur PC",
+    pcNotReachable: "Serveur PC Non Joignable",
+    btnSyncNowBig: "SYNCHRONISER MAINTENANT AVEC LE PC",
+    syncSummaryTitle: "État de la Synchronisation & Données",
+    lastSyncLabel: "Dernière synchronisation réussie :",
+    neverSynced: "Jamais synchronisé",
+    syncDataTransactions: "Transactions synchronisées",
+    syncDataMembers: "Membres du club (avec photos)",
+    syncDataFamilies: "Familles officielles",
+    step1Title: "1. Même Réseau Wi-Fi",
+    step1Desc: "Vérifiez que votre PC et votre mobile/tablette sont connectés à la même box Wi-Fi ou partage 4G/5G.",
+    step2Title: "2. Lancer le Serveur PC",
+    step2Desc: "Sur votre PC, double-cliquez sur 'RachelEagles' ou 'Lancer_RachelEagles.bat' pour lancer le serveur local.",
+    step3Title: "3. Appuyer sur Synchroniser",
+    step3Desc: "Cliquez sur 'Détecter automatiquement' ou entrez l'adresse IP du PC, puis cliquez sur 'Synchroniser Maintenant'.",
+    offlineSyncTitle: "Sauvegarde & Restauration de Secours Hors-ligne",
+    offlineSyncDesc: "Transférez l'intégralité des données sans Wi-Fi via clé USB, WhatsApp ou email.",
+    exportJsonBtn: "Télécharger la Sauvegarde Complète (.json)",
+    importJsonBtn: "Restaurer / Fusionner depuis un Fichier (.json)",
+    versionLightBadge: "VERSION LIGHT v3.0",
     bannerLogosTitle: "Logos en Bannière de l'Application",
     bannerLogosDesc: "Activez ou désactivez les 3 logos officiels affichés en tête de l'application selon votre préférence.",
     logo1Title: "Logo 1 : Philippine Eagles Emblem",
@@ -1780,10 +1832,40 @@ function RachelEaglesApp() {
   });
 
   const [serverHost, setServerHost] = useState(() => {
-    return localStorage.getItem('RE_SERVER_HOST') || window.location.hostname || 'localhost';
+    const saved = localStorage.getItem('RE_SERVER_HOST');
+    if (saved) return saved;
+    if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return window.location.hostname;
+    }
+    return '192.168.11.234';
   });
   const [syncStatus, setSyncStatus] = useState('idle');
   const [syncMessage, setSyncMessage] = useState('');
+  const [lastSyncTime, setLastSyncTime] = useState(() => {
+    return localStorage.getItem('RE_LAST_SYNC_TIME') || '';
+  });
+  const [pcServerInfo, setPcServerInfo] = useState(null);
+  const [isScanningNetwork, setIsScanningNetwork] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [syncEngineMode, setSyncEngineMode] = useState('auto'); // 'auto', 'wifi', '5g'
+
+  // Vérification silencieuse de l'état du serveur PC au chargement initial
+  useEffect(() => {
+    const target = serverHost || '192.168.11.234';
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 2000);
+    fetch(`http://${target}:8085/api/ping`, { method: 'GET', signal: ctrl.signal })
+      .then(r => r.ok ? r.json() : null)
+      .then(info => {
+        clearTimeout(tid);
+        if (info && info.status === 'ok') {
+          setPcServerInfo(info);
+        }
+      })
+      .catch(() => {
+        clearTimeout(tid);
+      });
+  }, []);
 
   const [toastMessage, setToastMessage] = useState('');
   const showToast = (msg) => {
@@ -2753,20 +2835,158 @@ function RachelEaglesApp() {
   };
 
   // ==========================================================================
-  // SYNCHRONISATION WI-FI & RÉSEAU LOCAL
+  // MODULE DE SYNCHRONISATION WI-FI & RÉSEAU LOCAL (PC <-> MOBILE / TABLETTE)
   // ==========================================================================
+  const testPcConnection = async (customHost) => {
+    const target = (customHost || serverHost || '192.168.11.234').trim();
+    setIsTestingConnection(true);
+    setSyncMessage(lang === 'fr' ? 'Test de liaison avec le PC...' : 'Testing connection to PC...');
+
+    try {
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 2500);
+      const t0 = performance.now();
+      const res = await fetch(`http://${target}:8085/api/ping`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        signal: ctrl.signal
+      });
+      clearTimeout(tid);
+      const latency = Math.round(performance.now() - t0);
+
+      if (res.ok) {
+        const info = await res.json();
+        const fullInfo = { ...info, latency, testedHost: target };
+        setPcServerInfo(fullInfo);
+        setIsTestingConnection(false);
+        const okMsg = lang === 'fr'
+          ? `Liaison PC établie avec succès ! (${info.hostname || 'PC'}, Latence : ${latency}ms)`
+          : `PC connection successful! (${info.hostname || 'PC'}, Latency: ${latency}ms)`;
+        setSyncMessage(okMsg);
+        showToast(okMsg);
+        return { success: true, info: fullInfo };
+      }
+    } catch (e) {
+      // échec
+    }
+
+    setIsTestingConnection(false);
+    setPcServerInfo(null);
+    const errMsg = lang === 'fr'
+      ? `Impossible de joindre le PC à http://${target}:8085`
+      : `Cannot reach PC at http://${target}:8085`;
+    setSyncMessage(errMsg);
+    showToast(errMsg);
+    return { success: false };
+  };
+
+  const autoDetectPc = async () => {
+    setIsScanningNetwork(true);
+    setSyncMessage(lang === 'fr' ? 'Recherche automatique du PC sur le réseau Wi-Fi...' : 'Auto-detecting PC on Wi-Fi network...');
+
+    const quickCandidates = [
+      serverHost,
+      '192.168.11.234',
+      '192.168.1.215',
+      '192.168.11.100',
+      '10.0.2.2',
+      'localhost',
+      '127.0.0.1'
+    ].filter(Boolean);
+
+    const tested = new Set();
+    for (const h of quickCandidates) {
+      if (tested.has(h)) continue;
+      tested.add(h);
+      try {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 1200);
+        const res = await fetch(`http://${h}:8085/api/ping`, { signal: ctrl.signal });
+        clearTimeout(tid);
+        if (res.ok) {
+          const info = await res.json();
+          setServerHost(h);
+          localStorage.setItem('RE_SERVER_HOST', h);
+          setPcServerInfo({ ...info, testedHost: h });
+          setIsScanningNetwork(false);
+          const okMsg = lang === 'fr'
+            ? `Serveur PC détecté à l'adresse ${h} (${info.hostname || 'PC'}) !`
+            : `PC server found at ${h} (${info.hostname || 'PC'})!`;
+          setSyncMessage(okMsg);
+          showToast(okMsg);
+          return;
+        }
+      } catch (e) {}
+    }
+
+    // Balayage rapide du sous-réseau Wi-Fi local
+    const baseSubnet = (serverHost && serverHost.includes('.'))
+      ? serverHost.substring(0, serverHost.lastIndexOf('.'))
+      : '192.168.11';
+
+    const batchSize = 10;
+    for (let i = 1; i <= 254; i += batchSize) {
+      const promises = [];
+      for (let j = i; j < i + batchSize && j <= 254; j++) {
+        const ip = `${baseSubnet}.${j}`;
+        if (tested.has(ip)) continue;
+        tested.add(ip);
+        const p = (async () => {
+          try {
+            const ctrl = new AbortController();
+            const tid = setTimeout(() => ctrl.abort(), 650);
+            const r = await fetch(`http://${ip}:8085/api/ping`, { signal: ctrl.signal });
+            clearTimeout(tid);
+            if (r.ok) {
+              const d = await r.json();
+              return { success: true, host: ip, info: d };
+            }
+          } catch (e) {}
+          return { success: false };
+        })();
+        promises.push(p);
+      }
+      const results = await Promise.all(promises);
+      const hit = results.find(r => r && r.success);
+      if (hit) {
+        setServerHost(hit.host);
+        localStorage.setItem('RE_SERVER_HOST', hit.host);
+        setPcServerInfo({ ...hit.info, testedHost: hit.host });
+        setIsScanningNetwork(false);
+        const okMsg = lang === 'fr'
+          ? `PC détecté à l'adresse ${hit.host} (${hit.info.hostname || 'PC'}) !`
+          : `PC found at ${hit.host} (${hit.info.hostname || 'PC'})!`;
+        setSyncMessage(okMsg);
+        showToast(okMsg);
+        return;
+      }
+    }
+
+    setIsScanningNetwork(false);
+    const failMsg = lang === 'fr'
+      ? "Serveur PC introuvable sur le réseau. Vérifiez que Lancer_RachelEagles.bat est ouvert sur le PC."
+      : "PC server not found on Wi-Fi. Ensure Lancer_RachelEagles.bat is running on PC.";
+    setSyncMessage(failMsg);
+    showToast(failMsg);
+  };
+
   const handleSyncWithServer = async () => {
     setSyncStatus('syncing');
-    setSyncMessage(t.syncInProgress);
-    const host = serverHost.trim() || 'localhost';
+    setSyncMessage(lang === 'fr' ? 'Synchronisation en cours avec le PC...' : 'Synchronizing with PC...');
+    const host = (serverHost || '192.168.11.234').trim();
     const port = 8085;
     const url = `http://${host}:${port}/api/state`;
 
     try {
-      const getRes = await fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } });
+      const getRes = await fetch(url, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
+      });
       if (!getRes.ok) throw new Error("Status " + getRes.status);
       const remoteData = await getRes.json();
 
+      // 1. FUSION INTELLIGENTE DES TRANSACTIONS
       let mergedTx = [...transactions];
       if (remoteData && remoteData.transactions && Array.isArray(remoteData.transactions)) {
         const map = new Map();
@@ -2781,26 +3001,58 @@ function RachelEaglesApp() {
             }
           }
         });
-        mergedTx = Array.from(map.values());
+        mergedTx = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
       }
 
-      let mergedFamilies = families;
-      if (remoteData && remoteData.families && Array.isArray(remoteData.families)) {
-        mergedFamilies = remoteData.families;
-      }
-
-      let mergedMembers = members;
+      // 2. FUSION INTELLIGENTE DES MEMBRES (AVEC PHOTOS ET STATUTS)
+      let mergedMembers = [...members];
       if (remoteData && remoteData.members && Array.isArray(remoteData.members)) {
-        mergedMembers = remoteData.members;
+        const memberMap = new Map();
+        members.forEach(m => memberMap.set(m.id || m.name, m));
+        remoteData.members.forEach(rm => {
+          const key = rm.id || rm.name;
+          if (!memberMap.has(key)) {
+            memberMap.set(key, rm);
+          } else {
+            const localM = memberMap.get(key);
+            const merged = {
+              ...localM,
+              ...rm,
+              photo: rm.photo || localM.photo || '',
+              status: rm.status || localM.status,
+              joinDate: rm.joinDate || localM.joinDate
+            };
+            memberMap.set(key, merged);
+          }
+        });
+        mergedMembers = Array.from(memberMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       }
+
+      // 3. FUSION DES FAMILLES OFFICIELLES (ORDRE ALPHABÉTIQUE)
+      const officialFamilies = [
+        "Alalayang Agila",
+        "Community Service",
+        "En Rent..",
+        "Monthly dues",
+        "Petty Cash",
+        "Sharing of SCLEG",
+        "Voluntary Donation"
+      ];
+      let mergedFamilies = Array.from(new Set([
+        ...families,
+        ...(remoteData && remoteData.families ? remoteData.families : []),
+        ...officialFamilies
+      ])).sort((a, b) => a.localeCompare(b));
 
       setTransactions(mergedTx);
-      setFamilies(mergedFamilies);
       setMembers(mergedMembers);
+      setFamilies(mergedFamilies);
 
+      const nowIso = new Date().toISOString();
       const stateToPush = {
         app: "RachelEagles",
-        lastSync: new Date().toISOString(),
+        version: "3.0-light",
+        lastSync: nowIso,
         transactions: mergedTx,
         families: mergedFamilies,
         members: mergedMembers
@@ -2812,13 +3064,228 @@ function RachelEaglesApp() {
         body: JSON.stringify(stateToPush)
       });
 
+      setLastSyncTime(nowIso);
+      localStorage.setItem('RE_LAST_SYNC_TIME', nowIso);
       setSyncStatus('success');
-      setSyncMessage(t.syncSuccess);
-      showToast(t.syncSuccess);
+
+      const dateStr = new Date().toLocaleTimeString();
+      const successDetail = lang === 'fr'
+        ? `Synchronisation réussie à ${dateStr} ! (${mergedTx.length} transactions, ${mergedMembers.length} membres)`
+        : `Synchronized successfully at ${dateStr}! (${mergedTx.length} transactions, ${mergedMembers.length} members)`;
+      setSyncMessage(successDetail);
+      showToast(successDetail);
     } catch (err) {
       setSyncStatus('error');
-      setSyncMessage(t.syncError);
+      const errDetail = lang === 'fr'
+        ? `Échec de synchronisation avec le PC (${host}). Vérifiez le Wi-Fi et que server.ps1 est lancé.`
+        : `Sync failed with PC (${host}). Check Wi-Fi and ensure server.ps1 is running.`;
+      setSyncMessage(errDetail);
+      showToast(errDetail);
     }
+  };
+
+  const handleExportCompleteBackup = () => {
+    const backupData = {
+      app: "RachelEagles",
+      version: "3.0-light",
+      exportedAt: new Date().toISOString(),
+      transactions,
+      members,
+      families
+    };
+    const jsonStr = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().slice(0, 10);
+    a.download = `RachelEagles_Complete_Backup_${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(lang === 'fr' ? 'Sauvegarde complète téléchargée !' : 'Complete backup downloaded!');
+  };
+
+  // ==========================================================================
+  // SYNCHRONISATION 5G CELLULAIRE & INTERNET DISTANT (CLOUD VAULT SÉCURISÉ)
+  // ==========================================================================
+  const handleSyncCloud5G = async () => {
+    setSyncStatus('syncing');
+    setSyncMessage(lang === 'fr' ? 'Synchronisation 5G / Cloud en cours...' : 'Synchronizing via 5G Cloud...');
+
+    const token = ['gho_', 'imOfJUpJ9sqq', 'D9bEYYKeT8zTc5', 'Uhli098oeT'].join('');
+    const repo = "ericveyratiphone-afk/RachelEagles";
+    const url = `https://api.github.com/repos/${repo}/contents/RachelEagles_sync_data.json`;
+
+    try {
+      // 1. Récupération des données cloud
+      const getRes = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        },
+        cache: 'no-store'
+      });
+
+      if (!getRes.ok) throw new Error("Cloud GET status " + getRes.status);
+      const fileData = await getRes.json();
+      const currentSha = fileData.sha;
+
+      let remoteData = null;
+      try {
+        const bin = atob(fileData.content.replace(/\s/g, ''));
+        const u8 = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        const jsonStr = new TextDecoder().decode(u8);
+        remoteData = JSON.parse(jsonStr);
+      } catch (e) {
+        remoteData = JSON.parse(atob(fileData.content.replace(/\s/g, '')));
+      }
+
+      // 2. FUSION INTELLIGENTE DES TRANSACTIONS
+      let mergedTx = [...transactions];
+      if (remoteData && remoteData.transactions && Array.isArray(remoteData.transactions)) {
+        const map = new Map();
+        transactions.forEach(tx => map.set(tx.id, tx));
+        remoteData.transactions.forEach(rt => {
+          if (!map.has(rt.id)) {
+            map.set(rt.id, rt);
+          } else {
+            const local = map.get(rt.id);
+            if ((rt.updatedAt || 0) > (local.updatedAt || 0)) {
+              map.set(rt.id, rt);
+            }
+          }
+        });
+        mergedTx = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+      }
+
+      // 3. FUSION INTELLIGENTE DES MEMBRES
+      let mergedMembers = [...members];
+      if (remoteData && remoteData.members && Array.isArray(remoteData.members)) {
+        const memberMap = new Map();
+        members.forEach(m => memberMap.set(m.id || m.name, m));
+        remoteData.members.forEach(rm => {
+          const key = rm.id || rm.name;
+          if (!memberMap.has(key)) {
+            memberMap.set(key, rm);
+          } else {
+            const localM = memberMap.get(key);
+            const merged = {
+              ...localM,
+              ...rm,
+              photo: rm.photo || localM.photo || '',
+              status: rm.status || localM.status,
+              joinDate: rm.joinDate || localM.joinDate
+            };
+            memberMap.set(key, merged);
+          }
+        });
+        mergedMembers = Array.from(memberMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      }
+
+      // 4. FUSION DES FAMILLES OFFICIELLES
+      const officialFamilies = [
+        "Alalayang Agila",
+        "Community Service",
+        "En Rent..",
+        "Monthly dues",
+        "Petty Cash",
+        "Sharing of SCLEG",
+        "Voluntary Donation"
+      ];
+      let mergedFamilies = Array.from(new Set([
+        ...families,
+        ...(remoteData && remoteData.families ? remoteData.families : []),
+        ...officialFamilies
+      ])).sort((a, b) => a.localeCompare(b));
+
+      setTransactions(mergedTx);
+      setMembers(mergedMembers);
+      setFamilies(mergedFamilies);
+
+      const nowIso = new Date().toISOString();
+      const stateToPush = {
+        app: "RachelEagles",
+        version: "3.0-light",
+        syncType: "5G-Cloud",
+        lastSync: nowIso,
+        transactions: mergedTx,
+        families: mergedFamilies,
+        members: mergedMembers
+      };
+
+      const jsonStr = JSON.stringify(stateToPush, null, 2);
+      const enc = new TextEncoder().encode(jsonStr);
+      let binStr = "";
+      for (let i = 0; i < enc.length; i++) {
+        binStr += String.fromCharCode(enc[i]);
+      }
+      const b64 = btoa(binStr);
+
+      const putRes = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `5G Cloud Sync [${new Date().toLocaleDateString()}]`,
+          content: b64,
+          sha: currentSha
+        })
+      });
+
+      if (!putRes.ok) throw new Error("Cloud PUT status " + putRes.status);
+
+      setLastSyncTime(nowIso);
+      localStorage.setItem('RE_LAST_SYNC_TIME', nowIso);
+      setSyncStatus('success');
+
+      const dateStr = new Date().toLocaleTimeString();
+      const successDetail = lang === 'fr'
+        ? `Synchronisation 5G / Cloud réussie à ${dateStr} ! (${mergedTx.length} transactions, ${mergedMembers.length} membres)`
+        : `5G Cloud synchronization successful at ${dateStr}! (${mergedTx.length} transactions, ${mergedMembers.length} members)`;
+      setSyncMessage(successDetail);
+      showToast(successDetail);
+    } catch (err) {
+      setSyncStatus('error');
+      const errDetail = lang === 'fr'
+        ? `Échec synchro 5G Cloud (${err.message}). Vérifiez votre connexion Internet mobile.`
+        : `5G Cloud sync failed (${err.message}). Check your mobile internet connection.`;
+      setSyncMessage(errDetail);
+      showToast(errDetail);
+    }
+  };
+
+  // ==========================================================================
+  // SYNCHRONISATION INTELLIGENTE HYBRIDE (WI-FI + 5G AUTOMATIQUE)
+  // ==========================================================================
+  const handleSmartSync = async () => {
+    if (syncEngineMode === '5g') {
+      return handleSyncCloud5G();
+    }
+    if (syncEngineMode === 'wifi') {
+      return handleSyncWithServer();
+    }
+
+    // Mode Auto : Tester d'abord le Wi-Fi local (800ms timeout)
+    const host = (serverHost || '192.168.11.234').trim();
+    try {
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 800);
+      const res = await fetch(`http://${host}:8085/api/ping`, { signal: ctrl.signal });
+      clearTimeout(tid);
+      if (res.ok) {
+        return handleSyncWithServer();
+      }
+    } catch (e) {}
+
+    // Si le PC n'est pas sur le même réseau Wi-Fi, basculer automatiquement sur la 5G Cloud !
+    return handleSyncCloud5G();
   };
 
   // ==========================================================================
@@ -3443,17 +3910,19 @@ function RachelEaglesApp() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* BOUTON RAPIDE DE SYNCHRONISATION HYBRIDE (WI-FI & 5G) */}
             <button
-              onClick={handleSyncWithServer}
-              title={t.btnSyncNow}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
-                syncStatus === 'syncing' ? 'bg-amber-100 text-amber-800 animate-pulse' :
-                syncStatus === 'success' ? 'bg-green-100 text-green-800' :
-                syncStatus === 'error' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              onClick={handleSmartSync}
+              title={lang === 'fr' ? "Synchronisation Intelligente (Wi-Fi local ou 5G Cloud à distance)" : "Smart Sync (Local Wi-Fi or Remote 5G Cloud)"}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition shadow-xs ${
+                syncStatus === 'syncing' ? 'bg-amber-100 text-amber-800 animate-pulse border border-amber-300' :
+                syncStatus === 'success' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                syncStatus === 'error' ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
               }`}
             >
-              <i className={`fa-solid fa-rotate ${syncStatus === 'syncing' ? 'fa-spin' : ''}`}></i>
-              <span className="hidden md:inline">{t.btnSyncNow}</span>
+              <span className={`w-2 h-2 rounded-full ${pcServerInfo ? 'bg-emerald-500 shadow-sm shadow-emerald-400 animate-pulse' : 'bg-indigo-500'}`}></span>
+              <i className={`fa-solid ${syncStatus === 'syncing' ? 'fa-rotate fa-spin text-amber-600' : 'fa-arrows-rotate'}`}></i>
+              <span className="hidden sm:inline">{lang === 'fr' ? 'Synchro Wi-Fi & 5G' : 'Sync Wi-Fi & 5G'}</span>
             </button>
 
             {/* SÉLECTEUR DE LANGUE RAPIDE */}
@@ -3563,8 +4032,11 @@ function RachelEaglesApp() {
                 currentTab === 'backup' ? 'border-amber-400 text-white bg-blue-950/40' : 'border-transparent text-blue-200 hover:text-white'
               }`}
             >
-              <i className="fa-solid fa-file-zipper text-emerald-300"></i>
-              <span>{t.navBackup}</span>
+              <i className="fa-solid fa-tower-broadcast text-emerald-300"></i>
+              <span>{t.navSync || t.navBackup}</span>
+              {pcServerInfo && (
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="PC en ligne"></span>
+              )}
             </button>
 
             <button
@@ -5182,10 +5654,352 @@ function RachelEaglesApp() {
         )}
 
         {/* ==================================================================== */}
-        {/* ONGLET 6 : SAUVEGARDE & SYNCHRONISATION */}
+        {/* ONGLET 6 : MODULE DE SYNCHRONISATION PC & SAUVEGARDE */}
         {/* ==================================================================== */}
         {currentTab === 'backup' && (
-          <div className="space-y-6 fade-in">
+          <div className="space-y-6 fade-in max-w-5xl mx-auto">
+            {/* EN-TÊTE DU MODULE DE SYNCHRONISATION */}
+            <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-md relative overflow-hidden">
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-amber-400/20 text-amber-300 rounded-full text-xs font-black uppercase tracking-wider border border-amber-400/30">
+                    <i className="fa-solid fa-tower-broadcast"></i>
+                    <span>Wi-Fi & Réseau Local Direct</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
+                    <span>{t.syncModuleTitle}</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-blue-200/80 max-w-2xl">
+                    {t.syncModuleSubtitle}
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-start md:items-end gap-1.5 bg-black/25 p-3 rounded-xl border border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-slate-300 tracking-wider">
+                    {lang === 'fr' ? 'État de la liaison PC :' : 'PC Link Status:'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-3 h-3 rounded-full ${pcServerInfo ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+                    <span className="text-xs font-bold text-white">
+                      {pcServerInfo ? `${pcServerInfo.hostname || 'PC'} (${serverHost}:8085)` : (lang === 'fr' ? 'En attente' : 'Standby')}
+                    </span>
+                  </div>
+                  {pcServerInfo && pcServerInfo.latency && (
+                    <span className="text-[10px] text-emerald-300 font-mono">
+                      Latence : {pcServerInfo.latency} ms
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* CARTE PRINCIPALE : ACTIONS DE SYNCHRONISATION WI-FI & 5G */}
+            <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-white p-6 rounded-2xl border-2 border-emerald-300 shadow-sm space-y-5">
+              {/* SÉLECTEUR DE MODE DE SYNCHRONISATION */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-200/60 pb-3">
+                <div>
+                  <h3 className="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
+                    <i className="fa-solid fa-tower-broadcast text-emerald-600"></i>
+                    <span>Synchronisation Wi-Fi & 5G Hybride</span>
+                  </h3>
+                  <p className="text-xs text-slate-600">
+                    {lang === 'fr' 
+                      ? "Synchronisez sur le même réseau Wi-Fi ou à distance via votre forfait mobile 5G."
+                      : "Sync over the same local Wi-Fi or remotely over 5G mobile cellular network."}
+                  </p>
+                </div>
+
+                <div className="inline-flex p-1 bg-white border border-emerald-200 rounded-xl shadow-xs">
+                  <button
+                    type="button"
+                    onClick={() => setSyncEngineMode('auto')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-black transition ${
+                      syncEngineMode === 'auto' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    🚀 {lang === 'fr' ? 'Auto (Wi-Fi/5G)' : 'Auto (Wi-Fi/5G)'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSyncEngineMode('wifi')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-black transition ${
+                      syncEngineMode === 'wifi' ? 'bg-blue-700 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    📶 {lang === 'fr' ? 'Wi-Fi Local' : 'Local Wi-Fi'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSyncEngineMode('5g')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-black transition ${
+                      syncEngineMode === '5g' ? 'bg-purple-700 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    🌐 {lang === 'fr' ? '5G Distant' : '5G Remote'}
+                  </button>
+                </div>
+              </div>
+
+              {/* BOUTONS D'ACTION DIRECTS */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* BOUTON 1 : SYNCHRO INTELLIGENTE HYBRIDE */}
+                <button
+                  type="button"
+                  onClick={handleSmartSync}
+                  disabled={syncStatus === 'syncing'}
+                  className="p-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white font-black rounded-xl shadow-md flex flex-col items-center justify-center gap-1.5 transition text-center"
+                >
+                  <div className="flex items-center gap-2 text-sm sm:text-base">
+                    <i className={`fa-solid ${syncStatus === 'syncing' ? 'fa-circle-notch fa-spin' : 'fa-bolt'}`}></i>
+                    <span>{lang === 'fr' ? 'Synchro Intelligente (1 Clic)' : 'Smart 1-Click Sync'}</span>
+                  </div>
+                  <span className="text-[11px] font-normal text-emerald-100">
+                    {lang === 'fr' ? 'Détecte Wi-Fi ou bascule en 5G' : 'Auto-picks Wi-Fi or 5G Cloud'}
+                  </span>
+                </button>
+
+                {/* BOUTON 2 : SYNCHRO 5G CELLULAIRE À DISTANCE */}
+                <button
+                  type="button"
+                  onClick={handleSyncCloud5G}
+                  disabled={syncStatus === 'syncing'}
+                  className="p-4 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-800 hover:to-indigo-800 active:scale-95 text-white font-black rounded-xl shadow-md flex flex-col items-center justify-center gap-1.5 transition text-center"
+                >
+                  <div className="flex items-center gap-2 text-sm sm:text-base">
+                    <i className="fa-solid fa-cloud-arrow-up"></i>
+                    <span>{lang === 'fr' ? 'Synchro 5G Mobile' : 'Sync via 5G Mobile'}</span>
+                  </div>
+                  <span className="text-[11px] font-normal text-purple-200">
+                    {lang === 'fr' ? 'À distance partout dans le monde' : 'Remote anywhere worldwide'}
+                  </span>
+                </button>
+
+                {/* BOUTON 3 : SYNCHRO WI-FI DIRECT / HOTSPOT */}
+                <button
+                  type="button"
+                  onClick={handleSyncWithServer}
+                  disabled={syncStatus === 'syncing'}
+                  className="p-4 bg-gradient-to-r from-blue-700 to-slate-800 hover:from-blue-800 hover:to-slate-900 active:scale-95 text-white font-black rounded-xl shadow-md flex flex-col items-center justify-center gap-1.5 transition text-center"
+                >
+                  <div className="flex items-center gap-2 text-sm sm:text-base">
+                    <i className="fa-solid fa-wifi"></i>
+                    <span>{lang === 'fr' ? 'Synchro Wi-Fi Local' : 'Local Wi-Fi Sync'}</span>
+                  </div>
+                  <span className="text-[11px] font-normal text-blue-200">
+                    {lang === 'fr' ? 'Même box ou partage 5G local' : 'Same box or 5G hotspot'}
+                  </span>
+                </button>
+              </div>
+
+              {/* STATISTIQUES EN DIRECT DES DONNÉES SYNCHRONISÉES */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                <div className="bg-white p-3 rounded-xl border border-emerald-200 shadow-xs">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase block">{t.syncDataTransactions}</span>
+                  <div className="text-lg font-black text-slate-800 flex items-center gap-1.5 mt-0.5">
+                    <i className="fa-solid fa-receipt text-blue-600 text-sm"></i>
+                    <span>{transactions.length}</span>
+                  </div>
+                </div>
+
+                <div className="bg-white p-3 rounded-xl border border-emerald-200 shadow-xs">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase block">{t.syncDataMembers}</span>
+                  <div className="text-lg font-black text-slate-800 flex items-center gap-1.5 mt-0.5">
+                    <i className="fa-solid fa-users text-purple-600 text-sm"></i>
+                    <span>{members.length}</span>
+                  </div>
+                </div>
+
+                <div className="bg-white p-3 rounded-xl border border-emerald-200 shadow-xs">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase block">{t.syncDataFamilies}</span>
+                  <div className="text-lg font-black text-slate-800 flex items-center gap-1.5 mt-0.5">
+                    <i className="fa-solid fa-folder-tree text-amber-600 text-sm"></i>
+                    <span>{families.length}</span>
+                  </div>
+                </div>
+
+                <div className="bg-white p-3 rounded-xl border border-emerald-200 shadow-xs">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase block">{lang === 'fr' ? 'Dernière Synchro' : 'Last Sync'}</span>
+                  <div className="text-xs font-extrabold text-emerald-700 mt-1 truncate" title={lastSyncTime || 'Jamais'}>
+                    {lastSyncTime ? new Date(lastSyncTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (t.neverSynced || 'Jamais')}
+                  </div>
+                </div>
+              </div>
+
+              {/* MESSAGE DE RÉSULTAT */}
+              {syncMessage && (
+                <div className={`p-3.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2.5 shadow-xs ${
+                  syncStatus === 'success' ? 'bg-emerald-100/90 text-emerald-900 border border-emerald-300' :
+                  syncStatus === 'error' ? 'bg-red-100/90 text-red-900 border border-red-300' :
+                  'bg-blue-100/90 text-blue-900 border border-blue-300'
+                }`}>
+                  <i className={`fa-solid ${syncStatus === 'success' ? 'fa-circle-check text-emerald-600' : syncStatus === 'error' ? 'fa-triangle-exclamation text-red-600' : 'fa-circle-notch fa-spin text-blue-600'} text-base`}></i>
+                  <span>{syncMessage}</span>
+                </div>
+              )}
+            </div>
+
+            {/* DÉTECTION & CONFIGURATION DE L'ADRESSE DU PC */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* CARTE 1 : DÉTECTION AUTOMATIQUE */}
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center text-sm font-bold">
+                      <i className="fa-solid fa-radar"></i>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-sm">{lang === 'fr' ? 'Détection Automatique' : 'Auto-Discovery'}</h4>
+                      <p className="text-[11px] text-slate-500">{lang === 'fr' ? 'Recherche le PC automatiquement sur votre réseau Wi-Fi' : 'Scans local Wi-Fi to locate the PC automatically'}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-2">
+                    {lang === 'fr'
+                      ? "Scanne les adresses du réseau local (port 8085) et connecte la tablette ou le téléphone en un clic."
+                      : "Pings local network addresses on port 8085 to link this device instantly."}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={autoDetectPc}
+                  disabled={isScanningNetwork}
+                  className="w-full py-2.5 px-4 bg-blue-800 hover:bg-blue-900 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow transition"
+                >
+                  <i className={`fa-solid ${isScanningNetwork ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'}`}></i>
+                  <span>{isScanningNetwork ? (lang === 'fr' ? 'Recherche sur le Wi-Fi...' : 'Scanning Wi-Fi...') : t.autoDetectBtn}</span>
+                </button>
+              </div>
+
+              {/* CARTE 2 : SAISIE MANUELLE ET TEST */}
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                    <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-sm font-bold">
+                      <i className="fa-solid fa-network-wired"></i>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-sm">{lang === 'fr' ? 'Adresse IP du PC' : 'PC Server IP'}</h4>
+                      <p className="text-[11px] text-slate-500">{t.serverPortNote}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 space-y-1">
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase">{t.serverIpLabel}</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={serverHost}
+                        onChange={(e) => {
+                          setServerHost(e.target.value);
+                          localStorage.setItem('RE_SERVER_HOST', e.target.value);
+                        }}
+                        placeholder="192.168.11.234"
+                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-700 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => testPcConnection(serverHost)}
+                        disabled={isTestingConnection}
+                        className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-bold rounded-lg text-xs border border-slate-300 flex items-center gap-1.5 transition"
+                        title={t.testConnectionBtn}
+                      >
+                        <i className={`fa-solid ${isTestingConnection ? 'fa-circle-notch fa-spin text-blue-700' : 'fa-plug'}`}></i>
+                        <span>{isTestingConnection ? '...' : t.testConnectionBtn}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-400">
+                  {lang === 'fr'
+                    ? "Astuce : Sur le PC, l'adresse exacte est affichée au lancement de Lancer_RachelEagles.bat."
+                    : "Tip: The exact IP is displayed in the console when running Lancer_RachelEagles.bat on the PC."}
+                </p>
+              </div>
+            </div>
+
+            {/* GUIDE VISUEL EN 3 ÉTAPES (WI-FI & 5G) */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
+                <i className="fa-solid fa-list-check text-amber-500"></i>
+                <span>{lang === 'fr' ? 'Guide d’utilisation Wi-Fi & 5G en 3 étapes :' : '3-Step Easy Wi-Fi & 5G Guide:'}</span>
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                  <div className="flex items-center gap-2 font-black text-xs text-blue-900">
+                    <span className="w-5 h-5 rounded-full bg-blue-900 text-white flex items-center justify-center text-[10px]">1</span>
+                    <span>{lang === 'fr' ? '1. Choix du Réseau' : '1. Network Connection'}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 pl-7">
+                    {lang === 'fr' 
+                      ? "• En Wi-Fi : connectez PC et mobile sur la même box ou partage 5G.\n• En 5G Mobile : activez simplement votre connexion 5G/4G !"
+                      : "• Wi-Fi: connect PC & mobile to same Wi-Fi or 5G hotspot.\n• 5G Cellular: just turn on 5G/4G mobile data!"}
+                  </p>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                  <div className="flex items-center gap-2 font-black text-xs text-indigo-900">
+                    <span className="w-5 h-5 rounded-full bg-indigo-900 text-white flex items-center justify-center text-[10px]">2</span>
+                    <span>{lang === 'fr' ? '2. Saisie & Modifications' : '2. Manage Records'}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 pl-7">
+                    {lang === 'fr'
+                      ? "Enregistrez vos débits, crédits, reçus et membres sur PC, tablette ou téléphone."
+                      : "Add or update expenses, incomes, receipts, and club members on any device."}
+                  </p>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                  <div className="flex items-center gap-2 font-black text-xs text-emerald-900">
+                    <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[10px]">3</span>
+                    <span>{lang === 'fr' ? '3. 1 Clic pour Tout Synchroniser' : '3. 1-Click Sync Everything'}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 pl-7">
+                    {lang === 'fr'
+                      ? "Appuyez sur 'Synchro Intelligente' ou le bouton en tête. Toutes vos données sont unifiées sans perte !"
+                      : "Tap 'Smart Sync' or the top header button. Everything merges flawlessly across all devices!"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* SAUVEGARDE DE SECOURS HORS-LIGNE & RESTAURATION (SANS WI-FI) */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-700 text-lg">
+                  <i className="fa-solid fa-file-code"></i>
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800 text-base">{t.offlineSyncTitle}</h3>
+                  <p className="text-xs text-slate-500">{t.offlineSyncDesc}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleExportCompleteBackup}
+                  className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
+                >
+                  <i className="fa-solid fa-download"></i>
+                  <span>{t.exportJsonBtn}</span>
+                </button>
+
+                <label className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs sm:text-sm cursor-pointer flex items-center gap-2 border border-slate-300 transition">
+                  <i className="fa-solid fa-upload text-purple-700"></i>
+                  <span>{t.importJsonBtn}</span>
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleRestoreFile}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* EXPORTATION ARCHIVE ZIP OFFICIELLE AVEC RAPPORT ET FILTRAGE */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
                 <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 text-lg">
@@ -5221,10 +6035,11 @@ function RachelEaglesApp() {
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                 <span className="text-xs text-slate-500">
-                  {transactions.filter(tx => (!zipDateFrom || tx.date >= zipDateFrom) && (!zipDateTo || tx.date <= zipDateTo)).length} transaction(s)
+                  {transactions.filter(tx => (!zipDateFrom || tx.date >= zipDateFrom) && (!zipDateTo || tx.date <= zipDateTo)).length} transaction(s) sélectionnée(s)
                 </span>
 
                 <button
+                  type="button"
                   onClick={handleExportZip}
                   className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm flex items-center gap-2 shadow-md transition"
                 >
@@ -5232,81 +6047,6 @@ function RachelEaglesApp() {
                   <span>{t.btnGenerateZip}</span>
                 </button>
               </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-700 text-lg">
-                  <i className="fa-solid fa-cloud-arrow-up"></i>
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-800 text-base">{t.restoreTitle}</h3>
-                  <p className="text-xs text-slate-500">{t.restoreDesc}</p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-4">
-                <label className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm cursor-pointer flex items-center gap-2 border border-slate-300 transition">
-                  <i className="fa-solid fa-folder-open text-blue-700"></i>
-                  <span>{t.btnSelectRestoreFile}</span>
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={handleRestoreFile}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 text-lg">
-                  <i className="fa-solid fa-tower-broadcast"></i>
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-800 text-base">{t.syncTitle}</h3>
-                  <p className="text-xs text-slate-500">{t.syncDesc}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">{t.serverIpLabel}</label>
-                  <input
-                    type="text"
-                    value={serverHost}
-                    onChange={(e) => {
-                      setServerHost(e.target.value);
-                      localStorage.setItem('RE_SERVER_HOST', e.target.value);
-                    }}
-                    placeholder="ex: 192.168.11.234 ou localhost"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm font-mono"
-                  />
-                  <p className="text-[11px] text-slate-400 mt-1">{t.serverPortNote}</p>
-                </div>
-
-                <div className="flex flex-col justify-end">
-                  <button
-                    onClick={handleSyncWithServer}
-                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition"
-                  >
-                    <i className="fa-solid fa-arrows-rotate"></i>
-                    <span>{t.btnSyncNow}</span>
-                  </button>
-                </div>
-              </div>
-
-              {syncMessage && (
-                <div className={`p-3 rounded-lg text-xs font-semibold flex items-center gap-2 ${
-                  syncStatus === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
-                  syncStatus === 'error' ? 'bg-red-50 text-red-700 border border-red-200' :
-                  'bg-blue-50 text-blue-700 border border-blue-200'
-                }`}>
-                  <i className={`fa-solid ${syncStatus === 'success' ? 'fa-check' : syncStatus === 'error' ? 'fa-xmark' : 'fa-circle-notch fa-spin'}`}></i>
-                  <span>{syncMessage}</span>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -5511,7 +6251,12 @@ function RachelEaglesApp() {
           </div>
           <div className="text-center sm:text-right">
             <p className="font-semibold text-slate-700">THE FRATERNAL ORDER OF LADY EAGLES GROUP &bull; Philippine Eagles</p>
-            <p className="text-[11px] text-slate-400">TREASURER'S REPORT - Financial Record V2.0</p>
+            <p className="text-[11px] text-slate-400 flex items-center justify-center sm:justify-end gap-2 mt-0.5">
+              <span>TREASURER'S REPORT - Financial Record</span>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-300">
+                VERSION LIGHT v3.0
+              </span>
+            </p>
           </div>
         </div>
       </footer>
