@@ -55,10 +55,33 @@ const I18N = {
     navDashboard: "Home",
     navDebits: "Debits (Expenses)",
     navCredits: "Credits (Incomes)",
-    navCategories: "Families & Members",
+    navFamilies: "Families",
+    navMembers: "Members",
+    navCategories: "Families",
     navStats: "Analytics, Reports & Audit",
     navBackup: "Backup & Sync",
     navSettings: "Settings",
+
+    // Members Directory & Management
+    membersTitle: "Official Club Members Directory",
+    membersSubtitle: "Directory of official members for expense and income attribution, contacts, and emergency info.",
+    btnAddMember: "+ Add Member",
+    modalNewMemberTitle: "Add Club Member",
+    modalEditMemberTitle: "Edit Club Member",
+    memberNameLabel: "Full Name (with title):",
+    memberPositionLabel: "Club Position / Role:",
+    memberPhoneLabel: "Telephone (Cambodia):",
+    memberAddressLabel: "Address in Cambodia:",
+    memberWorkLabel: "Nature of Work / Occupation:",
+    memberEmergencyLabel: "In Case of Emergency (Contact Name):",
+    memberEmergencyPhoneLabel: "Emergency Telephone Number:",
+    searchMembersPlaceholder: "Search members by name, position, phone, work, address...",
+    filterPositionLabel: "Role / Position:",
+    filterAllPositions: "All Positions",
+    confirmDeleteMember: "Are you sure you want to remove this member from the directory?",
+    memberDeletedSuccess: "Member deleted successfully.",
+    memberSavedSuccess: "Member saved successfully.",
+    noMembersFound: "No members match your search criteria.",
 
     // Statistical Sub-Views
     statView1: "1. Journal & General Ledger",
@@ -405,10 +428,33 @@ const I18N = {
     navDashboard: "Accueil",
     navDebits: "Débits (Dépenses)",
     navCredits: "Crédits (Recettes)",
-    navCategories: "Familles & Membres",
+    navFamilies: "Familles",
+    navMembers: "Membres",
+    navCategories: "Familles",
     navStats: "Statistiques, Rapports & Audit",
     navBackup: "Sauvegarde & Synchro",
     navSettings: "Paramètres",
+
+    // Members Directory & Management
+    membersTitle: "Annuaire Officiel des Membres",
+    membersSubtitle: "Annuaire des membres officiels pour l'imputation des dépenses et recettes, coordonnées et urgence.",
+    btnAddMember: "+ Ajouter un Membre",
+    modalNewMemberTitle: "Ajouter un Membre du Club",
+    modalEditMemberTitle: "Modifier un Membre du Club",
+    memberNameLabel: "Nom complet (avec titre) :",
+    memberPositionLabel: "Fonction / Rôle au sein du Club :",
+    memberPhoneLabel: "Téléphone (Cambodge) :",
+    memberAddressLabel: "Adresse au Cambodge :",
+    memberWorkLabel: "Nature du Travail / Métier :",
+    memberEmergencyLabel: "En cas d'urgence (Nom du contact) :",
+    memberEmergencyPhoneLabel: "Téléphone d'urgence :",
+    searchMembersPlaceholder: "Rechercher par nom, fonction, téléphone, métier, adresse...",
+    filterPositionLabel: "Fonction :",
+    filterAllPositions: "Toutes les fonctions",
+    confirmDeleteMember: "Êtes-vous sûr de vouloir supprimer ce membre de l'annuaire ?",
+    memberDeletedSuccess: "Membre supprimé avec succès.",
+    memberSavedSuccess: "Membre enregistré avec succès.",
+    noMembersFound: "Aucun membre ne correspond à vos critères de recherche.",
 
     // Statistical Sub-Views
     statView1: "1. Journal & Grand Livre",
@@ -721,12 +767,369 @@ const I18N = {
 // DONNÉES INITIALES PAR DÉFAUT
 // ============================================================================
 const DEFAULT_MEMBERS = [
-  'Kuya Gerry',
-  'Kuya Eric',
-  'Ate Rachel',
-  'Kuya Ronald',
-  'Kuya Mark',
-  'Kuya Bong'
+  {
+    id: 'mem_1',
+    no: 1,
+    name: 'Eagle VILMA ARDINA R.',
+    position: 'Group President',
+    phone: '092499323',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_2',
+    no: 2,
+    name: 'Eagle SHARON LLEGADO C.',
+    position: 'Group Vice President',
+    phone: '078843033',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_3',
+    no: 3,
+    name: 'Eagle MARY GRACE L. CABALLERO',
+    position: 'Group Secretary',
+    phone: '0977468246',
+    address: 'House 22 Street 28 Borey Piphop Thmey 2 Veng Sreng Road Sangkat Choam Chao Phnom Penh',
+    work: 'GARMENT INDUSTRY (QA of FAM BRAND)',
+    emergencyContact: 'IRENEO PENAREDONDO / SHANLI PENAREDONDO',
+    emergencyPhone: '(855) 972621935'
+  },
+  {
+    id: 'mem_4',
+    no: 4,
+    name: 'Eagle LEONIE A. ABELLA',
+    position: 'Group Treasurer',
+    phone: '078598905',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_5',
+    no: 5,
+    name: 'Eagle HELEN S. DELA CRUZ',
+    position: 'Group Auditor',
+    phone: '085264243',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_6',
+    no: 6,
+    name: 'Eagle ROSALIE L. CUESTAS',
+    position: 'Group Information Officer',
+    phone: '0969377417',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_7',
+    no: 7,
+    name: 'Eagle LEELANIE J. DE JUAN',
+    position: 'Group Protocol Officer',
+    phone: '012799167',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_8',
+    no: 8,
+    name: 'Eagle RIZA E. NACARIO',
+    position: 'Group Peace officer',
+    phone: '011894417',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_9',
+    no: 9,
+    name: 'Eagle ANALYN B. EFREN',
+    position: 'Group Peace officer',
+    phone: '061816886',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_10',
+    no: 10,
+    name: 'Eagle MENIE R. MABUNGA',
+    position: 'Group Peace officer',
+    phone: '0973540986',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_11',
+    no: 11,
+    name: 'Eagle ROSSANA P. AQUINO',
+    position: 'Group Grievance Chair',
+    phone: '07336308',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_12',
+    no: 12,
+    name: 'Eagle EMILY C. RAZA',
+    position: 'Group C.A.R.E Chairwoman',
+    phone: '0716010542',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_13',
+    no: 13,
+    name: 'Eagle MARIFE G. CONDE',
+    position: 'Group Board of Director',
+    phone: '012321001',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_14',
+    no: 14,
+    name: 'Eagle MA. GEMMA L. DIMAALA',
+    position: 'Group Board of Director',
+    phone: '092628301',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_15',
+    no: 15,
+    name: 'Eagle ANALIZA S. ASIGNAR',
+    position: 'Group Board of Director',
+    phone: '089562528',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_16',
+    no: 16,
+    name: 'Eagle MARITES E. HILOMA',
+    position: 'Group Board of Director',
+    phone: '087865451',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_17',
+    no: 17,
+    name: 'Eagle MARILYN B. ABAD',
+    position: 'Group Member',
+    phone: '069467828',
+    address: 'St. 16, #66 Borey 1, Veng Sreng Phnom Penh Cambodia',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_18',
+    no: 18,
+    name: 'Eagle ANNALIZA S. AUSTRIA',
+    position: 'Group Member',
+    phone: '017497926',
+    address: 'St. 07 No. 01 Borey New World Porsenchey, Phnom Penh, Cambodia',
+    work: 'GARMENT INDUSTRY (QUALITY ENGINEER)',
+    emergencyContact: 'GERARDO ADINIT / ELEUTERIA AUSTRIA',
+    emergencyPhone: '(855) 15907394'
+  },
+  {
+    id: 'mem_19',
+    no: 19,
+    name: 'Eagle ROSALIE O. CABRERA',
+    position: 'Group Member',
+    phone: '077349088',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_20',
+    no: 20,
+    name: 'Eagle HANNAH MARIE S. DELA CRUZ',
+    position: 'Group Member',
+    phone: '0768020375',
+    address: '77K STREET 9 BOREY HONGLAY, VENG SRENG, CHAUM CHAO, PHNOM PENH, CAMBODIA',
+    work: 'EDUCATION (TEACHER)',
+    emergencyContact: 'HELEN DELA CRUZ',
+    emergencyPhone: '(855) 85264243'
+  },
+  {
+    id: 'mem_21',
+    no: 21,
+    name: 'Eagle LOWELLA J. ESPRA',
+    position: 'Group Member',
+    phone: '010261621',
+    address: 'St. 11, #66 Borey 1, Veng Sreng Phnom Penh Cambodia',
+    work: 'BUSINESS (BRANCH MANAGER)',
+    emergencyContact: 'JOSEPH CARIN JR',
+    emergencyPhone: '(855) 87849245'
+  },
+  {
+    id: 'mem_22',
+    no: 22,
+    name: 'Eagle NELCIE GRACE J. FUERTE',
+    position: 'Group Member',
+    phone: '093697255',
+    address: 'St. 18, House No. 30 Borey Piphup Thamey 1, Veng Sreng , Phnom Penh, Cambodia',
+    work: 'GARMENT INDUSTRY (QUALITY ASSURANCE)',
+    emergencyContact: 'SAMUEL J. FUERTE',
+    emergencyPhone: '(639) 17561275'
+  },
+  {
+    id: 'mem_23',
+    no: 23,
+    name: 'Eagle DIANNA JEAN Y. LOREMIA',
+    position: 'Group Member',
+    phone: '0967404710',
+    address: 'St.04, Room.03 Borey 1 Phipop Themey Sangkat Choam Chao 1, Khan Porsenchey Phnom Penh',
+    work: 'GARMENT INDUSTRY (MERCHANDISER)',
+    emergencyContact: 'ANDREW B. LOREMIA',
+    emergencyPhone: '(855) 963146914'
+  },
+  {
+    id: 'mem_24',
+    no: 24,
+    name: 'Eagle REYNALIN C. MADLA',
+    position: 'Group Member',
+    phone: '099324089',
+    address: 'St.04, Room.08 Borey 1 Phipop Themey Sangkat Choam Chao 1, Khan Porsenchey Phnom Penh',
+    work: 'GARMENT INDUSTRY (QUALITY ASSURANCE)',
+    emergencyContact: 'ALEJANDRO B. CRISINI JR',
+    emergencyPhone: '(855) 969678216'
+  },
+  {
+    id: 'mem_25',
+    no: 25,
+    name: 'Eagle ELIZABETH V. OLIVEROS',
+    position: 'Group Member',
+    phone: '086799213',
+    address: 'House No #9 Street 19 Room C1 Chaom Chao Khan Porsenchey Phnom Penh',
+    work: 'GARMENT INDUSTRY (QUALITY ASSURANCE)',
+    emergencyContact: 'SARAH MAE OLIVARES',
+    emergencyPhone: '(639) 9771316571'
+  },
+  {
+    id: 'mem_26',
+    no: 26,
+    name: 'Eagle LAARNIE D. RIVA',
+    position: 'Group Member',
+    phone: '092487165',
+    address: 'St. 18, House No. 30 Borey Piphup Thamey 1, Veng Sreng , Phnom Penh, Cambodia',
+    work: 'GARMENT INDUSTRY (QUALITY ASSURANCE)',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_27',
+    no: 27,
+    name: 'Eagle JUDITH P. VELASCO',
+    position: 'Group Member',
+    phone: '010820661',
+    address: 'St.22 Borey 1 Phipop Themey Sangkat Choam Chao 1, Khan Porsenchey Phnom Penh',
+    work: 'GARMENT INDUSTRY (QUALITY ASSURANCE)',
+    emergencyContact: 'DARRYL P. VELASCO',
+    emergencyPhone: '(639) 9055230422'
+  },
+  {
+    id: 'mem_28',
+    no: 28,
+    name: 'Eagle CHARMILYN JADE M. POGOY',
+    position: 'Group Member',
+    phone: '087849182',
+    address: 'St. 11, No.66 Borey 1, Veng Sreng Phnom Penh Cambodia',
+    work: 'BUSINESS (OFFICE CLERK/ADMIN ASST)',
+    emergencyContact: 'NEILJUN C. EGPIT',
+    emergencyPhone: '(855) 87849259'
+  },
+  {
+    id: 'mem_29',
+    no: 29,
+    name: 'Eagle GRACELDA N. SIBUG',
+    position: 'Group Member',
+    phone: '093580719',
+    address: 'Borey SonTony # 16 Concrete Road 1, Trapeang Thleung 4 Village Sangkat Choam Chao 1, Khan Porsenchey Phnom Penh',
+    work: 'GARMENT INDUSTRY (QUALITY ASSURANCE)',
+    emergencyContact: 'MONICA RIMORIN',
+    emergencyPhone: '(639) 9169040027'
+  },
+  {
+    id: 'mem_30',
+    no: 30,
+    name: 'Eagle MARILYN M. ARANDIA',
+    position: 'Group Member',
+    phone: '070543092',
+    address: 'House 42 Street 42 Borey Piphop Thmey 2 Veng Sreng Road Sangkat Choam Chao Phnom Penh City Cambodia',
+    work: 'GARMENT INDUSTRY (QUALITY ASSURANCE)',
+    emergencyContact: 'ENGELBERT ESCULTURA',
+    emergencyPhone: '(855) 963583154'
+  },
+  {
+    id: 'mem_31',
+    no: 31,
+    name: 'Eagle JASMIN M. EVANGELISTA',
+    position: 'Group Member',
+    phone: '069563607',
+    address: 'St. Trung Morn Steung Meanchey 1 Meanchey, Phnom Penh Cambodia',
+    work: 'GARMENT INDUSTRY (QUALITY ASSURANCE)',
+    emergencyContact: 'COSME EVANGELISTA',
+    emergencyPhone: '(639) 9096244657'
+  },
+  {
+    id: 'mem_32',
+    no: 32,
+    name: 'Eagle ANITA S. CARIZO',
+    position: 'Group Member',
+    phone: '09669242504',
+    address: 'St. 12 House #66 Borey Piphup Thamey 1, Veng Sreng, Phnom Penh, Cambodia',
+    work: 'GARMENT INDUSTRY (QUALITY ASSURANCE)',
+    emergencyContact: '',
+    emergencyPhone: ''
+  },
+  {
+    id: 'mem_33',
+    no: 33,
+    name: 'Eagle MA. LUISA D.C. PINEDA',
+    position: 'Group Member',
+    phone: '099237584',
+    address: 'St. 19 House 138 Borey Piphup Thamey 2, Veng Sreng, Phnom Penh, Cambodia',
+    work: 'GARMENT INDUSTRY (COSTING STAFF)',
+    emergencyContact: 'GILBERTH T. PINEDA / ERICA MAE PINEDA',
+    emergencyPhone: '(855) 11 583 297 / (639) 9274731596'
+  }
 ];
 
 const DEFAULT_FAMILIES = [
@@ -747,7 +1150,7 @@ const DEFAULT_TRANSACTIONS = [
     date: '2026-10-01',
     amount: 3500.00,
     reason: 'Monthly dues',
-    person: 'Kuya Eric',
+    person: 'Eagle VILMA ARDINA R.',
     remark: 'October 2026 Monthly Dues',
     updatedAt: Date.now() - 86400000 * 20
   },
@@ -758,8 +1161,8 @@ const DEFAULT_TRANSACTIONS = [
     date: '2026-10-05',
     amount: 1200.00,
     reason: 'Voluntary Donation',
-    person: 'Kuya Gerry',
-    remark: 'Special Voluntary Donation Kuya Gerry',
+    person: 'Eagle LEONIE A. ABELLA',
+    remark: 'Special Voluntary Donation',
     updatedAt: Date.now() - 86400000 * 18
   },
   {
@@ -769,7 +1172,7 @@ const DEFAULT_TRANSACTIONS = [
     date: '2026-10-06',
     family: 'En Rent',
     amount: 245.50,
-    person: 'Ate Rachel',
+    person: 'Eagle SHARON LLEGADO C.',
     refInvoice: 'RENT-2026-10',
     remark: 'Eagles Nest Central Office Rent',
     updatedAt: Date.now() - 86400000 * 17
@@ -1323,10 +1726,11 @@ function RachelEaglesApp() {
 
   const [families, setFamilies] = useState(() => {
     try {
-      const migKey = 'RE_LANG_MIG_V9_NO_CAT';
+      const migKey = 'RE_LANG_MIG_V10_MEMBERS_33';
       if (localStorage.getItem(migKey) !== 'ready') {
         localStorage.setItem(migKey, 'ready');
         localStorage.setItem('RE_FAMILIES', JSON.stringify(DEFAULT_FAMILIES));
+        localStorage.setItem('RE_MEMBERS', JSON.stringify(DEFAULT_MEMBERS));
         localStorage.setItem('RE_TRANSACTIONS', JSON.stringify(DEFAULT_TRANSACTIONS));
         return DEFAULT_FAMILIES;
       }
@@ -1339,7 +1743,7 @@ function RachelEaglesApp() {
 
   const [transactions, setTransactions] = useState(() => {
     try {
-      const migKey = 'RE_LANG_MIG_V9_NO_CAT';
+      const migKey = 'RE_LANG_MIG_V10_MEMBERS_33';
       if (localStorage.getItem(migKey) !== 'ready') {
         return DEFAULT_TRANSACTIONS;
       }
@@ -1352,8 +1756,16 @@ function RachelEaglesApp() {
 
   const [members, setMembers] = useState(() => {
     try {
+      const migKey = 'RE_LANG_MIG_V10_MEMBERS_33';
+      if (localStorage.getItem(migKey) !== 'ready') {
+        return DEFAULT_MEMBERS;
+      }
       const saved = localStorage.getItem('RE_MEMBERS');
-      return saved ? JSON.parse(saved) : DEFAULT_MEMBERS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+      return DEFAULT_MEMBERS;
     } catch(e) {
       return DEFAULT_MEMBERS;
     }
@@ -1489,7 +1901,22 @@ function RachelEaglesApp() {
   }, [families, lang]);
 
   const sortedMembers = useMemo(() => {
-    return [...members].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    return [...members].map((m, idx) => {
+      if (typeof m === 'string') {
+        return {
+          id: 'mem_leg_' + idx,
+          no: idx + 1,
+          name: m,
+          position: 'Group Member',
+          phone: '',
+          address: '',
+          work: '',
+          emergencyContact: '',
+          emergencyPhone: ''
+        };
+      }
+      return m;
+    }).sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
   }, [members]);
 
   // ==========================================================================
@@ -1582,32 +2009,142 @@ function RachelEaglesApp() {
     showToast(t.saveSuccess);
   };
 
-  const handleOpenAddPerson = (origin = 'debit') => {
-    setPersonModalOrigin(origin);
-    setNewPersonInput('');
-    setIsAddPersonModalOpen(true);
+  // ==========================================================================
+  // ÉTAT ET GESTION DE L'ANNUAIRE DES MEMBRES
+  // ==========================================================================
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
+  const [memberFilterPosition, setMemberFilterPosition] = useState('all');
+  const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [memberModalOrigin, setMemberModalOrigin] = useState('manage'); // 'manage', 'debit', 'credit'
+  const [memberFormData, setMemberFormData] = useState({
+    id: null,
+    no: null,
+    name: '',
+    position: 'Group Member',
+    phone: '',
+    address: '',
+    work: '',
+    emergencyContact: '',
+    emergencyPhone: ''
+  });
+
+  const distinctPositions = useMemo(() => {
+    const set = new Set();
+    members.forEach(m => {
+      const pos = typeof m === 'object' ? m.position : 'Group Member';
+      if (pos) set.add(pos);
+    });
+    return Array.from(set).sort();
+  }, [members]);
+
+  const filteredDisplayMembers = useMemo(() => {
+    return sortedMembers.filter(m => {
+      if (memberFilterPosition !== 'all' && m.position !== memberFilterPosition) return false;
+      if (memberSearchQuery) {
+        const q = memberSearchQuery.toLowerCase();
+        const matchName = (m.name || '').toLowerCase().includes(q);
+        const matchPos = (m.position || '').toLowerCase().includes(q);
+        const matchPhone = (m.phone || '').toLowerCase().includes(q);
+        const matchWork = (m.work || '').toLowerCase().includes(q);
+        const matchAddr = (m.address || '').toLowerCase().includes(q);
+        const matchEmerg = (m.emergencyContact || '').toLowerCase().includes(q) || (m.emergencyPhone || '').toLowerCase().includes(q);
+        if (!matchName && !matchPos && !matchPhone && !matchWork && !matchAddr && !matchEmerg) return false;
+      }
+      return true;
+    });
+  }, [sortedMembers, memberSearchQuery, memberFilterPosition]);
+
+  const handleOpenAddMember = (origin = 'manage') => {
+    setMemberModalOrigin(origin);
+    setMemberFormData({
+      id: null,
+      no: members.length + 1,
+      name: '',
+      position: 'Group Member',
+      phone: '',
+      address: '',
+      work: '',
+      emergencyContact: '',
+      emergencyPhone: ''
+    });
+    setIsMemberModalOpen(true);
   };
 
-  const handleConfirmAddPerson = (e) => {
+  const handleOpenEditMember = (m) => {
+    setMemberModalOrigin('manage');
+    setMemberFormData({
+      id: m.id || null,
+      no: m.no || null,
+      name: m.name || (typeof m === 'string' ? m : ''),
+      position: m.position || 'Group Member',
+      phone: m.phone || '',
+      address: m.address || '',
+      work: m.work || '',
+      emergencyContact: m.emergencyContact || '',
+      emergencyPhone: m.emergencyPhone || ''
+    });
+    setIsMemberModalOpen(true);
+  };
+
+  const handleSaveMember = (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    const name = newPersonInput.trim();
-    if (!name) return;
+    const trimmedName = memberFormData.name.trim();
+    if (!trimmedName) return;
 
-    if (!members.includes(name)) {
-      const updated = [...members, name];
-      setMembers(updated);
+    if (memberFormData.id) {
+      const oldMem = members.find(m => (typeof m === 'object' && m.id === memberFormData.id) || (typeof m === 'string' && m === memberFormData.name));
+      const oldName = oldMem ? (typeof oldMem === 'object' ? oldMem.name : oldMem) : '';
+
+      setMembers(prev => prev.map(m => {
+        const currentId = typeof m === 'object' ? m.id : null;
+        const currentName = typeof m === 'object' ? m.name : m;
+        if ((currentId && currentId === memberFormData.id) || currentName === oldName) {
+          return {
+            ...memberFormData,
+            name: trimmedName
+          };
+        }
+        return m;
+      }));
+
+      if (oldName && oldName !== trimmedName) {
+        setTransactions(prev => prev.map(tx => tx.person === oldName ? { ...tx, person: trimmedName } : tx));
+      }
+      showToast(t.memberSavedSuccess || t.saveSuccess);
+    } else {
+      const newMem = {
+        ...memberFormData,
+        id: 'mem_' + Date.now(),
+        no: members.length + 1,
+        name: trimmedName
+      };
+      setMembers(prev => [...prev, newMem]);
+
+      if (memberModalOrigin === 'debit') {
+        setDebitForm(p => ({ ...p, person: trimmedName }));
+      } else if (memberModalOrigin === 'credit') {
+        setCreditForm(p => ({ ...p, person: trimmedName }));
+      }
+      showToast(t.memberSavedSuccess || t.saveSuccess);
     }
 
-    if (personModalOrigin === 'debit') {
-      setDebitForm(p => ({ ...p, person: name }));
-    } else if (personModalOrigin === 'credit') {
-      setCreditForm(p => ({ ...p, person: name }));
-    }
-
-    setIsAddPersonModalOpen(false);
-    setNewPersonInput('');
-    showToast(t.saveSuccess);
+    setIsMemberModalOpen(false);
   };
+
+  const handleDeleteMember = (memberToDelete) => {
+    const memName = typeof memberToDelete === 'object' ? memberToDelete.name : memberToDelete;
+    const memId = typeof memberToDelete === 'object' ? memberToDelete.id : null;
+    if (confirm(t.confirmDeleteMember || `Supprimer ${memName} de l'annuaire ?`)) {
+      setMembers(prev => prev.filter(m => {
+        if (memId && typeof m === 'object' && m.id) return m.id !== memId;
+        const n = typeof m === 'object' ? m.name : m;
+        return n !== memName;
+      }));
+      showToast(t.memberDeletedSuccess || t.deleteSuccess);
+    }
+  };
+
+  const handleOpenAddPerson = handleOpenAddMember;
 
   // ==========================================================================
   // ÉTAT FORMULAIRE DÉBIT (Champs 100% vierges au démarrage)
@@ -2583,44 +3120,148 @@ function RachelEaglesApp() {
       )}
 
 
-      {/* MODAL NOUVELLE PERSONNE / MEMBRE */}
-      {isAddPersonModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      {/* MODAL MEMBRE DU CLUB (AJOUT & MODIFICATION) */}
+      {isMemberModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all my-8">
             <div className="bg-blue-900 text-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <i className="fa-solid fa-user-plus text-amber-400 text-lg"></i>
-                <h3 className="font-bold text-base">{t.modalNewPersonTitle}</h3>
+                <i className={`fa-solid ${memberFormData.id ? 'fa-user-pen' : 'fa-user-plus'} text-amber-400 text-lg`}></i>
+                <h3 className="font-bold text-base">
+                  {memberFormData.id ? (t.modalEditMemberTitle || "Modifier le Membre") : (t.modalNewMemberTitle || "Ajouter un Membre")}
+                </h3>
               </div>
               <button
                 type="button"
-                onClick={() => setIsAddPersonModalOpen(false)}
+                onClick={() => setIsMemberModalOpen(false)}
                 className="text-white/70 hover:text-white p-1 rounded-lg"
               >
                 <i className="fa-solid fa-xmark text-lg"></i>
               </button>
             </div>
 
-            <form onSubmit={handleConfirmAddPerson} className="p-5 space-y-4">
+            <form onSubmit={handleSaveMember} className="p-5 space-y-3.5 max-h-[80vh] overflow-y-auto">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
-                  {t.modalPersonNameLabel}
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                  {t.memberNameLabel || "Nom complet (avec titre) :"} *
                 </label>
                 <input
                   type="text"
                   autoFocus
                   required
-                  value={newPersonInput}
-                  onChange={(e) => setNewPersonInput(e.target.value)}
-                  placeholder={t.inputPersonPlaceholder}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-800 focus:outline-none"
+                  value={memberFormData.name}
+                  onChange={(e) => setMemberFormData(p => ({ ...p, name: e.target.value }))}
+                  placeholder="ex: Eagle VILMA ARDINA R."
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-800 focus:outline-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                    {t.memberPositionLabel || "Fonction / Rôle :"}
+                  </label>
+                  <input
+                    type="text"
+                    list="positions-datalist"
+                    value={memberFormData.position}
+                    onChange={(e) => setMemberFormData(p => ({ ...p, position: e.target.value }))}
+                    placeholder="ex: Group President"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-800 focus:outline-none"
+                  />
+                  <datalist id="positions-datalist">
+                    <option value="Group President" />
+                    <option value="Group Vice President" />
+                    <option value="Group Secretary" />
+                    <option value="Group Treasurer" />
+                    <option value="Group Auditor" />
+                    <option value="Group Information Officer" />
+                    <option value="Group Protocol Officer" />
+                    <option value="Group Peace officer" />
+                    <option value="Group Grievance Chair" />
+                    <option value="Group C.A.R.E Chairwoman" />
+                    <option value="Group Board of Director" />
+                    <option value="Group Member" />
+                  </datalist>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                    {t.memberPhoneLabel || "Téléphone (Cambodge) :"}
+                  </label>
+                  <input
+                    type="tel"
+                    value={memberFormData.phone}
+                    onChange={(e) => setMemberFormData(p => ({ ...p, phone: e.target.value }))}
+                    placeholder="ex: 092499323"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-800 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                  {t.memberWorkLabel || "Nature du Travail / Métier :"}
+                </label>
+                <input
+                  type="text"
+                  value={memberFormData.work}
+                  onChange={(e) => setMemberFormData(p => ({ ...p, work: e.target.value }))}
+                  placeholder="ex: GARMENT INDUSTRY (QA of FAM BRAND), EDUCATION..."
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-800 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                  {t.memberAddressLabel || "Adresse au Cambodge :"}
+                </label>
+                <input
+                  type="text"
+                  value={memberFormData.address}
+                  onChange={(e) => setMemberFormData(p => ({ ...p, address: e.target.value }))}
+                  placeholder="ex: Borey Piphop Thmey 2, Veng Sreng Road, Phnom Penh"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-800 focus:outline-none"
+                />
+              </div>
+
+              <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl space-y-2.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 uppercase">
+                  <i className="fa-solid fa-truck-medical text-amber-600"></i>
+                  <span>{lang === 'fr' ? 'Coordonnées en cas d’urgence' : 'Emergency Contact Information'}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
+                      {t.memberEmergencyLabel || "Nom du contact :"}
+                    </label>
+                    <input
+                      type="text"
+                      value={memberFormData.emergencyContact}
+                      onChange={(e) => setMemberFormData(p => ({ ...p, emergencyContact: e.target.value }))}
+                      placeholder="Nom du proche"
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
+                      {t.memberEmergencyPhoneLabel || "Téléphone d'urgence :"}
+                    </label>
+                    <input
+                      type="tel"
+                      value={memberFormData.emergencyPhone}
+                      onChange={(e) => setMemberFormData(p => ({ ...p, emergencyPhone: e.target.value }))}
+                      placeholder="(855) 97... / (639) 90..."
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setIsAddPersonModalOpen(false)}
+                  onClick={() => setIsMemberModalOpen(false)}
                   className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs sm:text-sm transition"
                 >
                   {t.btnCancel}
@@ -2630,7 +3271,7 @@ function RachelEaglesApp() {
                   className="px-5 py-2 bg-blue-800 hover:bg-blue-900 text-white font-bold rounded-xl text-xs sm:text-sm shadow-md transition flex items-center gap-1.5"
                 >
                   <i className="fa-solid fa-check"></i>
-                  <span>{t.btnAddConfirm}</span>
+                  <span>{memberFormData.id ? t.btnUpdate : t.btnSave}</span>
                 </button>
               </div>
             </form>
@@ -2758,8 +3399,21 @@ function RachelEaglesApp() {
                 currentTab === 'categories' ? 'border-amber-400 text-white bg-blue-950/40' : 'border-transparent text-blue-200 hover:text-white'
               }`}
             >
-              <i className="fa-solid fa-tags text-amber-300"></i>
-              <span>{t.navCategories}</span>
+              <i className="fa-solid fa-folder-tree text-amber-300"></i>
+              <span>{t.navFamilies || "Familles"}</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentTab('members')}
+              className={`py-2.5 px-3 border-b-2 flex items-center gap-2 transition ${
+                currentTab === 'members' ? 'border-amber-400 text-white bg-blue-950/40' : 'border-transparent text-blue-200 hover:text-white'
+              }`}
+            >
+              <i className="fa-solid fa-users text-purple-300"></i>
+              <span>{t.navMembers || "Membres"}</span>
+              <span className="ml-0.5 text-[10px] bg-purple-900/80 text-purple-200 px-1.5 py-0.5 rounded-full font-bold">
+                {members.length}
+              </span>
             </button>
 
             <button
@@ -3098,11 +3752,11 @@ function RachelEaglesApp() {
                       </label>
                       <button
                         type="button"
-                        onClick={() => handleOpenAddPerson('debit')}
+                        onClick={() => handleOpenAddMember('debit')}
                         className="text-[11px] text-blue-700 hover:underline font-bold flex items-center gap-1"
                       >
                         <i className="fa-solid fa-plus text-[10px]"></i>
-                        <span>{t.btnAddPerson}</span>
+                        <span>{t.btnAddMember || t.btnAddPerson}</span>
                       </button>
                     </div>
                     <select
@@ -3112,7 +3766,9 @@ function RachelEaglesApp() {
                     >
                       <option value="">{t.selectPersonPlaceholder}</option>
                       {sortedMembers.map((m, idx) => (
-                        <option key={idx} value={m}>{m}</option>
+                        <option key={m.id || idx} value={m.name || m}>
+                          {m.name || m} {m.position ? `(${m.position})` : ''}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -3367,11 +4023,11 @@ function RachelEaglesApp() {
                       </label>
                       <button
                         type="button"
-                        onClick={() => handleOpenAddPerson('credit')}
+                        onClick={() => handleOpenAddMember('credit')}
                         className="text-[11px] text-blue-700 hover:underline font-bold flex items-center gap-1"
                       >
                         <i className="fa-solid fa-plus text-[10px]"></i>
-                        <span>{t.btnAddPerson}</span>
+                        <span>{t.btnAddMember || t.btnAddPerson}</span>
                       </button>
                     </div>
                     <select
@@ -3381,7 +4037,9 @@ function RachelEaglesApp() {
                     >
                       <option value="">{t.selectPersonPlaceholder}</option>
                       {sortedMembers.map((m, idx) => (
-                        <option key={idx} value={m}>{m}</option>
+                        <option key={m.id || idx} value={m.name || m}>
+                          {m.name || m} {m.position ? `(${m.position})` : ''}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -3511,7 +4169,7 @@ function RachelEaglesApp() {
         )}
 
         {/* ==================================================================== */}
-        {/* ONGLET 4 : GESTION DES FAMILLES & MEMBRES */}
+        {/* ONGLET 4 : GESTION DES FAMILLES */}
         {/* ==================================================================== */}
         {currentTab === 'categories' && (
           <div className="space-y-6 fade-in">
@@ -3519,12 +4177,12 @@ function RachelEaglesApp() {
               <div>
                 <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                   <i className="fa-solid fa-folder-tree text-amber-600"></i>
-                  <span>{t.navCategories}</span>
+                  <span>{t.navFamilies || "Familles"}</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-1">
                   {lang === 'fr'
-                    ? "Gérez les familles de dépenses officielles de RachelEagles classées par ordre alphabétique."
-                    : "Manage RachelEagles official expense families sorted in alphabetical order."}
+                    ? "Gérez les 7 familles budgétaires officielles de RachelEagles classées par ordre alphabétique."
+                    : "Manage RachelEagles 7 official budgetary families sorted in alphabetical order."}
                 </p>
               </div>
 
@@ -3585,73 +4243,216 @@ function RachelEaglesApp() {
                 );
               })}
             </div>
+          </div>
+        )}
 
-            {/* SECTION GESTION DES MEMBRES & PERSONNES */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                <div>
-                  <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <i className="fa-solid fa-users text-blue-700"></i>
-                    <span>{t.personsManagementTitle}</span>
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {t.personsManagementDesc}
-                  </p>
+        {/* ==================================================================== */}
+        {/* ONGLET 5 : ANNUAIRE & GESTION DÉDIÉE DES MEMBRES */}
+        {/* ==================================================================== */}
+        {currentTab === 'members' && (
+          <div className="space-y-6 fade-in">
+            {/* EN-TÊTE PRINCIPAL */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold text-lg">
+                    <i className="fa-solid fa-users"></i>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-extrabold text-slate-800">
+                      {t.membersTitle || "Annuaire Officiel des Membres"}
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {t.membersSubtitle || "Gérez les membres du club, coordonnées, postes et contacts d'urgence."}
+                    </p>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleOpenAddPerson('manage')}
-                  className="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm"
-                >
-                  <i className="fa-solid fa-user-plus"></i>
-                  <span>{t.btnAddPerson}</span>
-                </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {sortedMembers.map((m, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition">
-                    <div className="flex items-center gap-2.5 overflow-hidden">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                        <i className="fa-solid fa-user text-xs"></i>
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => handleOpenAddMember('manage')}
+                  className="px-4 py-2.5 bg-blue-800 hover:bg-blue-900 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
+                >
+                  <i className="fa-solid fa-user-plus"></i>
+                  <span>{t.btnAddMember || "+ Ajouter un Membre"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* STATISTIQUES DES MEMBRES */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs text-center">
+                <span className="text-[11px] font-bold uppercase text-slate-500">{lang === 'fr' ? 'Total Membres' : 'Total Members'}</span>
+                <p className="text-xl font-black text-blue-900 mt-0.5">{members.length}</p>
+              </div>
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs text-center">
+                <span className="text-[11px] font-bold uppercase text-amber-700">{lang === 'fr' ? 'Direction / Bureau' : 'Executive Board'}</span>
+                <p className="text-xl font-black text-amber-700 mt-0.5">
+                  {members.filter(m => (m.position || '').includes('President') || (m.position || '').includes('Treasurer') || (m.position || '').includes('Secretary') || (m.position || '').includes('Auditor')).length}
+                </p>
+              </div>
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs text-center">
+                <span className="text-[11px] font-bold uppercase text-purple-700">{lang === 'fr' ? 'Officiers & Chaires' : 'Officers & Chairs'}</span>
+                <p className="text-xl font-black text-purple-700 mt-0.5">
+                  {members.filter(m => (m.position || '').includes('Officer') || (m.position || '').includes('Chair') || (m.position || '').includes('Director')).length}
+                </p>
+              </div>
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs text-center">
+                <span className="text-[11px] font-bold uppercase text-slate-600">{lang === 'fr' ? 'Membres Adhérents' : 'General Members'}</span>
+                <p className="text-xl font-black text-slate-700 mt-0.5">
+                  {members.filter(m => !(m.position || '').includes('President') && !(m.position || '').includes('Treasurer') && !(m.position || '').includes('Secretary') && !(m.position || '').includes('Auditor') && !(m.position || '').includes('Officer') && !(m.position || '').includes('Chair') && !(m.position || '').includes('Director')).length}
+                </p>
+              </div>
+            </div>
+
+            {/* RECHERCHE ET FILTRE */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+              <div className="relative flex-1 min-w-[220px]">
+                <i className="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                <input
+                  type="text"
+                  value={memberSearchQuery}
+                  onChange={(e) => setMemberSearchQuery(e.target.value)}
+                  placeholder={t.searchMembersPlaceholder || "Rechercher par nom, fonction, téléphone, métier, adresse..."}
+                  className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-blue-800 focus:outline-none"
+                />
+                {memberSearchQuery && (
+                  <button
+                    onClick={() => setMemberSearchQuery('')}
+                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs"
+                  >
+                    <i className="fa-solid fa-circle-xmark"></i>
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 text-xs">
+                <label className="font-bold text-slate-600 whitespace-nowrap">{t.filterPositionLabel || "Fonction :"}</label>
+                <select
+                  value={memberFilterPosition}
+                  onChange={(e) => setMemberFilterPosition(e.target.value)}
+                  className="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none"
+                >
+                  <option value="all">{t.filterAllPositions || "Toutes les fonctions"}</option>
+                  {distinctPositions.map((pos, idx) => (
+                    <option key={idx} value={pos}>{pos}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* GRILLE DES CARTES DE MEMBRES */}
+            {filteredDisplayMembers.length === 0 ? (
+              <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-500 space-y-2">
+                <i className="fa-solid fa-users-slash text-3xl text-slate-300"></i>
+                <p className="text-sm font-semibold">{t.noMembersFound || "Aucun membre ne correspond à vos critères de recherche."}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredDisplayMembers.map(m => (
+                  <div key={m.id || m.name} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition space-y-3 flex flex-col justify-between">
+                    <div>
+                      {/* Header with badge and name */}
+                      <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-black text-sm shadow-sm flex-shrink-0 ${
+                            m.position?.includes('President') ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                            m.position?.includes('Treasurer') ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                            m.position?.includes('Secretary') ? 'bg-blue-100 text-blue-800 border border-blue-300' :
+                            m.position?.includes('Auditor') ? 'bg-cyan-100 text-cyan-800 border border-cyan-300' :
+                            m.position?.includes('Director') ? 'bg-purple-100 text-purple-800 border border-purple-300' :
+                            m.position?.includes('Officer') || m.position?.includes('Chair') ? 'bg-indigo-100 text-indigo-800 border border-indigo-300' :
+                            'bg-slate-100 text-slate-700 border border-slate-200'
+                          }`}>
+                            {m.no ? `#${m.no}` : <i className="fa-solid fa-user"></i>}
+                          </div>
+                          <div>
+                            <h3 className="font-extrabold text-slate-900 text-sm leading-snug">{m.name}</h3>
+                            <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                              m.position?.includes('President') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+                              m.position?.includes('Treasurer') ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
+                              m.position?.includes('Secretary') ? 'bg-blue-50 text-blue-800 border border-blue-200' :
+                              m.position?.includes('Auditor') ? 'bg-cyan-50 text-cyan-800 border border-cyan-200' :
+                              m.position?.includes('Director') ? 'bg-purple-50 text-purple-800 border border-purple-200' :
+                              m.position?.includes('Officer') || m.position?.includes('Chair') ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' :
+                              'bg-slate-100 text-slate-600 border border-slate-200'
+                            }`}>
+                              {m.position || 'Group Member'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <span className="font-bold text-slate-800 text-sm truncate">{m}</span>
+
+                      {/* Details */}
+                      <div className="pt-3 space-y-2 text-xs text-slate-600">
+                        {m.phone && (
+                          <div className="flex items-center gap-2">
+                            <i className="fa-solid fa-phone text-slate-400 w-4 text-center"></i>
+                            <a href={`tel:${m.phone}`} className="font-semibold text-blue-700 hover:underline">
+                              {m.phone}
+                            </a>
+                          </div>
+                        )}
+
+                        {m.work && (
+                          <div className="flex items-start gap-2">
+                            <i className="fa-solid fa-briefcase text-slate-400 w-4 text-center mt-0.5 flex-shrink-0"></i>
+                            <span className="font-medium text-slate-700">{m.work}</span>
+                          </div>
+                        )}
+
+                        {m.address && (
+                          <div className="flex items-start gap-2">
+                            <i className="fa-solid fa-location-dot text-slate-400 w-4 text-center mt-0.5 flex-shrink-0"></i>
+                            <span className="text-slate-500 line-clamp-2">{m.address}</span>
+                          </div>
+                        )}
+
+                        {(m.emergencyContact || m.emergencyPhone) && (
+                          <div className="p-2.5 bg-amber-50/70 rounded-xl border border-amber-100 text-[11px] text-amber-950 mt-2 space-y-0.5">
+                            <div className="font-bold flex items-center gap-1.5 text-amber-900">
+                              <i className="fa-solid fa-truck-medical text-amber-600 text-[10px]"></i>
+                              <span>{lang === 'fr' ? 'En cas d’urgence :' : 'In Case of Emergency:'}</span>
+                            </div>
+                            {m.emergencyContact && <div className="text-slate-700 font-medium">{m.emergencyContact}</div>}
+                            {m.emergencyPhone && <div className="font-bold text-red-700">{m.emergencyPhone}</div>}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const n = prompt(t.promptRenamePerson, m);
-                          if (n && n.trim() && n.trim() !== m) {
-                            const newName = n.trim();
-                            setMembers(prev => prev.map(item => item === m ? newName : item));
-                            setTransactions(prev => prev.map(tx => tx.person === m ? { ...tx, person: newName } : tx));
-                            showToast(t.saveSuccess);
-                          }
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-blue-700 rounded-md"
-                        title={t.btnRenamePerson}
-                      >
-                        <i className="fa-solid fa-pen text-xs"></i>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (confirm(t.confirmDeletePerson)) {
-                            setMembers(prev => prev.filter(item => item !== m));
-                            showToast(t.deleteSuccess);
-                          }
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-red-600 rounded-md"
-                        title={t.btnDeletePerson}
-                      >
-                        <i className="fa-solid fa-trash-can text-xs"></i>
-                      </button>
+
+                    {/* Actions footer */}
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <span className="text-[11px] text-slate-400">
+                        {transactions.filter(tx => tx.person === m.name).length} {lang === 'fr' ? 'écriture(s)' : 'transaction(s)'}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditMember(m)}
+                          className="px-2.5 py-1 text-xs bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold rounded-lg transition flex items-center gap-1"
+                          title={t.btnEdit}
+                        >
+                          <i className="fa-solid fa-pen text-[10px]"></i>
+                          <span>{t.btnEdit}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteMember(m)}
+                          className="px-2.5 py-1 text-xs bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-700 font-bold rounded-lg transition flex items-center gap-1"
+                          title={t.btnDelete}
+                        >
+                          <i className="fa-solid fa-trash-can text-[10px]"></i>
+                          <span>{t.btnDelete}</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -3874,7 +4675,7 @@ function RachelEaglesApp() {
                   >
                     <option value="all">{t.filterAllPersons}</option>
                     {sortedMembers.map((m, i) => (
-                      <option key={i} value={m}>{m}</option>
+                      <option key={m.id || i} value={m.name || m}>{m.name || m}</option>
                     ))}
                   </select>
                 </div>
@@ -6446,6 +7247,18 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
                   {isFr
                     ? "Toutes les 7 familles budgétaires officielles (Alalayang Agila, Community Service, En Rent, Monthly dues, Petty Cash, Sharing of SCLEG, Voluntary Donation) sont triées rigoureusement de A à Z pour une navigation instantanée et fluide."
                     : "All 7 official budgetary families (Alalayang Agila, Community Service, En Rent, Monthly dues, Petty Cash, Sharing of SCLEG, Voluntary Donation) are strictly sorted alphabetically from A to Z for rapid, intuitive lookups."}
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <h4 className="font-black text-slate-900 text-sm flex items-center gap-2">
+                  <i className="fa-solid fa-users text-purple-700"></i>
+                  <span>{isFr ? "Annuaire Officiel des 33 Membres Eagles" : "Official 33 Eagles Members Directory"}</span>
+                </h4>
+                <p className="text-xs text-slate-600">
+                  {isFr
+                    ? "L'onglet Membres liste les 33 membres officiels du club (Présidente, Trésorière, Secrétaire, Directeurs, Membres) avec téléphone, métier, adresse au Cambodge et contacts d'urgence. Vous pouvez ajouter, modifier ou retirer des membres à tout moment."
+                    : "The Members tab features the 33 official club members (President, Treasurer, Secretary, Board of Directors, Members) with telephone, occupation, Cambodian address, and emergency contact details. You can add, edit, or remove members at any time."}
                 </p>
               </div>
             </div>
