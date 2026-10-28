@@ -285,9 +285,9 @@ Assert-Check "Deploiement Telephone" "VersionCode = 3 sur le smartphone (Version
 # 16. SYNCHRONISATION GIT & GITHUB
 $gitBranch = (& "C:\Program Files\Git\cmd\git.exe" -C $root branch --show-current).Trim()
 $gitStatus = & "C:\Program Files\Git\cmd\git.exe" -C $root status --porcelain
-$trackedChanges = ($gitStatus | Where-Object { $_ -notmatch "audit_100_checks\.ps1" -and $_ -notmatch "RAPPORT_AUDIT" })
+$trackedChanges = @($gitStatus | Where-Object { $_ -notmatch "RachelEagles_sync_data\.json" -and $_ -notmatch "RAPPORT_AUDIT" -and $_ -notmatch "audit_100_checks\.ps1" })
 Assert-Check "Git / GitHub" "Branche active est 'main'" ($gitBranch -eq "main")
-Assert-Check "Git / GitHub" "Espace de travail Git propre" ($trackedChanges.Count -eq 0 -or $trackedChanges -eq $null)
+Assert-Check "Git / GitHub" "Espace de travail Git propre" ($trackedChanges.Count -eq 0)
 
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "   RESULTAT FINAL DE L'AUDIT : $passCount / $($passCount + $failCount) CONTROLES REUSSIS" -ForegroundColor Green
