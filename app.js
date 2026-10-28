@@ -55,7 +55,7 @@ const I18N = {
     navDashboard: "Home",
     navDebits: "Debits (Expenses)",
     navCredits: "Credits (Incomes)",
-    navCategories: "Families, Categories & Members",
+    navCategories: "Families & Members",
     navStats: "Analytics, Reports & Audit",
     navBackup: "Backup & Sync",
     navSettings: "Settings",
@@ -64,9 +64,8 @@ const I18N = {
     statView1: "1. Journal & General Ledger",
     statView2: "2. Histogram & Global Pie Chart",
     statView3: "3. Breakdown by Family",
-    statView4: "4. Breakdown by Category",
-    statView5: "5. Custom Analytics",
-    statView6: "6. Audit Report & Action Plans (3-Mo.)",
+    statView4: "4. Custom Analytics",
+    statView5: "5. Audit Report & Action Plans (3-Mo.)",
     auditReportTitle: "Treasury Audit Report & Action Roadmap",
     auditReportSubtitle: "Financial diagnostic, audit findings, and phased operational improvement plans.",
     auditScoreLabel: "Audit Compliance & Health Score",
@@ -319,31 +318,28 @@ const I18N = {
     pdfOrgName: "THE FRATERNAL ORDER OF LADY EAGLES GROUP",
     pdfTreasurerTitle: "The Treasurer",
     pdfSignatureLabel: "(Signature & Date)",
-    pdfFamCol: "Family / Category / Reason",
+    pdfFamCol: "Family / Reason",
     pdfRefCol: "Ref #",
     pdfRemarkCol: "Remark",
     pdfAmountCol: "Amount (USD)",
 
     // Prompts & Dialogs
-    promptNewFamily: "Name of new expense family (e.g. Electricity, Food...):",
-    promptNewCategory: "New category for family:",
+    promptNewFamily: "Name of new expense family (e.g. Community Service, Petty Cash...):",
     promptRenameFamily: "New name for family:",
-    confirmDeleteFamily: "Delete family and all associated categories?",
-    confirmDeleteCategory: "Delete this category?",
+    confirmDeleteFamily: "Delete this family?",
     promptQuickAmount: "New amount for this entry (USD):",
     alertInvalidAmount: "Please enter a valid amount greater than 0 USD.",
     alertChooseFamily: "Please select or create an expense family.",
 
     colDate: "Date",
     colType: "Type",
-    colFamilyCategory: "Family / Category / Reason",
+    colFamilyCategory: "Family / Reason",
     colRef: "Ref / Invoice",
     colRemark: "Remark",
     colAmount: "Amount",
     colFrequency: "Frequency",
     colActions: "Actions",
     colFamily: "Family",
-    colCategory: "Category",
     colReason: "Reason",
     syncShort: "Sync",
     syncTooltip: "Local Network Sync (PC <-> Phone)",
@@ -409,7 +405,7 @@ const I18N = {
     navDashboard: "Accueil",
     navDebits: "Débits (Dépenses)",
     navCredits: "Crédits (Recettes)",
-    navCategories: "Familles, Catégories & Membres",
+    navCategories: "Familles & Membres",
     navStats: "Statistiques, Rapports & Audit",
     navBackup: "Sauvegarde & Synchro",
     navSettings: "Paramètres",
@@ -418,9 +414,8 @@ const I18N = {
     statView1: "1. Journal & Grand Livre",
     statView2: "2. Histogramme & Camembert Global",
     statView3: "3. Répartition par Famille",
-    statView4: "4. Répartition par Catégorie",
-    statView5: "5. Graphiques Sur-Mesure",
-    statView6: "6. Rapport d'Audit & Fiches d'Action (3 Mois)",
+    statView4: "4. Graphiques Sur-Mesure",
+    statView5: "5. Rapport d'Audit & Fiches d'Action (3 Mois)",
     auditReportTitle: "Rapport d'Audit de Trésorerie & Feuille de Route",
     auditReportSubtitle: "Diagnostic financier approfondi, constats d'audit et fiches d'action d'amélioration dans le temps.",
     auditScoreLabel: "Score de Conformité & Santé Financière",
@@ -674,31 +669,28 @@ const I18N = {
     pdfOrgName: "THE FRATERNAL ORDER OF LADY EAGLES GROUP",
     pdfTreasurerTitle: "Le Trésorier / La Trésorière",
     pdfSignatureLabel: "(Signature & Date)",
-    pdfFamCol: "Famille / Catégorie / Raison",
+    pdfFamCol: "Famille / Motif",
     pdfRefCol: "Réf",
     pdfRemarkCol: "Remarque",
     pdfAmountCol: "Montant (USD)",
 
     // Prompts & Dialogs
-    promptNewFamily: "Nom de la nouvelle famille de dépense (ex: Électricité, Alimentation...) :",
-    promptNewCategory: "Nouvelle catégorie pour la famille :",
+    promptNewFamily: "Nom de la nouvelle famille de dépense (ex: Community Service, Petty Cash...) :",
     promptRenameFamily: "Nouveau nom pour la famille :",
-    confirmDeleteFamily: "Supprimer la famille et ses catégories associées ?",
-    confirmDeleteCategory: "Supprimer cette catégorie ?",
+    confirmDeleteFamily: "Supprimer cette famille ?",
     promptQuickAmount: "Nouveau montant pour cette entrée (USD) :",
     alertInvalidAmount: "Veuillez saisir un montant valide supérieur à 0 USD.",
     alertChooseFamily: "Veuillez choisir ou créer une famille de dépense.",
 
     colDate: "Date",
     colType: "Type",
-    colFamilyCategory: "Family / Category / Reason",
+    colFamilyCategory: "Famille / Motif",
     colRef: "Ref / Invoice",
     colRemark: "Remark",
     colAmount: "Amount",
     colFrequency: "Frequency",
     colActions: "Actions",
     colFamily: "Family",
-    colCategory: "Category",
     colReason: "Reason",
     syncShort: "Sync",
     syncTooltip: "Local Network Sync (PC <-> Phone)",
@@ -738,14 +730,13 @@ const DEFAULT_MEMBERS = [
 ];
 
 const DEFAULT_FAMILIES = [
-  { id: 'fam_elec', name: 'Electricity', categories: ['Office Bill', 'Air Conditioning', 'Electrical Maintenance'] },
-  { id: 'fam_eau', name: 'Water', categories: ['Running Water', 'Meeting Bottled Water', 'Water Filters'] },
-  { id: 'fam_alim', name: 'Food & Catering', categories: ['Member Meals', 'Meeting Snacks', 'Event Catering'] },
-  { id: 'fam_recep', name: 'Venue & Reception', categories: ['Reception Hall', 'Decoration', 'Catering Service', 'Sound System'] },
-  { id: 'fam_transp', name: 'Transportation', categories: ['Fuel / Gasoline', 'Van Rental', 'Toll Fees', 'Vehicle Maintenance'] },
-  { id: 'fam_action', name: 'Social Actions & Charity', categories: ['Humanitarian Relief', 'Scholarships', 'Emergency Aid'] },
-  { id: 'fam_comm', name: 'Communication & Banners', categories: ['Tarpaulin Printing', 'Eagles Banners', 'Jerseys & T-shirts'] },
-  { id: 'fam_admin', name: 'Administration & Operations', categories: ['Office Supplies', 'Bank Fees', '5G / Wi-Fi Internet'] }
+  { id: 'fam_alalayang', name: 'Alalayang Agila' },
+  { id: 'fam_community', name: 'Community Service' },
+  { id: 'fam_en_rent', name: 'En Rent' },
+  { id: 'fam_monthly_dues', name: 'Monthly dues' },
+  { id: 'fam_petty_cash', name: 'Petty Cash' },
+  { id: 'fam_sharing_scleg', name: 'Sharing of SCLEG' },
+  { id: 'fam_voluntary_donation', name: 'Voluntary Donation' }
 ];
 
 const DEFAULT_TRANSACTIONS = [
@@ -755,7 +746,7 @@ const DEFAULT_TRANSACTIONS = [
     frequency: 'monthly',
     date: '2026-10-01',
     amount: 3500.00,
-    reason: 'Membership Dues',
+    reason: 'Monthly dues',
     person: 'Kuya Eric',
     remark: 'October 2026 Monthly Dues',
     updatedAt: Date.now() - 86400000 * 20
@@ -766,9 +757,9 @@ const DEFAULT_TRANSACTIONS = [
     frequency: 'daily',
     date: '2026-10-05',
     amount: 1200.00,
-    reason: 'Donations & Benefactors',
+    reason: 'Voluntary Donation',
     person: 'Kuya Gerry',
-    remark: 'Special Donation Kuya Gerry',
+    remark: 'Special Voluntary Donation Kuya Gerry',
     updatedAt: Date.now() - 86400000 * 18
   },
   {
@@ -776,24 +767,22 @@ const DEFAULT_TRANSACTIONS = [
     type: 'debit',
     frequency: 'monthly',
     date: '2026-10-06',
-    family: 'Electricity',
-    category: 'Office Bill',
+    family: 'En Rent',
     amount: 245.50,
     person: 'Ate Rachel',
-    refInvoice: 'ELEC-2026-10',
-    remark: 'Eagles Nest Central Office',
+    refInvoice: 'RENT-2026-10',
+    remark: 'Eagles Nest Central Office Rent',
     updatedAt: Date.now() - 86400000 * 17
   },
   {
     id: 'tx_104',
     type: 'debit',
-    frequency: 'monthly',
+    frequency: 'daily',
     date: '2026-10-08',
-    family: 'Water',
-    category: 'Running Water',
+    family: 'Petty Cash',
     amount: 45.00,
-    refInvoice: 'WATER-9921',
-    remark: 'Water dispenser & office',
+    refInvoice: 'PC-9921',
+    remark: 'Office supplies & drinking water',
     updatedAt: Date.now() - 86400000 * 15
   },
   {
@@ -801,11 +790,10 @@ const DEFAULT_TRANSACTIONS = [
     type: 'debit',
     frequency: 'daily',
     date: '2026-10-12',
-    family: 'Transportation',
-    category: 'Van Rental',
+    family: 'Community Service',
     amount: 320.00,
-    refInvoice: 'VAN-RENT-04',
-    remark: 'Province outreach mission',
+    refInvoice: 'CS-RENT-04',
+    remark: 'Community outreach mission',
     updatedAt: Date.now() - 86400000 * 12
   },
   {
@@ -813,11 +801,10 @@ const DEFAULT_TRANSACTIONS = [
     type: 'debit',
     frequency: 'daily',
     date: '2026-10-15',
-    family: 'Transportation',
-    category: 'Fuel / Gasoline',
-    amount: 85.00,
-    refInvoice: 'TELA-5412',
-    remark: 'Fuel Van 1 & 2',
+    family: 'Alalayang Agila',
+    amount: 185.00,
+    refInvoice: 'AA-5412',
+    remark: 'Medical emergency aid for brother eagle',
     updatedAt: Date.now() - 86400000 * 10
   },
   {
@@ -825,11 +812,10 @@ const DEFAULT_TRANSACTIONS = [
     type: 'debit',
     frequency: 'daily',
     date: '2026-10-18',
-    family: 'Food & Catering',
-    category: 'Member Meals',
+    family: 'Sharing of SCLEG',
     amount: 210.00,
-    refInvoice: 'RESTO-88',
-    remark: 'Monthly committee dinner',
+    refInvoice: 'SCLEG-88',
+    remark: 'Regional council sharing',
     updatedAt: Date.now() - 86400000 * 7
   },
   {
@@ -838,8 +824,8 @@ const DEFAULT_TRANSACTIONS = [
     frequency: 'daily',
     date: '2026-10-22',
     amount: 850.00,
-    reason: 'Jerseys & Merchandising',
-    remark: 'Red B2 Jerseys Election EY-2027',
+    reason: 'Voluntary Donation',
+    remark: 'Fundraising Voluntary Donation',
     updatedAt: Date.now() - 86400000 * 4
   },
   {
@@ -847,131 +833,42 @@ const DEFAULT_TRANSACTIONS = [
     type: 'debit',
     frequency: 'daily',
     date: '2026-10-25',
-    family: 'Venue & Reception',
-    category: 'Reception Hall',
+    family: 'Community Service',
     amount: 450.00,
-    refInvoice: 'HALL-2026-25',
-    remark: 'General Assembly Hall rental',
+    refInvoice: 'CS-2026-25',
+    remark: 'Feeding program supplies',
     updatedAt: Date.now() - 86400000 * 1
   }
 ];
 
 const FAMILIES_TRANSLATION = {
   fr: {
-    'Electricity': 'ElectricitÃ©',
-    'Water': 'Eau',
-    'Food & Catering': 'Alimentation',
-    'Venue & Reception': 'RÃ©ception',
-    'Transportation': 'Transport',
-    'Social Actions & Charity': 'Actions Sociales & Dons',
-    'Communication & Banners': 'Communication & BanniÃ¨res',
-    'Administration & Operations': 'Administration & Frais',
-    'Office Bill': 'Facture bureau',
-    'Air Conditioning': 'Climatisation',
-    'Electrical Maintenance': 'Maintenance Ã©lectrique',
-    'Running Water': 'Eau courante',
-    'Meeting Bottled Water': 'Eau minÃ©rale rÃ©unions',
-    'Water Filters': 'Filtres',
-    'Member Meals': 'Repas membres',
-    'Meeting Snacks': 'Collation rÃ©unions',
-    'Event Catering': 'Restauration Ã©vÃ©nements',
-    'Reception Hall': 'Salle de rÃ©ception',
-    'Decoration': 'DÃ©coration',
-    'Catering Service': 'Traiteur',
-    'Sound System': 'Sonorisation',
-    'Fuel / Gasoline': 'Essence',
-    'Van Rental': 'Location Van',
-    'Toll Fees': 'Frais pÃ©age',
-    'Vehicle Maintenance': 'Entretien vÃ©hicule',
-    'Humanitarian Relief': 'Aide humanitaire',
-    'Scholarships': 'Bourses scolaires',
-    'Emergency Aid': 'Secours d\'urgence',
-    'Tarpaulin Printing': 'Impression bÃ¢ches',
-    'Eagles Banners': 'BanniÃ¨res Eagles',
-    'Jerseys & T-shirts': 'Jerseys & T-shirts',
-    'Office Supplies': 'Fournitures bureau',
-    'Bank Fees': 'Frais bancaires',
-    '5G / Wi-Fi Internet': 'Connexion 5G/Wi-Fi',
+    'Alalayang Agila': 'Alalayang Agila',
+    'Community Service': 'Community Service',
+    'En Rent': 'En Rent',
+    'Monthly dues': 'Monthly dues',
+    'Petty Cash': 'Petty Cash',
+    'Sharing of SCLEG': 'Sharing of SCLEG',
+    'Voluntary Donation': 'Voluntary Donation',
     'Membership Dues': 'Cotisations membres',
-    'Donations & Benefactors': 'Dons & MÃ©cÃ¨nes',
-    'Jerseys & Merchandising': 'Jerseys & Produits dÃ©rivÃ©s',
-    'General': 'GÃ©nÃ©ral',
+    'Donations & Benefactors': 'Dons & Mécènes',
+    'Jerseys & Merchandising': 'Jerseys & Produits dérivés',
+    'General': 'Général',
     'Other Income': 'Autre recette'
   },
   en: {
-    'ElectricitÃ©': 'Electricity',
-    'Electricite': 'Electricity',
-    'Electricit': 'Electricity',
-    'Eau': 'Water',
-    'Alimentation': 'Food & Catering',
-    'RÃ©ception': 'Venue & Reception',
-    'Reception': 'Venue & Reception',
-    'Rception': 'Venue & Reception',
-    'Transport': 'Transportation',
-    'Actions Sociales & Dons': 'Social Actions & Charity',
-    'Communication & BanniÃ¨res': 'Communication & Banners',
-    'Communication & Bannires': 'Communication & Banners',
-    'Communication & Bannieres': 'Communication & Banners',
-    'Administration & Frais': 'Administration & Operations',
-    'Facture bureau': 'Office Bill',
-    'Climatisation': 'Air Conditioning',
-    'Maintenance Ã©lectrique': 'Electrical Maintenance',
-    'Maintenance lectrique': 'Electrical Maintenance',
-    'Maintenance electrique': 'Electrical Maintenance',
-    'Eau courante': 'Running Water',
-    'Eau minÃ©rale rÃ©unions': 'Meeting Bottled Water',
-    'Eau minrale runions': 'Meeting Bottled Water',
-    'Eau minerale reunions': 'Meeting Bottled Water',
-    'Filtres': 'Water Filters',
-    'Repas membres': 'Member Meals',
-    'Collation rÃ©unions': 'Meeting Snacks',
-    'Collation runions': 'Meeting Snacks',
-    'Collation reunions': 'Meeting Snacks',
-    'Restauration Ã©vÃ©nements': 'Event Catering',
-    'Restauration vnements': 'Event Catering',
-    'Restauration evenements': 'Event Catering',
-    'Salle de rÃ©ception': 'Reception Hall',
-    'Salle de rception': 'Reception Hall',
-    'Salle de reception': 'Reception Hall',
-    'DÃ©coration': 'Decoration',
-    'Dcoration': 'Decoration',
-    'Decoration': 'Decoration',
-    'Traiteur': 'Catering Service',
-    'Sound System': 'Sound System',
-    'Essence': 'Fuel / Gasoline',
-    'Location Van': 'Van Rental',
-    'Frais pÃ©age': 'Toll Fees',
-    'Frais page': 'Toll Fees',
-    'Frais peage': 'Toll Fees',
-    'Entretien vÃ©hicule': 'Vehicle Maintenance',
-    'Entretien vhicule': 'Vehicle Maintenance',
-    'Entretien vehicule': 'Vehicle Maintenance',
-    'Aide humanitaire': 'Humanitarian Relief',
-    'Bourses scolaires': 'Scholarships',
-    'Secours d\'urgence': 'Emergency Aid',
-    'Impression bÃ¢ches': 'Tarpaulin Printing',
-    'Impression bches': 'Tarpaulin Printing',
-    'Impression baches': 'Tarpaulin Printing',
-    'BanniÃ¨res Eagles': 'Eagles Banners',
-    'Bannires Eagles': 'Eagles Banners',
-    'Bannieres Eagles': 'Eagles Banners',
-    'Fournitures bureau': 'Office Supplies',
-    'Frais bancaires': 'Bank Fees',
-    'Connexion 5G/Wi-Fi': '5G / Wi-Fi Internet',
-    'Cotisations membres': 'Membership Dues',
-    'Dons & MÃ©cÃ¨nes': 'Donations & Benefactors',
-    'Dons & Mcnes': 'Donations & Benefactors',
-    'Dons & Mecenes': 'Donations & Benefactors',
-    'Jerseys & Produits dÃ©rivÃ©s': 'Jerseys & Merchandising',
-    'Jerseys & Produits drivs': 'Jerseys & Merchandising',
-    'Jerseys & Produits derives': 'Jerseys & Merchandising',
-    'GÃ©nÃ©ral': 'General',
-    'Gneral': 'General',
+    'Alalayang Agila': 'Alalayang Agila',
+    'Community Service': 'Community Service',
+    'En Rent': 'En Rent',
+    'Monthly dues': 'Monthly dues',
+    'Petty Cash': 'Petty Cash',
+    'Sharing of SCLEG': 'Sharing of SCLEG',
+    'Voluntary Donation': 'Voluntary Donation',
+    'Membership Dues': 'Membership Dues',
+    'Donations & Benefactors': 'Donations & Benefactors',
+    'Jerseys & Merchandising': 'Jerseys & Merchandising',
     'General': 'General',
-    'Autre recette': 'Other Income',
-    'Ã‰vÃ©nement caritatif': 'Fundraising Event',
-    'Subventions organisme': 'Organization Grants',
-    'Remboursement avance': 'Advance Refund'
+    'Other Income': 'Other Income'
   }
 };
 
@@ -1426,7 +1323,7 @@ function RachelEaglesApp() {
 
   const [families, setFamilies] = useState(() => {
     try {
-      const migKey = 'RE_LANG_MIG_V7_EN';
+      const migKey = 'RE_LANG_MIG_V9_NO_CAT';
       if (localStorage.getItem(migKey) !== 'ready') {
         localStorage.setItem(migKey, 'ready');
         localStorage.setItem('RE_FAMILIES', JSON.stringify(DEFAULT_FAMILIES));
@@ -1442,7 +1339,7 @@ function RachelEaglesApp() {
 
   const [transactions, setTransactions] = useState(() => {
     try {
-      const migKey = 'RE_LANG_MIG_V7_EN';
+      const migKey = 'RE_LANG_MIG_V9_NO_CAT';
       if (localStorage.getItem(migKey) !== 'ready') {
         return DEFAULT_TRANSACTIONS;
       }
@@ -1644,13 +1541,10 @@ function RachelEaglesApp() {
   };
 
   // ==========================================================================
-  // MODALES D'AJOUT FAMILLE, CATÉGORIE & PERSONNE (In-App React Popups)
+  // MODALES D'AJOUT FAMILLE & PERSONNE (In-App React Popups)
   // ==========================================================================
   const [isAddFamilyModalOpen, setIsAddFamilyModalOpen] = useState(false);
   const [newFamilyInput, setNewFamilyInput] = useState('');
-  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
-  const [newCategoryInput, setNewCategoryInput] = useState('');
-  const [targetFamilyForCategory, setTargetFamilyForCategory] = useState('');
 
   // Modale d'ajout de personne / membre
   const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
@@ -1673,51 +1567,18 @@ function RachelEaglesApp() {
 
     const existing = families.find(f => f.name.toLowerCase() === name.toLowerCase());
     if (existing) {
-      setDebitForm(p => ({ ...p, family: existing.name, category: existing.categories[0] || '' }));
+      setDebitForm(p => ({ ...p, family: existing.name }));
       setIsAddFamilyModalOpen(false);
       setNewFamilyInput('');
       return;
     }
 
-    const newFam = { id: 'fam_' + Date.now(), name: name, categories: ['General'] };
+    const newFam = { id: 'fam_' + Date.now(), name: name };
     const updated = [...families, newFam];
     setFamilies(updated);
-    setDebitForm(p => ({ ...p, family: name, category: 'General' }));
+    setDebitForm(p => ({ ...p, family: name }));
     setIsAddFamilyModalOpen(false);
     setNewFamilyInput('');
-    showToast(t.saveSuccess);
-  };
-
-  const handleOpenAddCategory = (famName) => {
-    const parentFam = famName || debitForm.family;
-    if (!parentFam) {
-      alert(lang === 'fr' ? "Veuillez d'abord sélectionner une famille." : "Please select a family first.");
-      return;
-    }
-    setTargetFamilyForCategory(parentFam);
-    setNewCategoryInput('');
-    setIsAddCategoryModalOpen(true);
-  };
-
-  const handleConfirmAddCategory = (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-    const catName = newCategoryInput.trim();
-    if (!catName || !targetFamilyForCategory) return;
-
-    const updated = families.map(f => {
-      if (f.name === targetFamilyForCategory) {
-        const cats = f.categories.includes(catName) ? f.categories : [...f.categories, catName];
-        return { ...f, categories: cats };
-      }
-      return f;
-    });
-
-    setFamilies(updated);
-    if (debitForm.family === targetFamilyForCategory) {
-      setDebitForm(p => ({ ...p, category: catName }));
-    }
-    setIsAddCategoryModalOpen(false);
-    setNewCategoryInput('');
     showToast(t.saveSuccess);
   };
 
@@ -1756,7 +1617,6 @@ function RachelEaglesApp() {
     frequency: 'daily',
     date: '',
     family: '',
-    category: '',
     amount: '',
     person: '',
     refInvoice: '',
@@ -1766,8 +1626,7 @@ function RachelEaglesApp() {
   const handleFamilyChange = (famName) => {
     setDebitForm(prev => ({
       ...prev,
-      family: famName,
-      category: ''
+      family: famName
     }));
   };
 
@@ -1779,10 +1638,6 @@ function RachelEaglesApp() {
     }
     if (!debitForm.family) {
       alert(t.alertChooseFamily || (lang === 'fr' ? "Veuillez choisir ou créer une famille de dépense." : "Please select or create an expense family."));
-      return;
-    }
-    if (!debitForm.category) {
-      alert(t.alertChooseCategory || (lang === 'fr' ? "Veuillez sélectionner une catégorie." : "Please select a category."));
       return;
     }
     const amt = parseFloat(debitForm.amount);
@@ -1799,7 +1654,6 @@ function RachelEaglesApp() {
             frequency: debitForm.frequency,
             date: debitForm.date,
             family: debitForm.family,
-            category: debitForm.category,
             amount: amt,
             person: debitForm.person ? debitForm.person.trim() : '',
             refInvoice: debitForm.refInvoice.trim(),
@@ -1817,7 +1671,6 @@ function RachelEaglesApp() {
         frequency: debitForm.frequency,
         date: debitForm.date,
         family: debitForm.family,
-        category: debitForm.category,
         amount: amt,
         person: debitForm.person ? debitForm.person.trim() : '',
         refInvoice: debitForm.refInvoice.trim(),
@@ -1837,7 +1690,6 @@ function RachelEaglesApp() {
       frequency: 'daily',
       date: '',
       family: '',
-      category: '',
       amount: '',
       person: '',
       refInvoice: '',
@@ -1988,7 +1840,6 @@ function RachelEaglesApp() {
   const [statsFilterMonth, setStatsFilterMonth] = useState(() => String(new Date().getMonth() + 1).padStart(2, '0'));
   const [statsFilterType, setStatsFilterType] = useState('all'); // 'all', 'debit', 'credit'
   const [statsFilterFamily, setStatsFilterFamily] = useState('all');
-  const [statsFilterCategory, setStatsFilterCategory] = useState('all');
   const [statsFilterPerson, setStatsFilterPerson] = useState('all');
 
   const filteredStatsTransactions = useMemo(() => {
@@ -2014,12 +1865,7 @@ function RachelEaglesApp() {
         if (tx.family !== statsFilterFamily) return false;
       }
 
-      // 4. Filtrage Catégorie
-      if (statsFilterCategory !== 'all') {
-        if (tx.category !== statsFilterCategory) return false;
-      }
-
-      // 5. Filtrage Personne / Membre
+      // 4. Filtrage Personne / Membre
       if (statsFilterPerson !== 'all') {
         if (tx.person !== statsFilterPerson) return false;
       }
@@ -2036,7 +1882,6 @@ function RachelEaglesApp() {
     statsFilterMonth,
     statsFilterType,
     statsFilterFamily,
-    statsFilterCategory,
     statsFilterPerson
   ]);
 
@@ -2061,11 +1906,10 @@ function RachelEaglesApp() {
     if (statsFilterType === 'credit') parts.push(lang === 'fr' ? "Crédits" : "Credits");
 
     if (statsFilterFamily !== 'all') parts.push(`${lang === 'fr' ? 'Famille' : 'Family'}: ${statsFilterFamily}`);
-    if (statsFilterCategory !== 'all') parts.push(`${lang === 'fr' ? 'Catégorie' : 'Category'}: ${statsFilterCategory}`);
     if (statsFilterPerson !== 'all') parts.push(`${lang === 'fr' ? 'Membre' : 'Member'}: ${statsFilterPerson}`);
 
     return parts.join(' • ');
-  }, [lang, statsFilterMode, statsFilterDateSingle, statsFilterDateFrom, statsFilterDateTo, statsFilterYear, statsFilterMonth, statsFilterType, statsFilterFamily, statsFilterCategory, statsFilterPerson]);
+  }, [lang, statsFilterMode, statsFilterDateSingle, statsFilterDateFrom, statsFilterDateTo, statsFilterYear, statsFilterMonth, statsFilterType, statsFilterFamily, statsFilterPerson]);
 
   const filteredJournalTransactions = filteredStatsTransactions;
 
@@ -2242,7 +2086,7 @@ function RachelEaglesApp() {
   <table>
     <thead><tr><th>${t.date}</th><th>${t.type}</th><th>${t.pdfFamCol}</th><th>${t.pdfRefCol}</th><th>${t.amount}</th></tr></thead>
     <tbody>
-      ${txToSave.map(tItem => `<tr><td>${tItem.date}</td><td>${tItem.type.toUpperCase()}</td><td>${tItem.family || ''} ${tItem.category ? '- ' + tItem.category : ''} ${tItem.reason || ''}</td><td>${tItem.refInvoice || ''}</td><td class="${tItem.type}">$ ${Number(tItem.amount).toFixed(2)}</td></tr>`).join('')}
+      ${txToSave.map(tItem => `<tr><td>${tItem.date}</td><td>${tItem.type.toUpperCase()}</td><td>${tItem.family || ''} ${tItem.reason || ''}</td><td>${tItem.refInvoice || ''}</td><td class="${tItem.type}">$ ${Number(tItem.amount).toFixed(2)}</td></tr>`).join('')}
     </tbody>
   </table>
 </body>
@@ -2738,62 +2582,6 @@ function RachelEaglesApp() {
         </div>
       )}
 
-      {/* MODAL NOUVELLE CATÃ‰GORIE */}
-      {isAddCategoryModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
-            <div className="bg-blue-900 text-white p-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <i className="fa-solid fa-tag text-amber-400 text-lg"></i>
-                <h3 className="font-bold text-base">
-                  {t.modalNewCategoryTitle} ({formatItemLabel(targetFamilyForCategory, lang)})
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddCategoryModalOpen(false)}
-                className="text-white/70 hover:text-white p-1 rounded-lg"
-              >
-                <i className="fa-solid fa-xmark text-lg"></i>
-              </button>
-            </div>
-
-            <form onSubmit={handleConfirmAddCategory} className="p-5 space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
-                  {t.modalCategoryNameLabel}
-                </label>
-                <input
-                  type="text"
-                  autoFocus
-                  required
-                  value={newCategoryInput}
-                  onChange={(e) => setNewCategoryInput(e.target.value)}
-                  placeholder={t.inputCategoryPlaceholder}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-800 focus:outline-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddCategoryModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs sm:text-sm transition"
-                >
-                  {t.btnCancel}
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-blue-800 hover:bg-blue-900 text-white font-bold rounded-xl text-xs sm:text-sm shadow-md transition flex items-center gap-1.5"
-                >
-                  <i className="fa-solid fa-check"></i>
-                  <span>{t.btnAddConfirm}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* MODAL NOUVELLE PERSONNE / MEMBRE */}
       {isAddPersonModalOpen && (
@@ -3167,7 +2955,7 @@ function RachelEaglesApp() {
                         <td className="font-medium text-slate-800">
                           {tx.type === 'debit' ? (
                             <div>
-                              <div>{formatItemLabel(tx.family, lang)} <span className="text-slate-400">&rsaquo;</span> {formatItemLabel(tx.category, lang)}</div>
+                              <div>{formatItemLabel(tx.family, lang)}</div>
                               {tx.person && (
                                 <div className="text-[11px] text-blue-800 font-semibold mt-0.5 flex items-center gap-1">
                                   <i className="fa-solid fa-user text-[9px] text-slate-400"></i>
@@ -3262,7 +3050,7 @@ function RachelEaglesApp() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <div className="flex justify-between items-center mb-1.5">
-                      <label className="text-xs font-bold uppercase text-slate-600">{t.family}</label>
+                      <label className="text-xs font-bold uppercase text-slate-600">{t.family} *</label>
                       <button
                         type="button"
                         onClick={handleOpenAddFamily}
@@ -3285,32 +3073,6 @@ function RachelEaglesApp() {
                   </div>
 
                   <div>
-                    <div className="flex justify-between items-center mb-1.5">
-                      <label className="text-xs font-bold uppercase text-slate-600">{t.category}</label>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenAddCategory(debitForm.family)}
-                        className="text-[11px] text-blue-700 hover:underline font-bold flex items-center gap-1"
-                      >
-                        <i className="fa-solid fa-plus text-[10px]"></i>
-                        <span>{t.btnAddCategory}</span>
-                      </button>
-                    </div>
-                    <select
-                      value={debitForm.category}
-                      onChange={(e) => setDebitForm(p => ({ ...p, category: e.target.value }))}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-600 focus:outline-none"
-                    >
-                      <option value="">{t.selectCategoryPlaceholder}</option>
-                      {(families.find(f => f.name === debitForm.family)?.categories || []).slice().sort((a, b) => formatItemLabel(a, lang).localeCompare(formatItemLabel(b, lang), undefined, { sensitivity: 'base' })).map((cat, idx) => (
-                        <option key={idx} value={cat}>{formatItemLabel(cat, lang)}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">{t.amount} *</label>
                     <div className="relative">
                       <span className="absolute left-3 top-2.5 font-bold text-slate-400 text-sm">$</span>
@@ -3326,7 +3088,9 @@ function RachelEaglesApp() {
                       />
                     </div>
                   </div>
+                </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <div className="flex justify-between items-center mb-1.5">
                       <label className="text-xs font-bold uppercase text-slate-600">
@@ -3352,9 +3116,7 @@ function RachelEaglesApp() {
                       ))}
                     </select>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">{t.refInvoice}</label>
                     <input
@@ -3365,17 +3127,17 @@ function RachelEaglesApp() {
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-600 focus:outline-none"
                     />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">{t.remark}</label>
-                    <input
-                      type="text"
-                      value={debitForm.remark}
-                      onChange={(e) => setDebitForm(p => ({ ...p, remark: e.target.value }))}
-                      placeholder={t.placeholderRemark}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-600 focus:outline-none"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">{t.remark}</label>
+                  <input
+                    type="text"
+                    value={debitForm.remark}
+                    onChange={(e) => setDebitForm(p => ({ ...p, remark: e.target.value }))}
+                    placeholder={t.placeholderRemark}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-600 focus:outline-none"
+                  />
                 </div>
 
                 <div className="flex items-center gap-3 pt-3">
@@ -3394,7 +3156,6 @@ function RachelEaglesApp() {
                       frequency: 'daily',
                       date: '',
                       family: '',
-                      category: '',
                       amount: '',
                       person: '',
                       refInvoice: '',
@@ -3426,7 +3187,6 @@ function RachelEaglesApp() {
                       <th className="whitespace-nowrap">{t.colDate || t.date}</th>
                       <th className="whitespace-nowrap text-center">{t.colFrequency || t.frequency}</th>
                       <th>{t.colFamily || t.family}</th>
-                      <th>{t.colCategory || t.category}</th>
                       <th className="whitespace-nowrap">{t.colPerson}</th>
                       <th className="whitespace-nowrap">{t.colRef || t.refInvoice}</th>
                       <th>{t.colRemark || t.remark}</th>
@@ -3444,7 +3204,6 @@ function RachelEaglesApp() {
                           </span>
                         </td>
                         <td className="font-bold text-slate-800">{formatItemLabel(tx.family, lang)}</td>
-                        <td className="text-slate-600">{formatItemLabel(tx.category, lang)}</td>
                         <td className="text-xs font-semibold text-slate-700 whitespace-nowrap">
                           {tx.person ? (
                             <span className="inline-flex items-center gap-1 text-blue-900 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 font-medium">
@@ -3466,7 +3225,6 @@ function RachelEaglesApp() {
                                 frequency: tx.frequency || 'daily',
                                 date: tx.date,
                                 family: tx.family,
-                                category: tx.category,
                                 amount: tx.amount,
                                 person: tx.person || '',
                                 refInvoice: tx.refInvoice || '',
@@ -3753,7 +3511,7 @@ function RachelEaglesApp() {
         )}
 
         {/* ==================================================================== */}
-        {/* ONGLET 4 : GESTION DES FAMILLES & CATÉGORIES */}
+        {/* ONGLET 4 : GESTION DES FAMILLES & MEMBRES */}
         {/* ==================================================================== */}
         {currentTab === 'categories' && (
           <div className="space-y-6 fade-in">
@@ -3765,8 +3523,8 @@ function RachelEaglesApp() {
                 </h2>
                 <p className="text-xs text-slate-500 mt-1">
                   {lang === 'fr'
-                    ? "Créez et organisez vos familles de dépenses (ex: Electricité, Eau, Alimentation) et leurs catégories (ex: essence, location Van)."
-                    : "Create and organize your expense families (e.g. Electricity, Water, Food) and their categories (e.g. fuel, Van rental)."}
+                    ? "Gérez les familles de dépenses officielles de RachelEagles classées par ordre alphabétique."
+                    : "Manage RachelEagles official expense families sorted in alphabetical order."}
                 </p>
               </div>
 
@@ -3780,71 +3538,52 @@ function RachelEaglesApp() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {sortedFamilies.map(fam => (
-                <div key={fam.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-amber-500"></span>
-                      <h3 className="font-extrabold text-slate-800 text-base">{formatItemLabel(fam.name, lang)}</h3>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => {
-                          const n = prompt(t.promptRenameFamily, formatItemLabel(fam.name, lang));
-                          if (n && n.trim() && n.trim() !== fam.name) {
-                            setFamilies(prev => prev.map(f => f.id === fam.id ? { ...f, name: n.trim() } : f));
-                            setTransactions(prev => prev.map(tx => tx.family === fam.name ? { ...tx, family: n.trim() } : tx));
-                          }
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-blue-700 rounded-md"
-                        title={t.btnRenameFamily}
-                      >
-                        <i className="fa-solid fa-pen text-xs"></i>
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(t.confirmDeleteFamily)) {
-                            setFamilies(prev => prev.filter(f => f.id !== fam.id));
-                          }
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-red-600 rounded-md"
-                        title={t.btnDeleteFamily}
-                      >
-                        <i className="fa-solid fa-trash-can text-xs"></i>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1.5">
-                    {[...fam.categories].sort((a, b) => formatItemLabel(a, lang).localeCompare(formatItemLabel(b, lang), undefined, { sensitivity: 'base' })).map((cat, idx) => (
-                      <span key={idx} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs rounded-lg font-medium border border-slate-200">
-                        <span>{formatItemLabel(cat, lang)}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sortedFamilies.map(fam => {
+                const famDebits = transactions.filter(tx => tx.type === 'debit' && tx.family === fam.name);
+                const famTotal = famDebits.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+                return (
+                  <div key={fam.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-amber-500"></span>
+                        <h3 className="font-extrabold text-slate-800 text-base">{formatItemLabel(fam.name, lang)}</h3>
+                      </div>
+                      <div className="flex items-center gap-1">
                         <button
                           onClick={() => {
-                            if (confirm(t.confirmDeleteCategory)) {
-                              setFamilies(prev => prev.map(f => f.id === fam.id ? { ...f, categories: f.categories.filter(c => c !== cat) } : f));
+                            const n = prompt(t.promptRenameFamily, formatItemLabel(fam.name, lang));
+                            if (n && n.trim() && n.trim() !== fam.name) {
+                              setFamilies(prev => prev.map(f => f.id === fam.id ? { ...f, name: n.trim() } : f));
+                              setTransactions(prev => prev.map(tx => tx.family === fam.name ? { ...tx, family: n.trim() } : tx));
                             }
                           }}
-                          className="text-slate-400 hover:text-red-600 text-[10px]"
-                          title={t.btnDeleteCategory}
+                          className="p-1.5 text-slate-400 hover:text-blue-700 rounded-md"
+                          title={t.btnRenameFamily}
                         >
-                          &times;
+                          <i className="fa-solid fa-pen text-xs"></i>
                         </button>
-                      </span>
-                    ))}
-                  </div>
+                        <button
+                          onClick={() => {
+                            if (confirm(t.confirmDeleteFamily)) {
+                              setFamilies(prev => prev.filter(f => f.id !== fam.id));
+                            }
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-red-600 rounded-md"
+                          title={t.btnDeleteFamily}
+                        >
+                          <i className="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                      </div>
+                    </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleOpenAddCategory(fam.name)}
-                    className="text-xs text-blue-700 font-bold hover:underline flex items-center gap-1 pt-1"
-                  >
-                    <i className="fa-solid fa-plus text-[10px]"></i>
-                    <span>{t.btnAddCategory}</span>
-                  </button>
-                </div>
-              ))}
+                    <div className="flex items-center justify-between text-xs text-slate-600">
+                      <span>{famDebits.length} {lang === 'fr' ? 'écriture(s)' : 'transaction(s)'}</span>
+                      <span className="font-bold text-red-600">{formatUSD(famTotal)}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* SECTION GESTION DES MEMBRES & PERSONNES */}
@@ -3926,9 +3665,8 @@ function RachelEaglesApp() {
                 { id: 'view1', label: t.statView1, icon: 'fa-table-list' },
                 { id: 'view2', label: t.statView2, icon: 'fa-chart-pie' },
                 { id: 'view3', label: t.statView3, icon: 'fa-layer-group' },
-                { id: 'view4', label: t.statView4, icon: 'fa-sitemap' },
-                { id: 'view5', label: t.statView5, icon: 'fa-sliders' },
-                { id: 'view6', label: t.statView6, icon: 'fa-chart-line' }
+                { id: 'view5', label: t.statView4, icon: 'fa-sliders' },
+                { id: 'view6', label: t.statView5, icon: 'fa-chart-line' }
               ].map(v => (
                 <button
                   key={v.id}
@@ -3956,14 +3694,13 @@ function RachelEaglesApp() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {(statsFilterMode !== 'all' || statsFilterType !== 'all' || statsFilterFamily !== 'all' || statsFilterCategory !== 'all' || statsFilterPerson !== 'all') && (
+                  {(statsFilterMode !== 'all' || statsFilterType !== 'all' || statsFilterFamily !== 'all' || statsFilterPerson !== 'all') && (
                     <button
                       type="button"
                       onClick={() => {
                         setStatsFilterMode('all');
                         setStatsFilterType('all');
                         setStatsFilterFamily('all');
-                        setStatsFilterCategory('all');
                         setStatsFilterPerson('all');
                       }}
                       className="text-xs text-red-600 hover:text-red-800 font-bold flex items-center gap-1 transition"
@@ -3977,10 +3714,10 @@ function RachelEaglesApp() {
                     type="button"
                     onClick={() => {
                       triggerOfficialPdfExport(
-                        `${t.navStats} - ${statSubView === 'view1' ? t.statView1 : statSubView === 'view2' ? t.statView2 : statSubView === 'view3' ? t.statView3 : statSubView === 'view4' ? t.statView4 : t.statView5}`,
+                        `${t.navStats} - ${statSubView === 'view1' ? t.statView1 : statSubView === 'view2' ? t.statView2 : statSubView === 'view3' ? t.statView3 : statSubView === 'view5' ? t.statView4 : t.statView5}`,
                         `${t.activeFilterBadge} ${activeFilterDescription}`,
                         filteredStatsTransactions,
-                        statSubView === 'view2' ? 'chart-view2-bar' : statSubView === 'view3' ? 'chart-view3-fam' : statSubView === 'view4' ? 'chart-view4-cat' : null
+                        statSubView === 'view2' ? 'chart-view2-bar' : statSubView === 'view3' ? 'chart-view3-fam' : null
                       );
                     }}
                     className="px-3.5 py-1.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition"
@@ -4099,8 +3836,8 @@ function RachelEaglesApp() {
                 )}
               </div>
 
-              {/* LIGNE 2 : SÉLECTEURS TYPE / FAMILLE / CATÉGORIE / PERSONNE */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 pt-1">
+              {/* LIGNE 2 : SÉLECTEURS TYPE / FAMILLE / PERSONNE */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">{t.filterTypeLabel}</label>
                   <select
@@ -4118,32 +3855,12 @@ function RachelEaglesApp() {
                   <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">{t.filterFamilyLabel}</label>
                   <select
                     value={statsFilterFamily}
-                    onChange={(e) => {
-                      setStatsFilterFamily(e.target.value);
-                      setStatsFilterCategory('all');
-                    }}
+                    onChange={(e) => setStatsFilterFamily(e.target.value)}
                     className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none"
                   >
                     <option value="all">{t.filterAllFamilies}</option>
                     {sortedFamilies.map(f => (
                       <option key={f.id} value={f.name}>{formatItemLabel(f.name, lang)}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">{t.filterCategoryLabel}</label>
-                  <select
-                    value={statsFilterCategory}
-                    onChange={(e) => setStatsFilterCategory(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none"
-                  >
-                    <option value="all">{t.filterAllCategories}</option>
-                    {(statsFilterFamily !== 'all'
-                      ? (families.find(f => f.name === statsFilterFamily)?.categories || [])
-                      : Array.from(new Set(families.flatMap(f => f.categories || []))).sort()
-                    ).map((c, i) => (
-                      <option key={i} value={c}>{formatItemLabel(c, lang)}</option>
                     ))}
                   </select>
                 </div>
@@ -4254,7 +3971,7 @@ function RachelEaglesApp() {
                             <td className="font-medium text-slate-800">
                               {tx.type === 'debit' ? (
                                 <div>
-                                  <div>{formatItemLabel(tx.family, lang)} <span className="text-slate-400">&rsaquo;</span> {formatItemLabel(tx.category, lang)}</div>
+                                  <div>{formatItemLabel(tx.family, lang)}</div>
                                 </div>
                               ) : (
                                 <div>
@@ -4333,18 +4050,6 @@ function RachelEaglesApp() {
               />
             )}
 
-            {/* VUE 4 : RÉPARTITION PAR CATÉGORIE */}
-            {statSubView === 'view4' && (
-              <StatView4Component
-                transactions={filteredStatsTransactions}
-                activeFilterDescription={activeFilterDescription}
-                families={families}
-                formatUSD={formatUSD}
-                triggerOfficialPdfExport={triggerOfficialPdfExport}
-                t={t}
-                lang={lang}
-              />
-            )}
 
             {/* VUE 5 : DONNÉES CHOISIES (SUR-MESURE) */}
             {statSubView === 'view5' && (
@@ -4771,7 +4476,7 @@ function RachelEaglesApp() {
                       {tx.type === 'credit' ? t.credit.toUpperCase() : t.debit.toUpperCase()}
                     </td>
                     <td style={{ padding: '5px 8px' }}>
-                      {tx.type === 'debit' ? `${tx.family} > ${tx.category}` : tx.reason}
+                      {tx.type === 'debit' ? formatItemLabel(tx.family, lang) : formatItemLabel(tx.reason, lang)}
                     </td>
                     <td style={{ padding: '5px 8px', color: '#64748b' }}>{tx.refInvoice || '-'}</td>
                     <td style={{ padding: '5px 8px', color: '#64748b', fontStyle: 'italic' }}>{tx.remark || '-'}</td>
@@ -5485,208 +5190,6 @@ function StatView3Component({ transactions, activeFilterDescription, families, f
 }
 
 // ============================================================================
-// COMPOSANT VUE 4 : RÉPARTITION PAR CATÉGORIE
-// ============================================================================
-function StatView4Component({ transactions, activeFilterDescription, families, formatUSD, triggerOfficialPdfExport, t, lang }) {
-  const [displayMode, setDisplayMode] = useState('amount'); // 'amount' | 'percent'
-  const isFr = lang === 'fr';
-  const catCanvasRef = useRef(null);
-  const catChartInstance = useRef(null);
-
-  const totalDebits = useMemo(() => {
-    return transactions.filter(tItem => tItem.type === 'debit').reduce((s, tItem) => s + (Number(tItem.amount) || 0), 0);
-  }, [transactions]);
-
-  const catStats = useMemo(() => {
-    const map = {};
-    transactions.filter(tItem => tItem.type === 'debit' && tItem.category).forEach(tx => {
-      const key = `${formatItemLabel(tx.category, lang)} (${formatItemLabel(tx.family, lang) || ''})`;
-      map[key] = (map[key] || 0) + (Number(tx.amount) || 0);
-    });
-
-    const labels = Object.keys(map).sort((a, b) => map[b] - map[a]);
-    const values = labels.map(l => map[l]);
-    const percentages = labels.map(l => totalDebits > 0 ? Number(((map[l] / totalDebits) * 100).toFixed(1)) : 0);
-
-    return { labels, values, percentages };
-  }, [transactions, totalDebits, lang]);
-
-  const [chartReady, setChartReady] = useState(() => typeof window !== 'undefined' && !!window.Chart);
-
-  useEffect(() => {
-    if (chartReady) return;
-    const interval = setInterval(() => {
-      if (typeof window !== 'undefined' && window.Chart) {
-        setChartReady(true);
-        clearInterval(interval);
-      }
-    }, 100);
-    const timeout = setTimeout(() => clearInterval(interval), 4000);
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, [chartReady]);
-
-  useEffect(() => {
-    if (!window.Chart || !catCanvasRef.current) return;
-
-    try {
-      if (catChartInstance.current) {
-        try { catChartInstance.current.destroy(); } catch (_) {}
-        catChartInstance.current = null;
-      }
-      if (window.Chart.getChart) {
-        try {
-          const ex = window.Chart.getChart(catCanvasRef.current);
-          if (ex) ex.destroy();
-        } catch (_) {}
-      }
-
-      const ctx = catCanvasRef.current.getContext('2d');
-      const unitLabel = displayMode === 'amount' ? '($ USD)' : '(%)';
-      const chartData = displayMode === 'amount' ? catStats.values : catStats.percentages;
-
-      catChartInstance.current = new window.Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: catStats.labels,
-          datasets: [
-            {
-              label: `${t.debit} ${unitLabel}`,
-              data: chartData,
-              backgroundColor: '#0284c7'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const idx = context.dataIndex;
-                  const amt = catStats.values[idx];
-                  const pct = catStats.percentages[idx];
-                  return ` ${formatUSD(amt)} (${pct}%)`;
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              ticks: {
-                callback: function(value) {
-                  return displayMode === 'amount' ? `$ ${value}` : `${value} %`;
-                }
-              }
-            }
-          }
-        }
-      });
-    } catch (err) {
-      console.warn("Chart render warning in StatView4:", err);
-    }
-
-    return () => {
-      if (catChartInstance.current) {
-        try { catChartInstance.current.destroy(); } catch (_) {}
-        catChartInstance.current = null;
-      }
-    };
-  }, [chartReady, catStats, displayMode, lang]);
-
-  return (
-    <div className="space-y-6 fade-in">
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-bold text-slate-800 text-sm uppercase">{t.categoryBreakdownTitle}</h3>
-            <span className="text-xs font-bold text-amber-700">
-              ({displayMode === 'amount' ? t.inAmounts : t.inPercentages})
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {t.activeFilterBadge} {activeFilterDescription}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Toggle Montant / Pourcentage */}
-          <div className="flex items-center gap-1.5 bg-slate-100 p-0.5 rounded-lg border border-slate-300 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => setDisplayMode('amount')}
-              className={`px-3 py-1 rounded-md transition ${
-                displayMode === 'amount' ? 'bg-blue-900 text-white shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <i className="fa-solid fa-dollar-sign mr-1"></i>
-              <span>{t.modeAmounts}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setDisplayMode('percent')}
-              className={`px-3 py-1 rounded-md transition ${
-                displayMode === 'percent' ? 'bg-blue-900 text-white shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <i className="fa-solid fa-percent mr-1"></i>
-              <span>{t.modePercentages}</span>
-            </button>
-          </div>
-
-          <button
-            onClick={() => triggerOfficialPdfExport(
-              `${t.categoryBreakdownTitle} - ${displayMode === 'amount' ? t.inAmounts : t.inPercentages}`,
-              `${t.activeFilterBadge} ${activeFilterDescription}`,
-              transactions,
-              'chart-view4-cat'
-            )}
-            className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
-          >
-            <i className="fa-solid fa-file-pdf"></i>
-            <span>{t.btnExportPdf}</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-          <div style={{ height: '350px' }}>
-            <canvas id="chart-view4-cat" ref={catCanvasRef}></canvas>
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-          <h4 className="text-xs font-bold uppercase text-slate-600 mb-3">{t.categoryBreakdownTitle}</h4>
-          <table className="w-full text-left table-compact">
-            <thead>
-              <tr>
-                <th>{t.colCategory || t.category}</th>
-                <th className="text-right">{t.colAmount || t.totalDebits}</th>
-                <th className="text-right">Part (%)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {catStats.labels.map((name, i) => (
-                <tr key={i}>
-                  <td className="font-bold text-slate-800">{name}</td>
-                  <td className="text-right font-black text-sky-700">{formatUSD(catStats.values[i])}</td>
-                  <td className="text-right font-bold text-slate-600">{catStats.percentages[i]}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
 // COMPOSANT VUE 5 : DONNÉES CHOISIES PAR LE GESTIONNAIRE (SUR-MESURE)
 // ============================================================================
 function StatView5Component({ transactions, activeFilterDescription, families, formatUSD, triggerOfficialPdfExport, t, lang }) {
@@ -6022,7 +5525,7 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
         "Mettre en concurrence systématique au moins 2 devis avant engagement d'achat.",
         "Exiger une validation formelle du Trésorier pour tout décaissement supérieur à 100 USD."
       ] : [
-        "Freeze or cap non-critical discretionary spend in this category.",
+        "Freeze or cap non-critical discretionary spend in this family.",
         "Require at least two comparative vendor quotes before purchase approvals.",
         "Mandate formal Treasurer sign-off on any disbursement exceeding 100 USD."
       ],
@@ -6183,8 +5686,7 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
         id: c.code,
         date: c.periodLabel,
         type: st === 'done' ? 'credit' : 'debit',
-        family: `${c.code}: ${c.title}`,
-        category: `[${stLabel.toUpperCase()}] ${c.owner}`,
+        family: `${c.code}: ${c.title} - [${stLabel.toUpperCase()}] ${c.owner}`,
         refInvoice: c.periodLabel,
         amount: analyticsData.topFamilyPotentialSavings || 100,
         remark: `${c.targetGoal} | ${c.impact}`
@@ -6813,7 +6315,7 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
             }`}
           >
             <i className="fa-solid fa-tags"></i>
-            <span>{isFr ? "3. Nomenclature A-Z" : "3. Categories A-Z"}</span>
+            <span>{isFr ? "3. Familles A-Z" : "3. Families A-Z"}</span>
           </button>
 
           <button
@@ -6913,7 +6415,7 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
                 </h4>
                 <ul className="list-disc list-inside space-y-1 text-xs text-slate-600">
                   <li><strong>{isFr ? "Calendrier :" : "Calendar:"}</strong> {isFr ? "Sélecteur bilingue avec boutons clairs Définir, Annuler, Effacer." : "Bilingual picker with clear Set, Cancel, Clear actions."}</li>
-                  <li><strong>{isFr ? "Familles & Catégories à la volée :" : "On-the-fly additions:"}</strong> {isFr ? "Boutons '+ Nouvelle Famille' et '+ Nouvelle Catégorie' avec fenêtres explicites sans quitter le formulaire." : "Direct '+ New Family' and '+ New Category' buttons with explicit popups."}</li>
+                  <li><strong>{isFr ? "Familles à la volée :" : "On-the-fly families:"}</strong> {isFr ? "Bouton '+ Nouvelle Famille' avec fenêtre explicite sans quitter le formulaire." : "Direct '+ New Family' button with explicit popup."}</li>
                   <li><strong>{isFr ? "Attribution nominative :" : "Member attribution:"}</strong> {isFr ? "Champ optionnel pour associer le nom du membre ou du demandeur." : "Optional field to record the responsible member's name."}</li>
                   <li><strong>{isFr ? "Réinitialisation vierge :" : "Clean reset:"}</strong> {isFr ? "Tous les champs se vident automatiquement après chaque enregistrement." : "All fields clear automatically upon saving for the next entry."}</li>
                 </ul>
@@ -6938,12 +6440,12 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                 <h4 className="font-black text-slate-900 text-sm flex items-center gap-2">
                   <i className="fa-solid fa-arrow-down-a-z text-blue-700"></i>
-                  <span>{isFr ? "Tri Alphabétique Automatique A-Z" : "Automatic Alphabetical Ordering A-Z"}</span>
+                  <span>{isFr ? "Tri Alphabétique des Familles A-Z" : "Automatic Alphabetical Ordering A-Z"}</span>
                 </h4>
                 <p className="text-xs text-slate-600">
                   {isFr
-                    ? "Toutes les familles budgétaires et leurs sous-catégories sont triées rigoureusement de A à Z pour une navigation instantanée et fluide."
-                    : "All budgetary families and nested categories are strictly sorted alphabetically from A to Z for rapid, intuitive lookups."}
+                    ? "Toutes les 7 familles budgétaires officielles (Alalayang Agila, Community Service, En Rent, Monthly dues, Petty Cash, Sharing of SCLEG, Voluntary Donation) sont triées rigoureusement de A à Z pour une navigation instantanée et fluide."
+                    : "All 7 official budgetary families (Alalayang Agila, Community Service, En Rent, Monthly dues, Petty Cash, Sharing of SCLEG, Voluntary Donation) are strictly sorted alphabetically from A to Z for rapid, intuitive lookups."}
                 </p>
               </div>
             </div>
