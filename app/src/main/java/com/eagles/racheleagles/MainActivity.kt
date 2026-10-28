@@ -20,12 +20,35 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import android.app.AlertDialog
+import android.webkit.ValueCallback
+import androidx.activity.result.contract.ActivityResultContracts
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var webView: WebView
     var baseActivityContext: Context? = null
         private set
+
+    private var fileUploadCallback: ValueCallback<Array<Uri>>? = null
+    private val filePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val intent = result.data
+            val dataUris: Array<Uri>? = when {
+                intent?.data != null -> arrayOf(intent.data!!)
+                intent?.clipData != null -> {
+                    val clip = intent.clipData!!
+                    Array(clip.itemCount) { idx -> clip.getItemAt(idx).uri }
+                }
+                else -> null
+            }
+            fileUploadCallback?.onReceiveValue(dataUris)
+        } else {
+            fileUploadCallback?.onReceiveValue(null)
+        }
+        fileUploadCallback = null
+    }
 
     override fun attachBaseContext(newBase: Context) {
         val prefs = newBase.getSharedPreferences("RachelEaglesPrefs", Context.MODE_PRIVATE)
@@ -161,6 +184,26 @@ class MainActivity : ComponentActivity() {
                     .setOnCancelListener { result?.cancel() }
                     .show()
                 return true
+            }
+
+            override fun onShowFileChooser(
+                view: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: FileChooserParams?
+            ): Boolean {
+                fileUploadCallback?.onReceiveValue(null)
+                fileUploadCallback = filePathCallback
+                try {
+                    val intent = fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply {
+                        type = "image/*"
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                    }
+                    filePickerLauncher.launch(intent)
+                    return true
+                } catch (e: Exception) {
+                    fileUploadCallback = null
+                    return false
+                }
             }
         }
 

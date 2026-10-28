@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // RACHEL EAGLES - APPLICATION DE GESTION DE TRÉSORERIE (React 18)
 // The Fraternal Order of Eagles / Sargo Cambodia Eagles Club
 // ============================================================================
@@ -2025,6 +2025,7 @@ function RachelEaglesApp() {
     no: null,
     name: '',
     position: 'Group Member',
+    photo: '',
     phone: '',
     address: '',
     work: '',
@@ -2097,6 +2098,7 @@ function RachelEaglesApp() {
       no: members.length + 1,
       name: '',
       position: 'Group Member',
+      photo: '',
       phone: '',
       address: '',
       work: '',
@@ -2113,6 +2115,7 @@ function RachelEaglesApp() {
       no: m.no || null,
       name: m.name || (typeof m === 'string' ? m : ''),
       position: m.position || 'Group Member',
+      photo: m.photo || '',
       phone: m.phone || '',
       address: m.address || '',
       work: m.work || '',
@@ -2120,6 +2123,44 @@ function RachelEaglesApp() {
       emergencyPhone: m.emergencyPhone || ''
     });
     setIsMemberModalOpen(true);
+  };
+
+  const handleMemberPhotoUpload = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert(lang === 'fr' ? 'Veuillez sÃ©lectionner un fichier image valide (JPG, PNG).' : 'Please select a valid image file (JPG, PNG).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (loadEvent) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 280;
+        let width = img.width;
+        let height = img.height;
+
+        const minSide = Math.min(width, height);
+        const startX = (width - minSide) / 2;
+        const startY = (height - minSide) / 2;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = maxDim;
+        canvas.height = maxDim;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, startX, startY, minSide, minSide, 0, 0, maxDim, maxDim);
+
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        setMemberFormData(prev => ({
+          ...prev,
+          photo: compressedDataUrl
+        }));
+      };
+      img.src = loadEvent.target.result;
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveMember = (e) => {
@@ -3177,6 +3218,60 @@ function RachelEaglesApp() {
             </div>
 
             <form onSubmit={handleSaveMember} className="p-5 space-y-3.5 max-h-[80vh] overflow-y-auto">
+              {/* PHOTO DE PROFIL DU MEMBRE */}
+              <div className="flex items-center gap-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="relative flex-shrink-0">
+                  {memberFormData.photo ? (
+                    <img
+                      src={memberFormData.photo}
+                      alt="AperÃ§u photo"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-amber-400 shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-slate-200 text-slate-400 border-2 border-dashed border-slate-300 flex items-center justify-center text-xl">
+                      <i className="fa-solid fa-user"></i>
+                    </div>
+                  )}
+                  {memberFormData.photo && (
+                    <button
+                      type="button"
+                      onClick={() => setMemberFormData(p => ({ ...p, photo: '' }))}
+                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] hover:bg-red-700 shadow-sm"
+                      title={lang === 'fr' ? "Supprimer la photo" : "Remove photo"}
+                    >
+                      <i className="fa-solid fa-xmark"></i>
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex-grow space-y-1">
+                  <label className="block text-xs font-bold text-slate-700">
+                    {lang === 'fr' ? "Photo d'identitÃ© du membre :" : "Member Portrait Photo:"}
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <label className="px-3 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1.5 shadow-xs transition">
+                      <i className="fa-solid fa-camera"></i>
+                      <span>{memberFormData.photo ? (lang === 'fr' ? "Changer la photo" : "Change Photo") : (lang === 'fr' ? "Ajouter une photo" : "Add Photo")}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleMemberPhotoUpload}
+                      />
+                    </label>
+                    {memberFormData.photo && (
+                      <span className="text-[11px] text-green-700 font-semibold flex items-center gap-1">
+                        <i className="fa-solid fa-check"></i>
+                        <span>{lang === 'fr' ? "Photo chargÃ©e" : "Photo loaded"}</span>
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-400">
+                    {lang === 'fr' ? "Formats acceptÃ©s : JPG, PNG. Recadrage automatique carrÃ©." : "Formats: JPG, PNG. Automatic square cropping."}
+                  </p>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
                   {t.memberNameLabel || "Nom complet (avec titre) :"} *
@@ -4440,15 +4535,32 @@ function RachelEaglesApp() {
                             {m.no || idx + 1}
                           </td>
                           <td className="p-3 font-extrabold text-slate-900">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenEditMember(m)}
-                              className="text-left font-extrabold text-blue-900 hover:text-blue-700 hover:underline flex items-center gap-1.5"
-                              title={lang === 'fr' ? "Modifier ce membre" : "Edit member"}
-                            >
-                              <span>{m.name}</span>
-                              <i className="fa-solid fa-pen text-[10px] text-blue-400"></i>
-                            </button>
+                            <div className="flex items-center gap-2.5">
+                              {m.photo ? (
+                                <img
+                                  src={m.photo}
+                                  alt=""
+                                  className="w-9 h-9 rounded-full object-cover border border-amber-300 shadow-xs flex-shrink-0 cursor-pointer"
+                                  onClick={() => handleOpenEditMember(m)}
+                                />
+                              ) : (
+                                <div
+                                  className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center border border-slate-200 flex-shrink-0 cursor-pointer"
+                                  onClick={() => handleOpenEditMember(m)}
+                                >
+                                  <i className="fa-solid fa-user"></i>
+                                </div>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditMember(m)}
+                                className="text-left font-extrabold text-blue-900 hover:text-blue-700 hover:underline flex items-center gap-1.5"
+                                title={lang === 'fr' ? "Modifier ce membre" : "Edit member"}
+                              >
+                                <span>{m.name}</span>
+                                <i className="fa-solid fa-pen text-[10px] text-blue-400"></i>
+                              </button>
+                            </div>
                           </td>
                           <td className="p-3">
                             <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${
@@ -4520,16 +4632,26 @@ function RachelEaglesApp() {
                       {/* Header with badge and name */}
                       <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
                         <div className="flex items-center gap-3">
-                          <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-black text-sm shadow-sm flex-shrink-0 ${
-                            m.position?.includes('President') ? 'bg-amber-100 text-amber-800 border border-amber-300' :
-                            m.position?.includes('Treasurer') ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
-                            m.position?.includes('Secretary') ? 'bg-blue-100 text-blue-800 border border-blue-300' :
-                            m.position?.includes('Auditor') ? 'bg-cyan-100 text-cyan-800 border border-cyan-300' :
-                            m.position?.includes('Director') ? 'bg-purple-100 text-purple-800 border border-purple-300' :
-                            m.position?.includes('Officer') || m.position?.includes('Chair') ? 'bg-indigo-100 text-indigo-800 border border-indigo-300' :
-                            'bg-slate-100 text-slate-700 border border-slate-200'
-                          }`}>
-                            {m.no ? `#${m.no}` : <i className="fa-solid fa-user"></i>}
+                          <div className="relative flex-shrink-0 cursor-pointer" onClick={() => handleOpenEditMember(m)}>
+                            {m.photo ? (
+                              <img
+                                src={m.photo}
+                                alt={m.name}
+                                className="w-12 h-12 rounded-xl object-cover shadow-sm border-2 border-amber-300"
+                              />
+                            ) : (
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-sm shadow-sm ${
+                                m.position?.includes('President') ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                                m.position?.includes('Treasurer') ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                                m.position?.includes('Secretary') ? 'bg-blue-100 text-blue-800 border border-blue-300' :
+                                m.position?.includes('Auditor') ? 'bg-cyan-100 text-cyan-800 border border-cyan-300' :
+                                m.position?.includes('Director') ? 'bg-purple-100 text-purple-800 border border-purple-300' :
+                                m.position?.includes('Officer') || m.position?.includes('Chair') ? 'bg-indigo-100 text-indigo-800 border border-indigo-300' :
+                                'bg-slate-100 text-slate-700 border border-slate-200'
+                              }`}>
+                                {m.no ? `#${m.no}` : <i className="fa-solid fa-user"></i>}
+                              </div>
+                            )}
                           </div>
                           <div>
                             <h3
@@ -5458,7 +5580,22 @@ function RachelEaglesApp() {
                   {printDocumentData.membersList.map((m, idx) => (
                     <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                       <td style={{ padding: '4px 4px', textAlign: 'center', fontWeight: 'bold', color: '#64748b' }}>{m.no || idx + 1}</td>
-                      <td style={{ padding: '4px 6px', fontWeight: 'bold', color: '#0f172a' }}>{m.name}</td>
+                                            <td style={{ padding: '4px 6px', fontWeight: 'bold', color: '#0f172a' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {m.photo ? (
+                            <img
+                              src={m.photo}
+                              alt=""
+                              style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #cbd5e1', flexShrink: 0 }}
+                            />
+                          ) : (
+                            <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#e2e8f0', color: '#64748b', fontSize: '8.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              {m.no || idx + 1}
+                            </div>
+                          )}
+                          <span>{m.name}</span>
+                        </div>
+                      </td>
                       <td style={{ padding: '4px 6px' }}>
                         <span style={{
                           display: 'inline-block',
