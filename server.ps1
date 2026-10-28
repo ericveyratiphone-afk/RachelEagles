@@ -17,14 +17,56 @@ try {
     if ($foundIp) { $lanIp = $foundIp }
 } catch {}
 
-# Démarrage du serveur TCP HTTP (Accessible depuis PC, Smartphone et Tablette)
+# Verification si le serveur Rachel Eagles est deja actif
 $listener = $null
+$isAlreadyRunning = $false
+try {
+    $wcCheck = New-Object System.Net.WebClient
+    $resCheck = $wcCheck.DownloadString("http://127.0.0.1:$Port/api/ping")
+    if ($resCheck -match "RachelEagles") {
+        $isAlreadyRunning = $true
+    }
+} catch {}
+
+if ($isAlreadyRunning) {
+    Write-Host "==========================================================" -ForegroundColor Green
+    Write-Host "   LE SERVEUR RACHEL EAGLES EST DEJA ACTIF SUR LE PORT $Port" -ForegroundColor Green
+    Write-Host "==========================================================" -ForegroundColor Green
+    if (-not $NoBrowser) {
+        Write-Host "Ouverture immediate dans votre navigateur..." -ForegroundColor Cyan
+        try { Start-Process "http://localhost:$Port/index.html" } catch {}
+    }
+    Write-Host "Application prete." -ForegroundColor Gray
+    Start-Sleep -Seconds 1
+    exit 0
+}
+
+# Demarrage du serveur TCP HTTP (Accessible depuis PC, Smartphone et Tablette)
 try {
     $listener = New-Object System.Net.Sockets.TcpListener([System.Net.IPAddress]::Any, $Port)
     $listener.Start()
 } catch {
-    Write-Host "[ERREUR] Impossible de démarrer le serveur sur le port $Port : $($_.Exception.Message)" -ForegroundColor Red
-    exit 1
+    # Si le port est occupe par un ancien processus powershell
+    try {
+        $conn = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($conn -and $conn.OwningProcess -gt 0) {
+            $oldProc = Get-Process -Id $conn.OwningProcess -ErrorAction SilentlyContinue
+            if ($oldProc -and $oldProc.ProcessName -eq "powershell") {
+                Stop-Process -Id $oldProc.Id -Force -ErrorAction SilentlyContinue
+                Start-Sleep -Milliseconds 800
+                $listener = New-Object System.Net.Sockets.TcpListener([System.Net.IPAddress]::Any, $Port)
+                $listener.Start()
+            }
+        }
+    } catch {}
+
+    if (-not $listener) {
+        Write-Host "[ERREUR] Port $Port occupe. Ouverture directe du fichier..." -ForegroundColor Yellow
+        if (-not $NoBrowser) {
+            Start-Process "D:\AndroidProjects\RachelEagles\index.html"
+        }
+        exit 1
+    }
 }
 
 Write-Host "==========================================================" -ForegroundColor Cyan
@@ -33,13 +75,13 @@ Write-Host "   The Fraternal Order of Eagles - Sargo Cambodia Eagles" -Foregroun
 Write-Host "----------------------------------------------------------" -ForegroundColor DarkCyan
 Write-Host "   -> Sur ce PC           : http://localhost:$Port/index.html" -ForegroundColor Yellow
 Write-Host "   -> Sur Smartphone/Tab  : http://${lanIp}:$Port/index.html" -ForegroundColor Yellow
-Write-Host "   -> Point d'accès Synchro: http://${lanIp}:$Port/api/state" -ForegroundColor Cyan
+Write-Host "   -> Point d'acces Synchro: http://${lanIp}:$Port/api/state" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "Prêt pour la synchronisation bidirectionnelle avec le PC." -ForegroundColor Gray
-Write-Host "Appuyez sur CTRL+C pour arrêter le serveur à tout moment." -ForegroundColor Gray
+Write-Host "Pret pour la synchronisation bidirectionnelle avec le PC." -ForegroundColor Gray
+Write-Host "Appuyez sur CTRL+C pour arreter le serveur a tout moment." -ForegroundColor Gray
 Write-Host ""
 
-# Ouvrir le navigateur PC automatiquement si non désactivé
+# Ouvrir le navigateur PC automatiquement si non desactive
 if (-not $NoBrowser) {
     try {
         Start-Process "http://localhost:$Port/index.html"
