@@ -82,6 +82,9 @@ const I18N = {
     memberDeletedSuccess: "Member deleted successfully.",
     memberSavedSuccess: "Member saved successfully.",
     noMembersFound: "No members match your search criteria.",
+    btnExportMembersPdf: "Export Members to PDF",
+    viewModeCards: "Cards",
+    viewModeTable: "Table",
 
     // Statistical Sub-Views
     statView1: "1. Journal & General Ledger",
@@ -2014,6 +2017,7 @@ function RachelEaglesApp() {
   // ==========================================================================
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
   const [memberFilterPosition, setMemberFilterPosition] = useState('all');
+  const [memberViewMode, setMemberViewMode] = useState('grid'); // 'grid' | 'table'
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [memberModalOrigin, setMemberModalOrigin] = useState('manage'); // 'manage', 'debit', 'credit'
   const [memberFormData, setMemberFormData] = useState({
@@ -2053,6 +2057,38 @@ function RachelEaglesApp() {
       return true;
     });
   }, [sortedMembers, memberSearchQuery, memberFilterPosition]);
+
+  const triggerMembersPdfExport = (customList = null) => {
+    const listToExport = customList || (filteredDisplayMembers.length > 0 ? filteredDisplayMembers : sortedMembers);
+    const isFr = lang === 'fr';
+    const title = isFr ? "ANNUAIRE OFFICIEL DES MEMBRES DU CLUB" : "OFFICIAL CLUB MEMBERSHIP DIRECTORY";
+    const subtitle = isFr
+      ? `The Fraternal Order of Lady Eagles Group â€¢ Effectif : ${listToExport.length} membre(s)`
+      : `The Fraternal Order of Lady Eagles Group â€¢ Active Roster: ${listToExport.length} member(s)`;
+
+    setPrintDocumentData({
+      type: 'members',
+      title,
+      subtitle,
+      dateGenerated: new Date().toLocaleString(isFr ? 'fr-FR' : 'en-US'),
+      membersList: listToExport,
+      summary: {
+        total: listToExport.length,
+        exec: listToExport.filter(m => (m.position || '').includes('President') || (m.position || '').includes('Treasurer') || (m.position || '').includes('Secretary') || (m.position || '').includes('Auditor')).length,
+        officers: listToExport.filter(m => (m.position || '').includes('Officer') || (m.position || '').includes('Chair')).length,
+        board: listToExport.filter(m => (m.position || '').includes('Director')).length,
+        general: listToExport.filter(m => !(m.position || '').includes('President') && !(m.position || '').includes('Treasurer') && !(m.position || '').includes('Secretary') && !(m.position || '').includes('Auditor') && !(m.position || '').includes('Officer') && !(m.position || '').includes('Chair') && !(m.position || '').includes('Director')).length
+      }
+    });
+
+    setTimeout(() => {
+      if (window.AndroidNative && typeof window.AndroidNative.printPdf === 'function') {
+        window.AndroidNative.printPdf(title);
+      } else {
+        window.print();
+      }
+    }, 300);
+  };
 
   const handleOpenAddMember = (origin = 'manage') => {
     setMemberModalOrigin(origin);
@@ -4272,6 +4308,15 @@ function RachelEaglesApp() {
               <div className="flex items-center gap-2.5">
                 <button
                   type="button"
+                  onClick={() => triggerMembersPdfExport()}
+                  className="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
+                  title={t.btnExportMembersPdf || "Exporter l'Annuaire (PDF)"}
+                >
+                  <i className="fa-solid fa-file-pdf"></i>
+                  <span>{t.btnExportMembersPdf || (lang === 'fr' ? "Exporter en PDF" : "Export to PDF")}</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleOpenAddMember('manage')}
                   className="px-4 py-2.5 bg-blue-800 hover:bg-blue-900 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
                 >
@@ -4341,13 +4386,131 @@ function RachelEaglesApp() {
                   ))}
                 </select>
               </div>
+
+              {/* COMMUTATEUR VUE CARTES / VUE TABLEAU (OPTIMISÃ‰ PC & TABLETTE) */}
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setMemberViewMode('grid')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${memberViewMode === 'grid' ? 'bg-white text-blue-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
+                  title={lang === 'fr' ? "Vue Grille / Cartes" : "Cards Grid View"}
+                >
+                  <i className="fa-solid fa-grip"></i>
+                  <span className="hidden sm:inline">{lang === 'fr' ? 'Cartes' : 'Cards'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMemberViewMode('table')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${memberViewMode === 'table' ? 'bg-white text-blue-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
+                  title={lang === 'fr' ? "Vue Tableau / Liste (Ã‰dition rapide)" : "Table List View"}
+                >
+                  <i className="fa-solid fa-table-list"></i>
+                  <span className="hidden sm:inline">{lang === 'fr' ? 'Tableau' : 'Table'}</span>
+                </button>
+              </div>
             </div>
 
-            {/* GRILLE DES CARTES DE MEMBRES */}
+            {/* AFFICHAGE DES MEMBRES : TABLEAU OU GRILLE (OPTIMISÉ PC & TABLETTE) */}
             {filteredDisplayMembers.length === 0 ? (
               <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-500 space-y-2">
                 <i className="fa-solid fa-users-slash text-3xl text-slate-300"></i>
                 <p className="text-sm font-semibold">{t.noMembersFound || "Aucun membre ne correspond à vos critères de recherche."}</p>
+              </div>
+            ) : memberViewMode === 'table' ? (
+              /* VUE TABLEAU COMPLÈTE & RAPIDE POUR PC ET TABLETTE */
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                        <th className="p-3 text-center w-12">#</th>
+                        <th className="p-3">{lang === 'fr' ? "Nom & Titre" : "Full Name"}</th>
+                        <th className="p-3">{lang === 'fr' ? "Fonction / Rôle" : "Club Position"}</th>
+                        <th className="p-3">{lang === 'fr' ? "Téléphone" : "Phone"}</th>
+                        <th className="p-3">{lang === 'fr' ? "Métier / Travail" : "Occupation"}</th>
+                        <th className="p-3">{lang === 'fr' ? "Adresse (Cambodge)" : "Address"}</th>
+                        <th className="p-3">{lang === 'fr' ? "Contact Urgence" : "Emergency Contact"}</th>
+                        <th className="p-3 text-center w-32">{lang === 'fr' ? "Actions" : "Actions"}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredDisplayMembers.map((m, idx) => (
+                        <tr key={m.id || idx} className="hover:bg-blue-50/40 transition">
+                          <td className="p-3 text-center font-bold text-slate-400">
+                            {m.no || idx + 1}
+                          </td>
+                          <td className="p-3 font-extrabold text-slate-900">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditMember(m)}
+                              className="text-left font-extrabold text-blue-900 hover:text-blue-700 hover:underline flex items-center gap-1.5"
+                              title={lang === 'fr' ? "Modifier ce membre" : "Edit member"}
+                            >
+                              <span>{m.name}</span>
+                              <i className="fa-solid fa-pen text-[10px] text-blue-400"></i>
+                            </button>
+                          </td>
+                          <td className="p-3">
+                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${
+                              m.position?.includes('President') ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                              m.position?.includes('Treasurer') ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                              m.position?.includes('Secretary') ? 'bg-blue-100 text-blue-800 border border-blue-300' :
+                              m.position?.includes('Auditor') ? 'bg-cyan-100 text-cyan-800 border border-cyan-300' :
+                              m.position?.includes('Director') ? 'bg-purple-100 text-purple-800 border border-purple-300' :
+                              m.position?.includes('Officer') || m.position?.includes('Chair') ? 'bg-indigo-100 text-indigo-800 border border-indigo-300' :
+                              'bg-slate-100 text-slate-700 border border-slate-200'
+                            }`}>
+                              {m.position || 'Group Member'}
+                            </span>
+                          </td>
+                          <td className="p-3 font-bold text-blue-700 whitespace-nowrap">
+                            {m.phone ? (
+                              <a href={`tel:${m.phone}`} className="hover:underline flex items-center gap-1">
+                                <i className="fa-solid fa-phone text-[10px] text-slate-400"></i>
+                                <span>{m.phone}</span>
+                              </a>
+                            ) : '-'}
+                          </td>
+                          <td className="p-3 text-slate-700 font-medium max-w-[160px] truncate" title={m.work || ''}>
+                            {m.work || '-'}
+                          </td>
+                          <td className="p-3 text-slate-500 max-w-[180px] truncate" title={m.address || ''}>
+                            {m.address || '-'}
+                          </td>
+                          <td className="p-3 text-[11px]">
+                            {m.emergencyContact || m.emergencyPhone ? (
+                              <div>
+                                {m.emergencyContact && <div className="font-semibold text-slate-800">{m.emergencyContact}</div>}
+                                {m.emergencyPhone && <div className="font-bold text-red-600">{m.emergencyPhone}</div>}
+                              </div>
+                            ) : '-'}
+                          </td>
+                          <td className="p-3 text-center whitespace-nowrap">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditMember(m)}
+                                className="px-2.5 py-1 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg transition flex items-center gap-1 border border-blue-200"
+                                title={t.btnEdit}
+                              >
+                                <i className="fa-solid fa-pen text-[10px]"></i>
+                                <span>{t.btnEdit}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteMember(m)}
+                                className="px-2 py-1 text-xs bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-bold rounded-lg transition border border-slate-200"
+                                title={t.btnDelete}
+                              >
+                                <i className="fa-solid fa-trash-can text-[10px]"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -4369,7 +4532,13 @@ function RachelEaglesApp() {
                             {m.no ? `#${m.no}` : <i className="fa-solid fa-user"></i>}
                           </div>
                           <div>
-                            <h3 className="font-extrabold text-slate-900 text-sm leading-snug">{m.name}</h3>
+                            <h3
+                              onClick={() => handleOpenEditMember(m)}
+                              className="font-extrabold text-slate-900 text-sm leading-snug cursor-pointer hover:text-blue-800 hover:underline"
+                              title={lang === 'fr' ? "Cliquer pour modifier ce membre" : "Click to edit member"}
+                            >
+                              {m.name}
+                            </h3>
                             <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                               m.position?.includes('President') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
                               m.position?.includes('Treasurer') ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
@@ -4383,6 +4552,16 @@ function RachelEaglesApp() {
                             </span>
                           </div>
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditMember(m)}
+                          className="px-2 py-1 text-xs bg-slate-100 hover:bg-blue-100 text-blue-700 font-bold rounded-lg transition flex items-center gap-1 border border-slate-200"
+                          title={t.btnEdit}
+                        >
+                          <i className="fa-solid fa-pen text-[10px]"></i>
+                          <span className="hidden sm:inline">{t.btnEdit}</span>
+                        </button>
                       </div>
 
                       {/* Details */}
@@ -5232,11 +5411,111 @@ function RachelEaglesApp() {
               {printDocumentData.subtitle}
             </p>
             <p className="text-[10px] text-slate-500 mt-0.5">
-              {t.pdfGeneratedOn} {printDocumentData.dateGenerated} &bull; {t.pdfCurrencyNote}
+              {t.pdfGeneratedOn} {printDocumentData.dateGenerated} &bull; {printDocumentData.type === 'members' ? (lang === 'fr' ? "Document Officiel CertifiÃ©" : "Official Certified Document") : t.pdfCurrencyNote}
             </p>
           </div>
 
-          <div className="flex justify-between items-center my-4 p-3 bg-slate-50 border border-slate-200 rounded">
+          {printDocumentData.type === 'members' ? (
+            /* RENDU SPÃ‰CIFIQUE ANNUAIRE OFFICIEL DES MEMBRES */
+            <div>
+              {/* Badges de synthÃ¨se du tableau des membres */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', margin: '12px 0', padding: '8px 12px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '6px' }}>
+                <div style={{ textAlign: 'center', flex: 1 }}>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#64748b', display: 'block' }}>{lang === 'fr' ? 'Total Membres' : 'Total Members'}</span>
+                  <span style={{ fontSize: '15px', fontWeight: '900', color: '#1e3a8a' }}>{printDocumentData.summary.total}</span>
+                </div>
+                <div style={{ textAlign: 'center', flex: 1 }}>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#b45309', display: 'block' }}>{lang === 'fr' ? 'Bureau ExÃ©cutif' : 'Executive Board'}</span>
+                  <span style={{ fontSize: '15px', fontWeight: '900', color: '#b45309' }}>{printDocumentData.summary.exec}</span>
+                </div>
+                <div style={{ textAlign: 'center', flex: 1 }}>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#6b21a8', display: 'block' }}>{lang === 'fr' ? 'Officiers & Chaires' : 'Officers & Chairs'}</span>
+                  <span style={{ fontSize: '15px', fontWeight: '900', color: '#6b21a8' }}>{printDocumentData.summary.officers}</span>
+                </div>
+                <div style={{ textAlign: 'center', flex: 1 }}>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#92400e', display: 'block' }}>{lang === 'fr' ? 'Conseil d\'Admin.' : 'Board of Directors'}</span>
+                  <span style={{ fontSize: '15px', fontWeight: '900', color: '#92400e' }}>{printDocumentData.summary.board}</span>
+                </div>
+                <div style={{ textAlign: 'center', flex: 1 }}>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#475569', display: 'block' }}>{lang === 'fr' ? 'Membres AdhÃ©rents' : 'General Members'}</span>
+                  <span style={{ fontSize: '15px', fontWeight: '900', color: '#475569' }}>{printDocumentData.summary.general}</span>
+                </div>
+              </div>
+
+              {/* Tableau officiel des membres */}
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9.5px', marginTop: '10px' }}>
+                <thead>
+                  <tr style={{ background: '#1e3a8a', color: 'white' }}>
+                    <th style={{ padding: '5px 4px', textAlign: 'center', width: '28px' }}>#</th>
+                    <th style={{ padding: '5px 6px', textAlign: 'left', width: '27%' }}>{lang === 'fr' ? 'Nom Complet' : 'Full Name'}</th>
+                    <th style={{ padding: '5px 6px', textAlign: 'left', width: '22%' }}>{lang === 'fr' ? 'Fonction' : 'Position'}</th>
+                    <th style={{ padding: '5px 6px', textAlign: 'left', width: '14%' }}>{lang === 'fr' ? 'TÃ©lÃ©phone' : 'Phone'}</th>
+                    <th style={{ padding: '5px 6px', textAlign: 'left', width: '20%' }}>{lang === 'fr' ? 'MÃ©tier & Adresse' : 'Work & Address'}</th>
+                    <th style={{ padding: '5px 6px', textAlign: 'left', width: '17%' }}>{lang === 'fr' ? 'Urgence' : 'Emergency'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {printDocumentData.membersList.map((m, idx) => (
+                    <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '4px 4px', textAlign: 'center', fontWeight: 'bold', color: '#64748b' }}>{m.no || idx + 1}</td>
+                      <td style={{ padding: '4px 6px', fontWeight: 'bold', color: '#0f172a' }}>{m.name}</td>
+                      <td style={{ padding: '4px 6px' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '1px 5px',
+                          borderRadius: '3px',
+                          fontSize: '8.5px',
+                          fontWeight: 'bold',
+                          background: (m.position || '').includes('President') ? '#fef3c7' : (m.position || '').includes('Treasurer') ? '#dcfce7' : (m.position || '').includes('Secretary') ? '#dbeafe' : (m.position || '').includes('Auditor') ? '#cffafe' : '#f1f5f9',
+                          color: (m.position || '').includes('President') ? '#92400e' : (m.position || '').includes('Treasurer') ? '#166534' : (m.position || '').includes('Secretary') ? '#1e40af' : (m.position || '').includes('Auditor') ? '#0e7490' : '#334155'
+                        }}>
+                          {m.position || 'Group Member'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '4px 6px', fontWeight: 'bold', color: '#1e3a8a' }}>{m.phone || '-'}</td>
+                      <td style={{ padding: '4px 6px', color: '#475569', fontSize: '8.5px' }}>
+                        {m.work && <div style={{ fontWeight: '600' }}>{m.work}</div>}
+                        {m.address && <div style={{ color: '#64748b' }}>{m.address}</div>}
+                        {!m.work && !m.address && '-'}
+                      </td>
+                      <td style={{ padding: '4px 6px', color: '#dc2626', fontSize: '8.5px' }}>
+                        {m.emergencyContact && <div style={{ fontWeight: '600', color: '#0f172a' }}>{m.emergencyContact}</div>}
+                        {m.emergencyPhone && <div>{m.emergencyPhone}</div>}
+                        {!m.emergencyContact && !m.emergencyPhone && '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Signatures officielles */}
+              <div style={{ marginTop: '24px', paddingTop: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <div style={{ fontSize: '9px', color: '#64748b' }}>
+                    <p style={{ fontWeight: 'bold' }}>THE FRATERNAL ORDER OF LADY EAGLES GROUP</p>
+                    <p>{lang === 'fr' ? 'Annuaire Officiel CertifiÃ© - Registre du Club' : 'Official Certified Directory - Club Registry'}</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '24px' }}>
+                    <div style={{ textAlign: 'center', minWidth: '130px', borderTop: '1px solid #94a3b8', paddingTop: '4px' }}>
+                      <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a' }}>{lang === 'fr' ? 'La SecrÃ©taire' : 'The Secretary'}</p>
+                      <p style={{ fontSize: '8px', color: '#64748b', marginTop: '16px' }}>(Signature & Date)</p>
+                    </div>
+                    <div style={{ textAlign: 'center', minWidth: '130px', borderTop: '1px solid #94a3b8', paddingTop: '4px' }}>
+                      <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a' }}>{lang === 'fr' ? 'La PrÃ©sidente' : 'The President'}</p>
+                      <p style={{ fontSize: '8px', color: '#64748b', marginTop: '16px' }}>(Signature & Date)</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'center' }}>
+                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '55px', objectFit: 'contain' }} />
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* RENDU POUR TRANSACTIONS CLASSIQUES */
+            <div>
+              <div className="flex justify-between items-center my-4 p-3 bg-slate-50 border border-slate-200 rounded">
             <div>
               <span className="text-[11px] uppercase font-bold text-slate-500 block">{t.totalCredits}</span>
               <span className="text-base font-black text-green-700">{formatUSD(printDocumentData.totalCredits)}</span>
@@ -5306,6 +5585,8 @@ function RachelEaglesApp() {
               <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '60px', objectFit: 'contain' }} />
             </div>
           </div>
+          </div>
+        )}
         </div>
       )}
     </div>

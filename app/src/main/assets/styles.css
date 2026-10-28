@@ -166,6 +166,21 @@ body {
     page-break-after: always;
   }
 
+  #print-section table {
+    width: 100%;
+    border-collapse: collapse;
+    page-break-inside: auto;
+  }
+
+  #print-section tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  #print-section thead {
+    display: table-header-group;
+  }
+
   @page {
     size: A4 portrait;
     margin: 8mm;
