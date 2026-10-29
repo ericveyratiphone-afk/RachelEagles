@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Proposition de Gouvernance - Profil Consultation Membre pour Décision Présidentielle</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 14mm 12mm 14mm;
+      @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+      font-size: 9.2pt;
+      line-height: 1.4;
+    }
+    .header {
+      border-bottom: 2.5px solid #1e3a8a;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-logos {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .header-logos img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+    }
+    .header-titles {
+      text-align: right;
+    }
+    .header-titles h1 {
+      margin: 0;
+      font-size: 12.5pt;
+      color: #1e3a8a;
+      text-transform: uppercase;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+    .header-titles p {
+      margin: 2px 0 0 0;
+      font-size: 8pt;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .meta-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 7px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8.5pt;
+    }
+    .meta-box div {
+      line-height: 1.35;
+    }
+    h2 {
+      color: #1e3a8a;
+      font-size: 10.5pt;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      border-left: 4px solid #1e3a8a;
+      padding-left: 7px;
+      text-transform: uppercase;
+    }
+    h3 {
+      color: #0f172a;
+      font-size: 9pt;
+      margin-top: 6px;
+      margin-bottom: 3px;
+      font-weight: 700;
+    }
+    p {
+      margin: 0 0 5px 0;
+    }
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 7px 10px;
+      margin-bottom: 7px;
+    }
+    .card-info {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.3pt;
+      margin-top: 4px;
+      margin-bottom: 6px;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 5px 7px;
+      text-align: left;
+    }
+    th {
+      background: #1e3a8a;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 8.3pt;
+    }
+    tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .badge-yes {
+      background: #dcfce7;
+      color: #166534;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      display: inline-block;
+    }
+    .badge-no {
+      background: #fee2e2;
+      color: #991b1b;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      display: inline-block;
+    }
+    .badge-view {
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      display: inline-block;
+    }
+    .page-break {
+      page-break-after: always;
+      break-after: page;
+    }
+    .option-card {
+      border: 2px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px 11px;
+      margin-bottom: 8px;
+      background: #ffffff;
+    }
+    .option-recommended {
+      border-color: #1e3a8a;
+      background: #f0f7ff;
+    }
+    .option-title {
+      font-weight: 800;
+      font-size: 9.3pt;
+      color: #1e3a8a;
+      margin-bottom: 3px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .signature-section {
+      margin-top: 14px;
+      display: flex;
+      gap: 16px;
+    }
+    .signature-block {
+      flex: 1;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #f8fafc;
+      min-height: 125px;
+    }
+    .signature-line {
+      margin-top: 40px;
+      border-top: 1px dashed #64748b;
+      padding-top: 4px;
+      font-size: 8pt;
+      color: #64748b;
+    }
+    .checkbox-box {
+      margin: 6px 0;
+      font-size: 8.5pt;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== PAGE 1 ==================== -->
+  <div class="header">
+    <div class="header-logos">
+      <img src="logo1.png" alt="Logo Eagles">
+      <img src="logo2.png" alt="Logo Sargo Cambodia Lady Eagles Group">
+      <img src="logo3.png" alt="Logo Rachel Eagles">
+    </div>
+    <div class="header-titles">
+      <h1>THE FRATERNAL ORDER OF LADY EAGLES GROUP</h1>
+      <p>Sargo Cambodia Lady Eagles Group &bull; Commission de Gestion Financi&egrave;re</p>
+    </div>
+  </div>
+
+  <div class="meta-box">
+    <div>
+      <strong>&Eacute;metteur :</strong> Rachel Chua - Group Treasurer<br>
+      <strong>Organisation :</strong> THE FRATERNAL ORDER OF LADY EAGLES GROUP
+    </div>
+    <div style="text-align: right;">
+      <strong>Destinataire :</strong> Lady Eagles Group Members and Officers<br>
+      <strong>Application :</strong> Treasurer Financial Record<br>
+      <strong>Date :</strong> 29 Octobre 2026
+    </div>
+  </div>
+
+  <h2>1. Contexte &amp; Enjeu de Gouvernance</h2>
+  <p>
+    Actuellement, au sein de l'organisation <strong>THE FRATERNAL ORDER OF LADY EAGLES GROUP</strong>, l'application de tr&eacute;sorerie <strong>Treasurer Financial Record</strong> (d&eacute;ploy&eacute;e sur PC, Smartphone Android et Tablettes) est prot&eacute;g&eacute;e &agrave; l'ouverture par un acc&egrave;s s&eacute;curis&eacute; par mot de passe d&eacute;tenu exclusivement par la tr&eacute;sori&egrave;re <strong>Rachel Chua</strong> (Group Treasurer).
+  </p>
+  <p>
+    Les membres et officiers du Lady Eagles Group expriment le souhait l&eacute;gitime de <strong>pouvoir consulter r&eacute;guli&egrave;rement la situation financi&egrave;re</strong> du Group (solde global, solde des 7 familles financi&egrave;res officielles, &eacute;tat d'avancement des cotisations <em>Monthly dues</em>, dons <em>Alalayang Agila</em>, d&eacute;penses <em>Community Service</em>), <strong>sans pour autant pouvoir modifier, saisir ou supprimer la moindre donn&eacute;e comptable</strong>.
+  </p>
+
+  <h2>2. Solution Technique Recommand&eacute;e : Le Double Profil d'Acc&egrave;s</h2>
+  <p>
+    Pour r&eacute;pondre &agrave; cet objectif de transparence tout en pr&eacute;servant l'int&eacute;grit&eacute; stricte des comptes, le d&eacute;veloppeur de l'application propose l'introduction d'un <strong>mode &agrave; deux profils &eacute;tanches</strong> d&egrave;s l'&eacute;cran de d&eacute;marrage :
+  </p>
+  <div class="card card-info">
+    <p><strong>&bull; Profil 1 &mdash; Tr&eacute;sorier (Acc&egrave;s Administrateur &amp; Saisie) :</strong> Conserv&eacute; exclusivement par Rachel Chua (Group Treasurer) avec mot de passe s&eacute;curis&eacute;. Permet la saisie des d&eacute;penses (Debits), encaissements (Credits), la gestion des membres, la cr&eacute;ation de sauvegardes ZIP et la synchronisation r&eacute;seau Wi-Fi / Cloud 5G.</p>
+    <p><strong>&bull; Profil 2 &mdash; Membre (Consultation en Lecture Seule) :</strong> Accessible aux membres et officiers du Lady Eagles Group. Acc&egrave;s imm&eacute;diat en lecture seule aux synth&egrave;ses, graphiques, historiques et &eacute;tats de cotisations. Aucun bouton de saisie, de modification ou de suppression n'est disponible.</p>
+  </div>
+
+  <h2>3. Matrice Comparatrice des Droits &amp; Permissions</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 48%;">Fonctionnalit&eacute; / &Eacute;cran de l'Application</th>
+        <th style="width: 26%; text-align: center;">Profil Tr&eacute;sorier (Rachel Chua)</th>
+        <th style="width: 26%; text-align: center;">Profil Membre (Officiers / Membres)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Consultation du Solde Global &amp; Synth&egrave;se</strong></td>
+        <td style="text-align: center;"><span class="badge-yes">&check; Acc&egrave;s Complet</span></td>
+        <td style="text-align: center;"><span class="badge-view">&check; Lecture Seule</span></td>
+      </tr>
+      <tr>
+        <td><strong>Historique D&eacute;penses (Debits) &amp; Recettes (Credits)</strong></td>
+        <td style="text-align: center;"><span class="badge-yes">&check; Saisie &amp; &Eacute;dition</span></td>
+        <td style="text-align: center;"><span class="badge-view">&check; Consultation Seule</span></td>
+      </tr>
+      <tr>
+        <td><strong>Ajouter, Modifier ou Supprimer une Transaction</strong></td>
+        <td style="text-align: center;"><span class="badge-yes">&check; Autoris&eacute;</span></td>
+        <td style="text-align: center;"><span class="badge-no">&cross; Verrouill&eacute; / D&eacute;sactiv&eacute;</span></td>
+      </tr>
+      <tr>
+        <td><strong>Suivi des 7 Familles</strong> (Agila, Community, Rent, Dues...)</td>
+        <td style="text-align: center;"><span class="badge-yes">&check; Saisie &amp; Budgets</span></td>
+        <td style="text-align: center;"><span class="badge-view">&check; Graphiques &amp; R&eacute;partition</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tableau des Cotisations Membres (Monthly Dues)</strong></td>
+        <td style="text-align: center;"><span class="badge-yes">&check; Validation des Paiments</span></td>
+        <td style="text-align: center;"><span class="badge-view">&check; Consultation de l'&Eacute;tat</span></td>
+      </tr>
+      <tr>
+        <td><strong>Rapports &amp; Statistiques (Analytics &amp; Audit)</strong></td>
+        <td style="text-align: center;"><span class="badge-yes">&check; Acc&egrave;s Complet</span></td>
+        <td style="text-align: center;"><span class="badge-view">&check; Consultation Graphiques</span></td>
+      </tr>
+      <tr>
+        <td><strong>Sauvegarde &amp; Restauration JSON / Archives ZIP</strong></td>
+        <td style="text-align: center;"><span class="badge-yes">&check; Export &amp; Import</span></td>
+        <td style="text-align: center;"><span class="badge-no">&cross; Masqu&eacute; / Inaccessible</span></td>
+      </tr>
+      <tr>
+        <td><strong>Synchronisation Wi-Fi Local &amp; 5G Cloud</strong></td>
+        <td style="text-align: center;"><span class="badge-yes">&check; &Eacute;mission &amp; Fusion</span></td>
+        <td style="text-align: center;"><span class="badge-view">&check; R&eacute;ception Donn&eacute;es &Agrave; Jour</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- ==================== PAGE 2 ==================== -->
+  <div class="header">
+    <div class="header-logos">
+      <img src="logo1.png" alt="Logo Eagles">
+      <img src="logo2.png" alt="Logo Sargo Cambodia Lady Eagles Group">
+      <img src="logo3.png" alt="Logo Rachel Eagles">
+    </div>
+    <div class="header-titles">
+      <h1>THE FRATERNAL ORDER OF LADY EAGLES GROUP</h1>
+      <p>Sargo Cambodia Lady Eagles Group &bull; Commission de Gestion Financi&egrave;re</p>
+    </div>
+  </div>
+
+  <h2>4. Deux Options Soumises &agrave; la D&eacute;cision de la Pr&eacute;sidente</h2>
+  <p>Afin de valider la modalit&eacute; d'acc&egrave;s au profil Membre, deux options op&eacute;rationnelles sont propos&eacute;es &agrave; l'arbitrage de la Pr&eacute;sidente <strong>Sharon Llegado</strong> :</p>
+
+  <div class="option-card option-recommended">
+    <div class="option-title">
+      <span>OPTION A : Bouton Direct &laquo; Consultation Membre &raquo; (Sans Mot de Passe)</span>
+      <span style="font-size: 8pt; color: #1e3a8a; font-weight: 700;">RECOMMAND&Eacute; POUR LA SIMPLICIT&Eacute;</span>
+    </div>
+    <p>
+      Sur l'&eacute;cran d'accueil de l'application, un deuxi&egrave;me bouton visible <strong>[ 👁️ Consultation Membre (Lecture Seule) ]</strong> permet &agrave; tout membre du Lady Eagles Group d'acc&eacute;der en un clic &agrave; la vue d'ensemble financi&egrave;re, sans avoir &agrave; m&eacute;moriser ni saisir d'identifiant.
+    </p>
+    <p style="margin-bottom: 0;">
+      <em>Avantages :</em> Aucune gestion de code, transparence totale lors des r&eacute;unions, convivialit&eacute; imm&eacute;diate sur smartphone ou tablette.
+    </p>
+  </div>
+
+  <div class="option-card">
+    <div class="option-title">
+      <span>OPTION B : Code PIN Partag&eacute; &agrave; 4 Chiffres (Ex: &laquo; 2026 &raquo;)</span>
+      <span style="font-size: 8pt; color: #64748b; font-weight: 700;">CONTR&Ocirc;LE DE GROUPE RENFORC&Eacute;</span>
+    </div>
+    <p>
+      L'acc&egrave;s &agrave; la consultation n&eacute;cessite la saisie d'un code PIN court &agrave; 4 chiffres commun &agrave; tous les membres du Group (ex: <code>2026</code> ou choix de la Pr&eacute;sidente).
+    </p>
+    <p style="margin-bottom: 0;">
+      <em>Avantages :</em> Emp&ecirc;che une personne totalement &eacute;trang&egrave;re au Lady Eagles Group qui prendrait le t&eacute;l&eacute;phone de voir les chiffres internes. Le code peut &ecirc;tre chang&eacute; annuellement.
+    </p>
+  </div>
+
+  <h2>5. Garanties Techniques &amp; S&eacute;curit&eacute; Comptable</h2>
+  <div class="card">
+    <p>&bull; <strong>Immunis&eacute; contre toute fausse manipulation :</strong> En mode Membre, le moteur interne bloque formellement tout appel d'&eacute;criture en base de donn&eacute;es. Impossible d'effacer ou de modifier un chiffre par accident.</p>
+    <p>&bull; <strong>Verrou d'&eacute;l&eacute;vation :</strong> Pour basculer du mode Membre vers le mode Tr&eacute;sorier (administration), le mot de passe personnel de <strong>Rachel Chua</strong> est imp&eacute;rativement exig&eacute;.</p>
+    <p>&bull; <strong>D&eacute;veloppement applicatif :</strong> R&eacute;alis&eacute; par le d&eacute;veloppeur Eric Veyrat selon les exigences comptables de Rachel Chua et les statuts du Lady Eagles Group.</p>
+  </div>
+
+  <h2>6. D&eacute;cision &amp; Formalisation de l'Approbation</h2>
+  <p>Veuillez cocher l'option retenue et apposer votre visa pour d&eacute;ploiement imm&eacute;diat dans la prochaine version de l'application :</p>
+
+  <div class="signature-section">
+    <div class="signature-block">
+      <strong>Rachel Chua - Group Treasurer</strong><br>
+      <br>
+      Date : _____ / _____ / 2026<br>
+      <br>
+      <div class="signature-line">Signature de la Tr&eacute;sori&egrave;re du Group</div>
+    </div>
+    <div class="signature-block">
+      <strong>Sharon Llegado - Group President</strong><br>
+      <div class="checkbox-box">
+        <input type="checkbox"> <strong>OPTION A Approuv&eacute;e</strong> (Acc&egrave;s Direct 1 Clic)<br>
+        <input type="checkbox"> <strong>OPTION B Approuv&eacute;e</strong> (Code PIN Membre Partag&eacute;)
+      </div>
+      Date : _____ / _____ / 2026<br>
+      <div class="signature-line">Signature de la Pr&eacute;sidente du Group</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 14px; text-align: center; color: #64748b; font-size: 7.5pt;">
+    THE FRATERNAL ORDER OF LADY EAGLES GROUP &bull; Sargo Cambodia Lady Eagles Group &bull; Application : Treasurer Financial Record &bull; Version 3.0
+  </div>
+
+</body>
+</html>
