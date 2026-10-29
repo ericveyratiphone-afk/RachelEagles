@@ -11,8 +11,8 @@ android {
         applicationId = "com.eagles.racheleagles"
         minSdk = 24
         targetSdk = 35
-        versionCode = 4
-        versionName = "3.1-assembly"
+        versionCode = 5
+        versionName = "3.2-assembly5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
