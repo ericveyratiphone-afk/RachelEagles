@@ -1,6 +1,6 @@
 ﻿// ============================================================================
 // RACHEL EAGLES - APPLICATION DE GESTION DE TRÉSORERIE (React 18)
-// The Fraternal Order of Eagles / Sargo Cambodia Eagles Club
+// The Fraternal Order of Eagles / Sargo Cambodia Eagles Group
 // ============================================================================
 
 const { useState, useEffect, useMemo, useRef } = React;
@@ -64,13 +64,13 @@ const I18N = {
     navSettings: "Settings",
 
     // Members Directory & Management
-    membersTitle: "Official Club Members Directory",
+    membersTitle: "Official Group Members Directory",
     membersSubtitle: "Directory of official members for expense and income attribution, contacts, and emergency info.",
     btnAddMember: "+ Add Member",
-    modalNewMemberTitle: "Add Club Member",
-    modalEditMemberTitle: "Edit Club Member",
+    modalNewMemberTitle: "Add Group Member",
+    modalEditMemberTitle: "Edit Group Member",
     memberNameLabel: "Full Name (with title):",
-    memberPositionLabel: "Club Position / Role:",
+    memberPositionLabel: "Group Position / Role:",
     memberPhoneLabel: "Telephone (Cambodia):",
     memberAddressLabel: "Address in Cambodia:",
     memberWorkLabel: "Nature of Work / Occupation:",
@@ -238,7 +238,7 @@ const I18N = {
     colPerson: "Person / Member",
     optional: "optional",
     personsManagementTitle: "Members & Persons Management",
-    personsManagementDesc: "Manage names of club members and persons for expense and income attribution.",
+    personsManagementDesc: "Manage names of group members and persons for expense and income attribution.",
     promptRenamePerson: "New name for person / member:",
     confirmDeletePerson: "Remove this person from the list?",
     btnDeletePerson: "Delete person",
@@ -357,7 +357,7 @@ const I18N = {
     logo2Title: "Logo 2: Fraternal Order of Eagles Seal",
     logo2Desc: "Official Golden Circular Seal",
     logo3Title: "Logo 3: Sargo Cambodia Eagles Badge",
-    logo3Desc: "Official Cambodia Club Badge",
+    logo3Desc: "Official Cambodia Group Badge",
     securityTitle: "Treasurer Access & Security",
     authorizedEmailsLabel: "Authorized Recovery Emails:",
 
@@ -469,8 +469,8 @@ const I18N = {
     membersTitle: "Annuaire Officiel des Membres",
     membersSubtitle: "Annuaire des membres officiels pour l'imputation des dépenses et recettes, coordonnées et urgence.",
     btnAddMember: "+ Ajouter un Membre",
-    modalNewMemberTitle: "Ajouter un Membre du Club",
-    modalEditMemberTitle: "Modifier un Membre du Club",
+    modalNewMemberTitle: "Ajouter un Membre du Group",
+    modalEditMemberTitle: "Modifier un Membre du Group",
     memberNameLabel: "Nom complet (avec titre) :",
     memberPositionLabel: "Fonction / Rôle au sein du Club :",
     memberPhoneLabel: "Téléphone (Cambodge) :",
@@ -737,7 +737,7 @@ const I18N = {
     lastSyncLabel: "Dernière synchronisation réussie :",
     neverSynced: "Jamais synchronisé",
     syncDataTransactions: "Transactions synchronisées",
-    syncDataMembers: "Membres du club (avec photos)",
+    syncDataMembers: "Membres du Group (avec photos)",
     syncDataFamilies: "Familles officielles",
     step1Title: "1. Même Réseau Wi-Fi",
     step1Desc: "Vérifiez que votre PC et votre mobile/tablette sont connectés à la même box Wi-Fi ou partage 4G/5G.",
@@ -757,7 +757,7 @@ const I18N = {
     logo2Title: "Logo 2 : Fraternal Order of Eagles Seal",
     logo2Desc: "Sceau officiel circulaire doré",
     logo3Title: "Logo 3 : Sargo Cambodia Eagles Badge",
-    logo3Desc: "Insigne officiel Club du Cambodge",
+    logo3Desc: "Insigne officiel Group du Cambodge",
     securityTitle: "Accès Trésorier & Sécurité",
     authorizedEmailsLabel: "Emails autorisés pour la récupération :",
 
@@ -1356,6 +1356,33 @@ function formatUSD(num) {
 }
 
 // ============================================================================
+// FORMAT DE DATE EUROPEEN / PHILIPPIN (JJ/MM/AAAA - DD/MM/YYYY)
+// ============================================================================
+function formatDisplayDate(dStr) {
+  if (!dStr) return '';
+  if (typeof dStr !== 'string') return String(dStr);
+  const clean = dStr.trim();
+  const m = clean.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    return m[3] + '/' + m[2] + '/' + m[1];
+  }
+  return clean;
+}
+
+function parseToIsoDate(dStr) {
+  if (!dStr) return '';
+  const clean = dStr.trim();
+  const m = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if (m) {
+    const dd = m[1].padStart(2, '0');
+    const mm = m[2].padStart(2, '0');
+    const yyyy = m[3];
+    return yyyy + '-' + mm + '-' + dd;
+  }
+  return clean;
+}
+
+// ============================================================================
 // COMPOSANT SÉLECTEUR DE DATE BILINGUE OFFICIEL (CALENDRIER INTERACTIF)
 // Traduction stricte garantie : Set / Cancel / Clear (EN) ou Définir / Annuler / Effacer (FR)
 // ============================================================================
@@ -1366,7 +1393,7 @@ function BilingualDatePicker({
   className = "",
   lang = "en",
   accentColor = "blue",
-  placeholder = "YYYY-MM-DD",
+  placeholder = "DD/MM/YYYY",
   disabled = false,
   compact = false
 }) {
@@ -1374,9 +1401,15 @@ function BilingualDatePicker({
   const isFr = lang === 'fr';
 
   const parseDate = (dStr) => {
-    if (dStr && /^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
-      const parts = dStr.split('-').map(Number);
-      return { y: parts[0], m: parts[1] - 1, d: parts[2] };
+    if (dStr) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
+        const parts = dStr.split('-').map(Number);
+        return { y: parts[0], m: parts[1] - 1, d: parts[2] };
+      }
+      if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(dStr)) {
+        const parts = dStr.split(/[\/\-]/).map(Number);
+        return { y: parts[2], m: parts[1] - 1, d: parts[0] };
+      }
     }
     const now = new Date();
     return { y: now.getFullYear(), m: now.getMonth(), d: now.getDate() };
@@ -1526,7 +1559,7 @@ function BilingualDatePicker({
         <div className="flex items-center gap-2 overflow-hidden">
           <i className={`fa-solid fa-calendar-day ${accentColor === 'red' ? 'text-red-600' : accentColor === 'green' ? 'text-green-600' : 'text-blue-600'}`}></i>
           <span className={`font-mono font-medium ${value ? 'text-slate-800' : 'text-slate-400'}`}>
-            {value || placeholder}
+            {value ? formatDisplayDate(value) : (isFr ? "JJ/MM/AAAA" : placeholder)}
           </span>
         </div>
         <button
@@ -1566,7 +1599,7 @@ function BilingualDatePicker({
                     {isFr ? "Choisir une Date" : "Select Date"}
                   </h4>
                   <p className="text-[10px] text-blue-200">
-                    {selectedYMD ? selectedYMD : (isFr ? "Aucune date sélectionnée" : "No date selected")}
+                    {selectedYMD ? formatDisplayDate(selectedYMD) : (isFr ? "Aucune date sÃ©lectionnÃ©e" : "No date selected")}
                   </p>
                 </div>
               </div>
@@ -2144,7 +2177,7 @@ function RachelEaglesApp() {
   const triggerMembersPdfExport = (customList = null) => {
     const listToExport = customList || (filteredDisplayMembers.length > 0 ? filteredDisplayMembers : sortedMembers);
     const isFr = lang === 'fr';
-    const title = isFr ? "ANNUAIRE OFFICIEL DES MEMBRES DU CLUB" : "OFFICIAL CLUB MEMBERSHIP DIRECTORY";
+    const title = isFr ? "ANNUAIRE OFFICIEL DES MEMBRES DU GROUP" : "OFFICIAL GROUP MEMBERSHIP DIRECTORY";
     const subtitle = isFr
       ? `The Fraternal Order of Lady Eagles Group â€¢ Effectif : ${listToExport.length} membre(s)`
       : `The Fraternal Order of Lady Eagles Group â€¢ Active Roster: ${listToExport.length} member(s)`;
@@ -2618,7 +2651,7 @@ function RachelEaglesApp() {
     setPrintDocumentData({
       title,
       subtitle: subtitle || `${t.pdfPeriodPrefix} ${filterDateFrom || 'Start'} ${t.toDate.toLowerCase()} ${filterDateTo || 'End'}`,
-      dateGenerated: new Date().toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-US'),
+      dateGenerated: (() => { const _n = new Date(); const _p = (v) => String(v).padStart(2, '0'); return ${_p(_n.getDate())}// :; })(),
       transactions: transactionsList,
       totalCredits: transactionsList.filter(tx => tx.type === 'credit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0),
       totalDebits: transactionsList.filter(tx => tx.type === 'debit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0),
@@ -4233,7 +4266,7 @@ function RachelEaglesApp() {
                   <tbody>
                     {sortedTransactions.slice(0, 10).map(tx => (
                       <tr key={tx.id}>
-                        <td className="font-semibold text-slate-700 whitespace-nowrap">{tx.date}</td>
+                        <td className="font-semibold text-slate-700 whitespace-nowrap">{formatDisplayDate(tx.date)}</td>
                         <td className="w-28 text-center whitespace-nowrap">
                           <span className={`inline-flex items-center justify-center min-w-[78px] px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide shadow-sm ${tx.type === 'credit' ? 'badge-credit' : 'badge-debit'}`}>
                             {tx.type === 'credit' ? `+ ${t.credit}` : `- ${t.debit}`}
@@ -4486,7 +4519,7 @@ function RachelEaglesApp() {
                   <tbody>
                     {sortedDebits.map(tx => (
                       <tr key={tx.id}>
-                        <td className="font-semibold text-slate-700 whitespace-nowrap">{tx.date}</td>
+                        <td className="font-semibold text-slate-700 whitespace-nowrap">{formatDisplayDate(tx.date)}</td>
                         <td className="text-xs uppercase text-slate-500 whitespace-nowrap text-center font-bold">
                           <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600">
                             {tx.frequency === 'monthly' ? t.monthly : t.daily}
@@ -4745,7 +4778,7 @@ function RachelEaglesApp() {
                   <tbody>
                     {sortedCredits.map(tx => (
                       <tr key={tx.id}>
-                        <td className="font-semibold text-slate-700 whitespace-nowrap">{tx.date}</td>
+                        <td className="font-semibold text-slate-700 whitespace-nowrap">{formatDisplayDate(tx.date)}</td>
                         <td className="text-xs uppercase text-slate-500 whitespace-nowrap text-center font-bold">
                           <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600">
                             {tx.frequency === 'monthly' ? t.monthly : t.daily}
@@ -5022,7 +5055,7 @@ function RachelEaglesApp() {
                       <tr className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
                         <th className="p-3 text-center w-12">#</th>
                         <th className="p-3">{lang === 'fr' ? "Nom & Titre" : "Full Name"}</th>
-                        <th className="p-3">{lang === 'fr' ? "Fonction / Rôle" : "Club Position"}</th>
+                        <th className="p-3">{lang === 'fr' ? "Fonction / Rôle" : "Group Position"}</th>
                         <th className="p-3">{lang === 'fr' ? "Téléphone" : "Phone"}</th>
                         <th className="p-3">{lang === 'fr' ? "Métier / Travail" : "Occupation"}</th>
                         <th className="p-3">{lang === 'fr' ? "Adresse (Cambodge)" : "Address"}</th>
@@ -5318,6 +5351,27 @@ function RachelEaglesApp() {
                     type="button"
                     onClick={() => {
                       triggerOfficialPdfExport(
+                        lang === "fr" 
+                          ? "RAPPORT OFFICIEL DE TRESORERIE - ASSEMBLEE GENERALE DU GROUP" 
+                          : "OFFICIAL TREASURY REPORT - GENERAL ASSEMBLY OF THE GROUP",
+                        lang === "fr"
+                          ? `PrÃ©sentÃ© par Rachel Chua (Group Treasurer) & Sharon Llegado (Group President) â€¢ PÃ©riode : ${activeFilterDescription}`
+                          : `Presented by Rachel Chua (Group Treasurer) & Sharon Llegado (Group President) â€¢ Period: ${activeFilterDescription}`,
+                        filteredStatsTransactions,
+                        "chart-view3-fam"
+                      );
+                    }}
+                    className="px-3.5 py-1.5 bg-gradient-to-r from-blue-900 to-indigo-900 hover:from-blue-950 hover:to-indigo-950 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-md transition border border-amber-400/40"
+                    title={lang === "fr" ? "GÃ©nÃ©rer le Rapport Officiel pour l'AssemblÃ©e GÃ©nÃ©rale Mensuelle" : "Generate Official Monthly General Assembly Report"}
+                  >
+                    <i className="fa-solid fa-landmark text-amber-400"></i>
+                    <span>{lang === "fr" ? "Rapport AssemblÃ©e (PDF)" : "Assembly Report (PDF)"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerOfficialPdfExport(
                         `${t.navStats} - ${statSubView === 'view1' ? t.statView1 : statSubView === 'view2' ? t.statView2 : statSubView === 'view3' ? t.statView3 : statSubView === 'view5' ? t.statView4 : t.statView5}`,
                         `${t.activeFilterBadge} ${activeFilterDescription}`,
                         filteredStatsTransactions,
@@ -5566,7 +5620,7 @@ function RachelEaglesApp() {
                       <tbody>
                         {filteredStatsTransactions.map(tx => (
                           <tr key={tx.id}>
-                            <td className="font-semibold text-slate-700 whitespace-nowrap">{tx.date}</td>
+                            <td className="font-semibold text-slate-700 whitespace-nowrap">{formatDisplayDate(tx.date)}</td>
                             <td className="w-28 text-center whitespace-nowrap">
                               <span className={`inline-flex items-center justify-center min-w-[78px] px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide shadow-sm ${tx.type === 'credit' ? 'badge-credit' : 'badge-debit'}`}>
                                 {tx.type === 'credit' ? `+ ${t.credit}` : `- ${t.debit}`}
@@ -5976,7 +6030,7 @@ function RachelEaglesApp() {
                   <p className="text-[11px] text-slate-600 pl-7">
                     {lang === 'fr'
                       ? "Enregistrez vos débits, crédits, reçus et membres sur PC, tablette ou téléphone."
-                      : "Add or update expenses, incomes, receipts, and club members on any device."}
+                      : "Add or update expenses, incomes, receipts, and group members on any device."}
                   </p>
                 </div>
 
@@ -6411,7 +6465,7 @@ function RachelEaglesApp() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
                   <div style={{ fontSize: '9px', color: '#64748b' }}>
                     <p style={{ fontWeight: 'bold' }}>THE FRATERNAL ORDER OF LADY EAGLES GROUP</p>
-                    <p>{lang === 'fr' ? 'Annuaire Officiel CertifiÃ© - Registre du Club' : 'Official Certified Directory - Club Registry'}</p>
+                    <p>{lang === 'fr' ? 'Annuaire Officiel CertifiÃ© - Registre du Group' : 'Official Certified Directory - Group Registry'}</p>
                   </div>
                   <div style={{ display: 'flex', gap: '24px' }}>
                     <div style={{ textAlign: 'center', minWidth: '130px', borderTop: '1px solid #94a3b8', paddingTop: '4px' }}>
@@ -6469,7 +6523,7 @@ function RachelEaglesApp() {
               <tbody>
                 {printDocumentData.transactions.map((tx, idx) => (
                   <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '5px 8px', fontWeight: 'bold' }}>{tx.date}</td>
+                    <td style={{ padding: '5px 8px', fontWeight: 'bold' }}>{formatDisplayDate(tx.date)}</td>
                     <td style={{ padding: '5px 8px', color: tx.type === 'credit' ? '#16a34a' : '#dc2626', fontWeight: 'bold' }}>
                       {tx.type === 'credit' ? t.credit.toUpperCase() : t.debit.toUpperCase()}
                     </td>
@@ -6493,9 +6547,17 @@ function RachelEaglesApp() {
                 <p>{t.pdfOfficialDoc}</p>
                 <p>{t.pdfOrgName}</p>
               </div>
-              <div style={{ textAlign: 'center', minWidth: '180px', borderTop: '1px solid #94a3b8', paddingTop: '5px' }}>
-                <p style={{ fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a' }}>{t.pdfTreasurerTitle}</p>
-                <p style={{ fontSize: '9px', color: '#64748b', marginTop: '20px' }}>{t.pdfSignatureLabel}</p>
+              <div style={{ display: 'flex', gap: '28px' }}>
+                <div style={{ textAlign: 'center', minWidth: '150px', borderTop: '1.5px solid #1e3a8a', paddingTop: '5px' }}>
+                  <p style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#1e3a8a' }}>Rachel Chua</p>
+                  <p style={{ fontSize: '9px', fontWeight: 'bold', color: '#475569' }}>Group Treasurer</p>
+                  <p style={{ fontSize: '8px', color: '#94a3b8', marginTop: '18px' }}>{t.pdfSignatureLabel}</p>
+                </div>
+                <div style={{ textAlign: 'center', minWidth: '150px', borderTop: '1.5px solid #1e3a8a', paddingTop: '5px' }}>
+                  <p style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#1e3a8a' }}>Sharon Llegado</p>
+                  <p style={{ fontSize: '9px', fontWeight: 'bold', color: '#475569' }}>Group President</p>
+                  <p style={{ fontSize: '8px', color: '#94a3b8', marginTop: '18px' }}>{t.pdfSignatureLabel}</p>
+                </div>
               </div>
             </div>
 
@@ -6582,7 +6644,7 @@ function StatView2Component({
     });
 
     return {
-      labels: sortedKeys,
+      labels: sortedKeys.map(k => (k.length === 10 ? formatDisplayDate(k) : (k.length === 7 ? ${k.substring(5, 7)}/ : k))),
       credits: creditsData,
       debits: debitsData,
       rawMap: datesMap
@@ -7251,9 +7313,11 @@ function StatView5Component({ transactions, activeFilterDescription, families, f
         if (tx.type === 'credit') datesMap[k].credit += Number(tx.amount) || 0;
       });
 
-      const labels = Object.keys(datesMap).sort();
-      const debits = labels.map(l => datesMap[l].debit);
-      const credits = labels.map(l => datesMap[l].credit);
+      const sortedDateKeys = Object.keys(datesMap).sort();
+      const labels = sortedDateKeys.map(k => (k.length === 10 ? formatDisplayDate(k) : k));
+      const debits = sortedDateKeys.map(l => datesMap[l].debit);
+      const credits = sortedDateKeys.map(l => datesMap[l].credit);
+      // credits mapped above
 
       const ctx = customCanvasRef.current.getContext('2d');
       customChartInstance.current = new window.Chart(ctx, {
@@ -7604,7 +7668,7 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
         "Sensibiliser les membres aux règles d'engagement de dépenses officielles du club."
       ] : [
         "Review and update any missing invoice/ref numbers on historical records.",
-        "Perform a certified full-month ZIP backup archive for official club records.",
+        "Perform a certified full-month ZIP backup archive for official group records.",
         "Brief members on formal reimbursement protocols and valid proof-of-purchase standards."
       ],
       owner: lang === 'fr' ? 'Comité d’Audit Interne' : 'Internal Audit Committee',
@@ -7630,13 +7694,13 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
         "Établir une convention avec 2 ou 3 entreprises partenaires bienfaitrices."
       ] : [
         "Organize an annual Eagles fraternal charity event with ticket sales and raffles.",
-        "Expand official club merchandising (polo shirts, badges, eagles memorabilia).",
+        "Expand official group merchandising (polo shirts, badges, eagles memorabilia).",
         "Sign sponsorship agreements with 2-3 local community corporate benefactors."
       ],
       owner: lang === 'fr' ? 'Comité Événements & Trésorier' : 'Events Committee & Treasurer',
       impact: lang === 'fr'
         ? 'Autonomie accrue pour financer les actions caritatives et investissements durables.'
-        : 'Self-sustaining financial foundation for philanthropic mission and club expansion.'
+        : 'Self-sustaining financial foundation for philanthropic mission and group expansion.'
     },
     {
       id: 'act_06',
@@ -8457,7 +8521,7 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
                 <p className="text-xs text-slate-600">
                   {isFr
                     ? "L'onglet Membres liste les 33 membres officiels du club (Présidente, Trésorière, Secrétaire, Directeurs, Membres) avec téléphone, métier, adresse au Cambodge et contacts d'urgence. Vous pouvez ajouter, modifier ou retirer des membres à tout moment."
-                    : "The Members tab features the 33 official club members (President, Treasurer, Secretary, Board of Directors, Members) with telephone, occupation, Cambodian address, and emergency contact details. You can add, edit, or remove members at any time."}
+                    : "The Members tab features the 33 official group members (President, Treasurer, Secretary, Board of Directors, Members) with telephone, occupation, Cambodian address, and emergency contact details. You can add, edit, or remove members at any time."}
                 </p>
               </div>
             </div>
