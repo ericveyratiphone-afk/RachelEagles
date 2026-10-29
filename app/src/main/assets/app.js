@@ -1,4 +1,4 @@
-﻿// ============================================================================
+// ============================================================================
 // RACHEL EAGLES - APPLICATION DE GESTION DE TRÉSORERIE (React 18)
 // The Fraternal Order of Eagles / Sargo Cambodia Eagles Group
 // ============================================================================
@@ -2651,7 +2651,11 @@ function RachelEaglesApp() {
     setPrintDocumentData({
       title,
       subtitle: subtitle || `${t.pdfPeriodPrefix} ${filterDateFrom || 'Start'} ${t.toDate.toLowerCase()} ${filterDateTo || 'End'}`,
-      dateGenerated: (() => { const _n = new Date(); const _p = (v) => String(v).padStart(2, '0'); return ${_p(_n.getDate())}// :; })(),
+      dateGenerated: (() => {
+        const _n = new Date();
+        const _p = (v) => String(v).padStart(2, '0');
+        return _p(_n.getDate()) + '/' + _p(_n.getMonth() + 1) + '/' + _n.getFullYear() + ' ' + _p(_n.getHours()) + ':' + _p(_n.getMinutes());
+      })(),
       transactions: transactionsList,
       totalCredits: transactionsList.filter(tx => tx.type === 'credit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0),
       totalDebits: transactionsList.filter(tx => tx.type === 'debit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0),
@@ -6644,7 +6648,7 @@ function StatView2Component({
     });
 
     return {
-      labels: sortedKeys.map(k => (k.length === 10 ? formatDisplayDate(k) : (k.length === 7 ? ${k.substring(5, 7)}/ : k))),
+      labels: sortedKeys.map(k => (k.length === 10 ? formatDisplayDate(k) : (k.length === 7 ? (k.substring(5, 7) + '/' + k.substring(0, 4)) : k))),
       credits: creditsData,
       debits: debitsData,
       rawMap: datesMap
