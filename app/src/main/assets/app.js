@@ -6283,9 +6283,15 @@ function RachelEaglesApp() {
             <p className="font-semibold text-slate-700">THE FRATERNAL ORDER OF LADY EAGLES GROUP &bull; Philippine Eagles</p>
             <p className="text-[11px] text-slate-400 flex items-center justify-center sm:justify-end gap-2 mt-0.5">
               <span>TREASURER'S REPORT - Financial Record</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-300">
-                VERSION LIGHT v3.0
-              </span>
+              {typeof window !== 'undefined' && (window.AndroidNative || /Android/i.test(navigator.userAgent)) ? (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-300" title="Version allÃ©gÃ©e optimisÃ©e pour Smartphone et Tablette">
+                  VERSION MOBILE LIGHT v3.0
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-300" title="Ã‰dition PC avec Serveur Local de Synchronisation">
+                  VERSION PC v3.0
+                </span>
+              )}
             </p>
           </div>
         </div>
