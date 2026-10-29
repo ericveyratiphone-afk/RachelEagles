@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // RACHEL EAGLES - APPLICATION DE GESTION DE TRÉSORERIE (React 18)
 // The Fraternal Order of Eagles / Sargo Cambodia Eagles Group
 // ============================================================================
@@ -2683,6 +2683,214 @@ function RachelEaglesApp() {
   };
 
   // ==========================================================================
+  // RAPPORT SPECIAL ASSEMBLEE GENERALE MENSUELLE (PACK 3 PAGES COUVERTURE & CHARTS)
+  // ==========================================================================
+  const handleExportAssemblyReportPdf = () => {
+    const famTotals = {};
+    families.forEach(f => { famTotals[f.name] = 0; });
+    let totalD = 0;
+    let totalC = 0;
+
+    const sortedTx = [...filteredStatsTransactions].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+    sortedTx.forEach(tx => {
+      const amt = Number(tx.amount) || 0;
+      if (tx.type === 'debit') {
+        totalD += amt;
+        const fn = tx.family || 'Other';
+        famTotals[fn] = (famTotals[fn] || 0) + amt;
+      } else if (tx.type === 'credit') {
+        totalC += amt;
+      }
+    });
+
+    const famLabels = Object.keys(famTotals).filter(k => famTotals[k] > 0);
+    const famData = famLabels.map(k => famTotals[k]);
+    const famColors = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#9333ea', '#0891b2', '#ea580c', '#475569', '#059669', '#e11d48'];
+
+    const dateMap = {};
+    sortedTx.forEach(tx => {
+      const d = tx.date || '';
+      if (!d) return;
+      if (!dateMap[d]) dateMap[d] = { credits: 0, debits: 0 };
+      const amt = Number(tx.amount) || 0;
+      if (tx.type === 'credit') dateMap[d].credits += amt;
+      else if (tx.type === 'debit') dateMap[d].debits += amt;
+    });
+
+    const sortedDates = Object.keys(dateMap).sort();
+    let runningBal = 0;
+    const trendLabels = sortedDates.map(d => formatDisplayDate(d));
+    const trendBalanceData = [];
+    sortedDates.forEach(d => {
+      runningBal += (dateMap[d].credits - dateMap[d].debits);
+      trendBalanceData.push(runningBal);
+    });
+
+    let pieUri = null;
+    let barUri = null;
+    let lineUri = null;
+
+    if (typeof window !== 'undefined' && window.Chart) {
+      // 1. Camembert (Dépenses par famille)
+      try {
+        const pieC = document.createElement('canvas');
+        pieC.width = 440;
+        pieC.height = 230;
+        pieC.style.position = 'fixed';
+        pieC.style.left = '-9999px';
+        document.body.appendChild(pieC);
+
+        const pieChart = new window.Chart(pieC.getContext('2d'), {
+          type: 'pie',
+          data: {
+            labels: famLabels.length > 0 ? famLabels.map(l => formatItemLabel(l, lang)) : [lang === 'fr' ? 'Aucune d\\u00e9pense' : 'No expenses'],
+            datasets: [{
+              data: famData.length > 0 ? famData : [1],
+              backgroundColor: famData.length > 0 ? famColors.slice(0, famLabels.length) : ['#cbd5e1']
+            }]
+          },
+          options: {
+            animation: false,
+            responsive: false,
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: { boxWidth: 10, font: { size: 9, weight: 'bold' } }
+              }
+            }
+          }
+        });
+        pieChart.render();
+        pieUri = pieC.toDataURL('image/png');
+        pieChart.destroy();
+        document.body.removeChild(pieC);
+      } catch (err) {
+        console.warn('Pie chart offscreen warning:', err);
+      }
+
+      // 2. Histogramme (Recettes vs Dépenses)
+      try {
+        const barC = document.createElement('canvas');
+        barC.width = 440;
+        barC.height = 230;
+        barC.style.position = 'fixed';
+        barC.style.left = '-9999px';
+        document.body.appendChild(barC);
+
+        const barChart = new window.Chart(barC.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: [
+              lang === 'fr' ? 'Recettes (Incomes)' : 'Incomes (Credits)',
+              lang === 'fr' ? 'D\\u00e9penses (Debits)' : 'Expenses (Debits)'
+            ],
+            datasets: [{
+              label: 'USD ($)',
+              data: [totalC, totalD],
+              backgroundColor: ['#16a34a', '#dc2626'],
+              borderRadius: 6
+            }]
+          },
+          options: {
+            animation: false,
+            responsive: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { font: { size: 9, weight: 'bold' } } },
+              x: { ticks: { font: { size: 9, weight: 'bold' } } }
+            }
+          }
+        });
+        barChart.render();
+        barUri = barC.toDataURL('image/png');
+        barChart.destroy();
+        document.body.removeChild(barC);
+      } catch (err) {
+        console.warn('Bar chart offscreen warning:', err);
+      }
+
+      // 3. Courbe de trésorerie (Solde net cumulé au fil du temps)
+      try {
+        const lineC = document.createElement('canvas');
+        lineC.width = 880;
+        lineC.height = 200;
+        lineC.style.position = 'fixed';
+        lineC.style.left = '-9999px';
+        document.body.appendChild(lineC);
+
+        const _nowDate = new Date();
+        const _p2 = (v) => String(v).padStart(2, '0');
+        const fallbackDate = _p2(_nowDate.getDate()) + '/' + _p2(_nowDate.getMonth() + 1) + '/' + _nowDate.getFullYear();
+
+        const lineChart = new window.Chart(lineC.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: trendLabels.length > 0 ? trendLabels : [fallbackDate],
+            datasets: [{
+              label: lang === 'fr' ? 'Solde Net Cumul\\u00e9 ($)' : 'Cumulative Treasury Balance ($)',
+              data: trendBalanceData.length > 0 ? trendBalanceData : [totalC - totalD],
+              borderColor: '#1e3a8a',
+              backgroundColor: 'rgba(30, 58, 138, 0.1)',
+              fill: true,
+              tension: 0.25,
+              borderWidth: 2.5,
+              pointRadius: 3,
+              pointBackgroundColor: '#1e3a8a'
+            }]
+          },
+          options: {
+            animation: false,
+            responsive: false,
+            plugins: {
+              legend: { display: true, labels: { font: { size: 9, weight: 'bold' } } }
+            },
+            scales: {
+              y: { ticks: { font: { size: 9, weight: 'bold' } } },
+              x: { ticks: { font: { size: 9, weight: 'bold' }, maxRotation: 45 } }
+            }
+          }
+        });
+        lineChart.render();
+        lineUri = lineC.toDataURL('image/png');
+        lineChart.destroy();
+        document.body.removeChild(lineC);
+      } catch (err) {
+        console.warn('Line chart offscreen warning:', err);
+      }
+    }
+
+    const _now = new Date();
+    const _p = (v) => String(v).padStart(2, '0');
+    const assemblyDateStr = _p(_now.getDate()) + '/' + _p(_now.getMonth() + 1) + '/' + _now.getFullYear();
+
+    setPrintDocumentData({
+      type: 'assembly_report',
+      title: lang === 'fr' 
+        ? 'RAPPORT OFFICIEL DE TR\\u00c9SORERIE - ASSEMBL\\u00c9E G\\u00c9N\\u00c9RALE DU GROUP' 
+        : 'OFFICIAL TREASURY REPORT - GENERAL ASSEMBLY OF THE GROUP',
+      subtitle: activeFilterDescription,
+      dateGenerated: assemblyDateStr + ' ' + _p(_now.getHours()) + ':' + _p(_now.getMinutes()),
+      assemblyDate: assemblyDateStr,
+      transactions: sortedTx,
+      totalCredits: totalC,
+      totalDebits: totalD,
+      netBalance: totalC - totalD,
+      pieChartImage: pieUri,
+      barChartImage: barUri,
+      lineChartImage: lineUri
+    });
+
+    setTimeout(() => {
+      if (window.AndroidNative && typeof window.AndroidNative.printPdf === 'function') {
+        window.AndroidNative.printPdf(lang === 'fr' ? 'Rapport_Assemblee_Mensuelle' : 'Monthly_Assembly_Report');
+      } else {
+        window.print();
+      }
+    }, 350);
+  };
+
+  // ==========================================================================
   // SAUVEGARDE ZIP
   // ==========================================================================
   const [zipDateFrom, setZipDateFrom] = useState('');
@@ -5353,23 +5561,12 @@ function RachelEaglesApp() {
                   
                   <button
                     type="button"
-                    onClick={() => {
-                      triggerOfficialPdfExport(
-                        lang === "fr" 
-                          ? "RAPPORT OFFICIEL DE TRESORERIE - ASSEMBLEE GENERALE DU GROUP" 
-                          : "OFFICIAL TREASURY REPORT - GENERAL ASSEMBLY OF THE GROUP",
-                        lang === "fr"
-                          ? `PrÃ©sentÃ© par Rachel Chua (Group Treasurer) & Sharon Llegado (Group President) â€¢ PÃ©riode : ${activeFilterDescription}`
-                          : `Presented by Rachel Chua (Group Treasurer) & Sharon Llegado (Group President) â€¢ Period: ${activeFilterDescription}`,
-                        filteredStatsTransactions,
-                        "chart-view3-fam"
-                      );
-                    }}
+                    onClick={handleExportAssemblyReportPdf}
                     className="px-3.5 py-1.5 bg-gradient-to-r from-blue-900 to-indigo-900 hover:from-blue-950 hover:to-indigo-950 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-md transition border border-amber-400/40"
-                    title={lang === "fr" ? "GÃ©nÃ©rer le Rapport Officiel pour l'AssemblÃ©e GÃ©nÃ©rale Mensuelle" : "Generate Official Monthly General Assembly Report"}
+                    title={lang === 'fr' ? "G\u00e9n\u00e9rer le Rapport d'Assembl\u00e9e G\u00e9n\u00e9rale (Pack 3 Pages)" : "Generate General Assembly Report (3-Page Presentation Pack)"}
                   >
                     <i className="fa-solid fa-landmark text-amber-400"></i>
-                    <span>{lang === "fr" ? "Rapport AssemblÃ©e (PDF)" : "Assembly Report (PDF)"}</span>
+                    <span>{lang === 'fr' ? "Rapport Assembl\u00e9e (PDF)" : "Assembly Report (PDF)"}</span>
                   </button>
 
                   <button
@@ -6360,7 +6557,298 @@ function RachelEaglesApp() {
         <div id="print-section">
           <div className="print-watermark"></div>
 
-          <div className="text-center mb-4">
+          {printDocumentData.type === 'assembly_report' ? (
+            /* ===============================================================
+               PACK OFFICIEL ASSEMBLEE GENERALE EN 3 PAGES
+               =============================================================== */
+            <div>
+              {/* PAGE 1 : PAGE DE GARDE D'ATTENTE (AUCUN CHIFFRE NI TABLE) */}
+              <div className="page-break" style={{ minHeight: '94vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', textAlign: 'center', padding: '15px 10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '24px', marginBottom: '12px' }}>
+                  <img src="logo1.png" alt="Logo Eagles" style={{ width: '85px', height: '85px', objectFit: 'contain' }} />
+                  <img src="logo2.png" alt="Logo Sargo" style={{ width: '95px', height: '95px', objectFit: 'contain' }} />
+                  <img src="logo3.png" alt="Logo Rachel Eagles" style={{ width: '85px', height: '85px', objectFit: 'contain' }} />
+                </div>
+
+                <div>
+                  <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 6px 0' }}>
+                    THE FRATERNAL ORDER OF LADY EAGLES GROUP
+                  </h1>
+                  <h2 style={{ fontSize: '13px', fontWeight: '700', color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 14px 0' }}>
+                    Sargo Cambodia Lady Eagles Group &bull; Commission des Finances
+                  </h2>
+                  <div style={{ width: '120px', height: '3.5px', background: '#1e3a8a', margin: '0 auto 18px auto', borderRadius: '2px' }}></div>
+
+                  <div style={{ display: 'inline-block', background: '#eff6ff', border: '2px solid #1e3a8a', borderRadius: '12px', padding: '16px 36px', boxShadow: '0 4px 12px rgba(30, 58, 138, 0.08)' }}>
+                    <p style={{ fontSize: '11px', fontWeight: '800', color: '#2563eb', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 4px 0' }}>
+                      Application : Treasurer Financial Record
+                    </p>
+                    <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 6px 0', textTransform: 'uppercase' }}>
+                      {lang === 'fr' ? "RAPPORT OFFICIEL DE TR\u00c9SORERIE" : "OFFICIAL TREASURY & FINANCIAL REPORT"}
+                    </h3>
+                    <p style={{ fontSize: '13px', fontWeight: '700', color: '#475569', margin: '0 0 4px 0' }}>
+                      {lang === 'fr' ? "ASSEMBL\u00c9E G\u00c9N\u00c9RALE MENSUELLE" : "MONTHLY GENERAL ASSEMBLY"}
+                    </p>
+                    <p style={{ fontSize: '11px', color: '#64748b', margin: 0, fontStyle: 'italic' }}>
+                      {lang === 'fr' ? "P\u00e9riode d'audit :" : "Audited Period:"} {printDocumentData.subtitle}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Encadr\u00e9 d'attente / Standby Slide (strictement aucun chiffre ici !) */}
+                <div style={{ background: '#f8fafc', border: '1.5px dashed #94a3b8', borderRadius: '12px', padding: '16px 24px', maxWidth: '580px', margin: '20px auto 10px auto' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fef3c7', color: '#92400e', fontWeight: '800', fontSize: '11px', padding: '4px 14px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                    <span>\ud83c\udfdb\ufe0f {lang === 'fr' ? "S\u00c9ANCE EN COURS D'INSTALLATION" : "GENERAL ASSEMBLY IN SESSION"}</span>
+                  </div>
+                  <h4 style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a', margin: '0 0 6px 0' }}>
+                    Recipient: Lady Eagles Group Members and Officers
+                  </h4>
+                  <p style={{ fontSize: '11px', color: '#475569', margin: 0, lineHeight: '1.5' }}>
+                    {lang === 'fr' 
+                      ? "Bienvenue \u00e0 tous les membres et officiers. Veuillez prendre place. La pr\u00e9sentation officielle des comptes mensuels d\u00e9butera d\u00e8s que l'assembl\u00e9e sera au complet." 
+                      : "Welcome to all members and officers. Please take your seats. The official financial accounts and treasury presentation will commence shortly once the assembly is in full session."}
+                  </p>
+                </div>
+
+                {/* Cadre Pr\u00e9sentateurs & Date */}
+                <div style={{ marginTop: '15px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '60px', marginBottom: '14px' }}>
+                    <div style={{ textAlign: 'center', minWidth: '180px' }}>
+                      <p style={{ fontSize: '9px', fontWeight: '700', color: '#64748b', margin: '0 0 2px 0', textTransform: 'uppercase' }}>
+                        Issuer / Pr\u00e9sent\u00e9 par
+                      </p>
+                      <p style={{ fontSize: '13px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 2px 0' }}>Rachel Chua</p>
+                      <p style={{ fontSize: '10px', fontWeight: '700', color: '#475569', margin: 0 }}>
+                        Group Treasurer
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'center', minWidth: '180px' }}>
+                      <p style={{ fontSize: '9px', fontWeight: '700', color: '#64748b', margin: '0 0 2px 0', textTransform: 'uppercase' }}>
+                        Endorsement / Approuv\u00e9 par
+                      </p>
+                      <p style={{ fontSize: '13px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 2px 0' }}>Sharon Llegado</p>
+                      <p style={{ fontSize: '10px', fontWeight: '700', color: '#475569', margin: 0 }}>
+                        Group President
+                      </p>
+                    </div>
+                  </div>
+
+                  <p style={{ fontSize: '10.5px', color: '#64748b', margin: '0 0 10px 0', fontWeight: '600' }}>
+                    {lang === 'fr' ? 'Date de S\u00e9ance :' : 'Session Date:'} <strong>{printDocumentData.assemblyDate}</strong> &bull; Phnom Penh
+                  </p>
+                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '48px', objectFit: 'contain' }} />
+                </div>
+              </div>
+
+              {/* PAGE 2 : TABLEAU DE BORD FINANCIER & STATISTIQUES */}
+              <div className="page-break" style={{ minHeight: '94vh', padding: '10px 5px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #1e3a8a', paddingBottom: '6px', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <img src="logo2.png" alt="Sargo" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
+                      <div>
+                        <h2 style={{ fontSize: '11px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: 0 }}>
+                          THE FRATERNAL ORDER OF LADY EAGLES GROUP
+                        </h2>
+                        <p style={{ fontSize: '9px', fontWeight: '700', color: '#d97706', margin: 0 }}>
+                          {lang === 'fr' ? "TABLEAU DE BORD FINANCIER & STATISTIQUES" : "EXECUTIVE FINANCIAL DASHBOARD & CHARTS"}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', fontSize: '9px', color: '#64748b' }}>
+                      <p style={{ margin: 0, fontWeight: '700' }}>{printDocumentData.subtitle}</p>
+                      <p style={{ margin: 0 }}>{printDocumentData.dateGenerated}</p>
+                    </div>
+                  </div>
+
+                  {/* 3 KPI CARDS */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '12px' }}>
+                    <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '9.5px', fontWeight: '800', color: '#166534', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '2px' }}>
+                        {lang === 'fr' ? "Total Recettes (Incomes)" : "Total Incomes (Credits)"}
+                      </span>
+                      <span style={{ fontSize: '19px', fontWeight: '900', color: '#15803d' }}>
+                        {formatUSD(printDocumentData.totalCredits)}
+                      </span>
+                    </div>
+
+                    <div style={{ background: '#fef2f2', border: '1.5px solid #fca5a5', borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '9.5px', fontWeight: '800', color: '#991b1b', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '2px' }}>
+                        {lang === 'fr' ? "Total D\u00e9penses (Debits)" : "Total Expenses (Debits)"}
+                      </span>
+                      <span style={{ fontSize: '19px', fontWeight: '900', color: '#b91c1c' }}>
+                        {formatUSD(printDocumentData.totalDebits)}
+                      </span>
+                    </div>
+
+                    <div style={{ background: '#eff6ff', border: '1.5px solid #93c5fd', borderRadius: '10px', padding: '10px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '9.5px', fontWeight: '800', color: '#1e40af', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '2px' }}>
+                        {lang === 'fr' ? "Solde Net Disponible" : "Net Treasury Balance"}
+                      </span>
+                      <span style={{ fontSize: '19px', fontWeight: '900', color: '#1e3a8a' }}>
+                        {formatUSD(printDocumentData.netBalance)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 2 CHARTS: CAMEMBERT + HISTOGRAMME */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', alignItems: 'stretch', marginBottom: '10px' }}>
+                    <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '8px', textAlign: 'center' }}>
+                      <h4 style={{ fontSize: '10px', fontWeight: '800', color: '#1e3a8a', margin: '0 0 4px 0', textTransform: 'uppercase' }}>
+                        {lang === 'fr' ? "R\u00e9partition des D\u00e9penses par Famille" : "Expense Breakdown by Family"}
+                      </h4>
+                      {printDocumentData.pieChartImage ? (
+                        <img src={printDocumentData.pieChartImage} alt="Expenses by Family" style={{ maxWidth: '100%', maxHeight: '185px', margin: '0 auto', objectFit: 'contain' }} />
+                      ) : (
+                        <div style={{ height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '10px' }}>
+                          {lang === 'fr' ? "Aucune d\u00e9pense sur cette p\u00e9riode" : "No expense recorded"}
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '8px', textAlign: 'center' }}>
+                      <h4 style={{ fontSize: '10px', fontWeight: '800', color: '#1e3a8a', margin: '0 0 4px 0', textTransform: 'uppercase' }}>
+                        {lang === 'fr' ? "Recettes vs D\u00e9penses (USD)" : "Incomes vs Expenses (USD)"}
+                      </h4>
+                      {printDocumentData.barChartImage ? (
+                        <img src={printDocumentData.barChartImage} alt="Incomes vs Expenses" style={{ maxWidth: '100%', maxHeight: '185px', margin: '0 auto', objectFit: 'contain' }} />
+                      ) : (
+                        <div style={{ height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '10px' }}>
+                          {lang === 'fr' ? "Graphique non disponible" : "Chart not available"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 3EME CHART: COURBE D'EVOLUTION DU SOLDE */}
+                  <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '8px', textAlign: 'center', marginBottom: '8px' }}>
+                    <h4 style={{ fontSize: '10px', fontWeight: '800', color: '#1e3a8a', margin: '0 0 4px 0', textTransform: 'uppercase' }}>
+                      {lang === 'fr' ? "Courbe d'\u00c9volution de la Tr\u00e9sorerie (Solde Net Cumul\u00e9)" : "Treasury Trend (Cumulative Net Balance)"}
+                    </h4>
+                    {printDocumentData.lineChartImage ? (
+                      <img src={printDocumentData.lineChartImage} alt="Treasury Trend" style={{ maxWidth: '100%', maxHeight: '150px', margin: '0 auto', objectFit: 'contain' }} />
+                    ) : (
+                      <div style={{ height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '10px' }}>
+                        {lang === 'fr' ? "Courbe non disponible" : "Trend curve not available"}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Note de gouvernance */}
+                  <div style={{ background: '#f8fafc', borderLeft: '4px solid #1e3a8a', padding: '6px 12px', borderRadius: '0 6px 6px 0', fontSize: '9.5px', color: '#475569' }}>
+                    <strong>{lang === 'fr' ? "Note de Tr\u00e9sorerie :" : "Treasury Note:"}</strong> {lang === 'fr' 
+                      ? "La situation financi\u00e8re refl\u00e8te les \u00e9critures valid\u00e9es au journal. Les ratios d'engagement restent conformes aux r\u00e9solutions de l'Assembl\u00e9e G\u00e9n\u00e9rale." 
+                      : "Financial standing reflects validated ledger entries. Allocation ratios adhere strictly to General Assembly authorizations."}
+                  </div>
+                </div>
+
+                {/* Footer Page 2 avec signatures nominatives */}
+                <div style={{ marginTop: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #cbd5e1', paddingTop: '6px' }}>
+                    <div style={{ fontSize: '9px', fontWeight: '800', color: '#1e3a8a' }}>
+                      Rachel Chua &bull; <span style={{ color: '#64748b', fontWeight: '600' }}>Group Treasurer</span>
+                    </div>
+                    <div style={{ fontSize: '8.5px', color: '#94a3b8' }}>
+                      {lang === 'fr' ? "Pack Assembl\u00e9e G\u00e9n\u00e9rale \u2022 Page 2 / 3" : "General Assembly Pack \u2022 Page 2 / 3"}
+                    </div>
+                    <div style={{ fontSize: '9px', fontWeight: '800', color: '#1e3a8a' }}>
+                      Sharon Llegado &bull; <span style={{ color: '#64748b', fontWeight: '600' }}>Group President</span>
+                    </div>
+                  </div>
+                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '42px', objectFit: 'contain', marginTop: '6px' }} />
+                </div>
+              </div>
+
+              {/* PAGE 3 : GRAND LIVRE DETAILLE & ENDORSEMENT */}
+              <div style={{ minHeight: '94vh', padding: '10px 5px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #1e3a8a', paddingBottom: '6px', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <img src="logo2.png" alt="Sargo" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
+                      <div>
+                        <h2 style={{ fontSize: '11px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: 0 }}>
+                          THE FRATERNAL ORDER OF LADY EAGLES GROUP
+                        </h2>
+                        <p style={{ fontSize: '9px', fontWeight: '700', color: '#d97706', margin: 0 }}>
+                          {lang === 'fr' ? "JOURNAL AUDIT\u00c9 & GRAND LIVRE DES TRANSACTIONS" : "AUDITED TRANSACTION JOURNAL & ITEM LEDGER"}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', fontSize: '9px', color: '#64748b' }}>
+                      <p style={{ margin: 0, fontWeight: '700' }}>{printDocumentData.subtitle}</p>
+                      <p style={{ margin: 0 }}>{printDocumentData.transactions.length} {lang === 'fr' ? 'op\u00e9rations' : 'transactions'}</p>
+                    </div>
+                  </div>
+
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
+                    <thead>
+                      <tr style={{ background: '#1e3a8a', color: 'white' }}>
+                        <th style={{ padding: '5px 6px', textAlign: 'left' }}>{t.date}</th>
+                        <th style={{ padding: '5px 6px', textAlign: 'left' }}>{t.type}</th>
+                        <th style={{ padding: '5px 6px', textAlign: 'left' }}>{t.pdfFamCol}</th>
+                        <th style={{ padding: '5px 6px', textAlign: 'left' }}>{t.pdfRefCol}</th>
+                        <th style={{ padding: '5px 6px', textAlign: 'left' }}>{t.pdfRemarkCol}</th>
+                        <th style={{ padding: '5px 6px', textAlign: 'right' }}>{t.pdfAmountCol}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {printDocumentData.transactions.map((tx, idx) => (
+                        <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                          <td style={{ padding: '4px 6px', fontWeight: 'bold' }}>{formatDisplayDate(tx.date)}</td>
+                          <td style={{ padding: '4px 6px', color: tx.type === 'credit' ? '#16a34a' : '#dc2626', fontWeight: 'bold' }}>
+                            {tx.type === 'credit' ? t.credit.toUpperCase() : t.debit.toUpperCase()}
+                          </td>
+                          <td style={{ padding: '4px 6px' }}>
+                            {tx.type === 'debit' ? formatItemLabel(tx.family, lang) : formatItemLabel(tx.reason, lang)}
+                          </td>
+                          <td style={{ padding: '4px 6px', color: '#64748b' }}>{tx.refInvoice || '-'}</td>
+                          <td style={{ padding: '4px 6px', color: '#64748b', fontStyle: 'italic' }}>{tx.remark || '-'}</td>
+                          <td style={{ padding: '4px 6px', textAlign: 'right', fontWeight: 'bold', color: tx.type === 'credit' ? '#16a34a' : '#dc2626' }}>
+                            {formatUSD(tx.amount)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '20px', marginTop: '10px', padding: '6px 12px', background: '#f1f5f9', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold' }}>
+                    <span>{t.totalCredits}: <span style={{ color: '#16a34a' }}>{formatUSD(printDocumentData.totalCredits)}</span></span>
+                    <span>{t.totalDebits}: <span style={{ color: '#dc2626' }}>{formatUSD(printDocumentData.totalDebits)}</span></span>
+                    <span>{t.balance}: <span style={{ color: '#1e3a8a' }}>{formatUSD(printDocumentData.netBalance)}</span></span>
+                  </div>
+                </div>
+
+                {/* Signatures officielles */}
+                <div style={{ marginTop: '24px', paddingTop: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px' }}>
+                    <div style={{ fontSize: '9px', color: '#64748b', maxWidth: '280px' }}>
+                      <p style={{ margin: '0 0 2px 0', fontWeight: 'bold', color: '#0f172a' }}>{t.pdfOfficialDoc}</p>
+                      <p style={{ margin: 0 }}>THE FRATERNAL ORDER OF LADY EAGLES GROUP</p>
+                      <p style={{ margin: '2px 0 0 0', fontStyle: 'italic' }}>Certification Assembl\u00e9e G\u00e9n\u00e9rale &bull; {printDocumentData.assemblyDate}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '32px' }}>
+                      <div style={{ textAlign: 'center', minWidth: '160px', borderTop: '1.5px solid #1e3a8a', paddingTop: '6px' }}>
+                        <p style={{ fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a', margin: '0 0 2px 0' }}>Rachel Chua</p>
+                        <p style={{ fontSize: '9.5px', fontWeight: 'bold', color: '#475569', margin: '0 0 16px 0' }}>Group Treasurer</p>
+                        <p style={{ fontSize: '8px', color: '#94a3b8', margin: 0 }}>{t.pdfSignatureLabel}</p>
+                      </div>
+                      <div style={{ textAlign: 'center', minWidth: '160px', borderTop: '1.5px solid #1e3a8a', paddingTop: '6px' }}>
+                        <p style={{ fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a', margin: '0 0 2px 0' }}>Sharon Llegado</p>
+                        <p style={{ fontSize: '9.5px', fontWeight: 'bold', color: '#475569', margin: '0 0 16px 0' }}>Group President</p>
+                        <p style={{ fontSize: '8px', color: '#94a3b8', margin: 0 }}>{t.pdfSignatureLabel}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'center' }}>
+                    <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '48px', objectFit: 'contain' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="text-center mb-4">
             <img src="header_banner.jpg" alt="Official Header" style={{ width: '100%', maxHeight: '110px', objectFit: 'contain' }} />
           </div>
 
@@ -6571,6 +7059,8 @@ function RachelEaglesApp() {
           </div>
           </div>
         )}
+            </div>
+          )}
         </div>
       )}
     </div>

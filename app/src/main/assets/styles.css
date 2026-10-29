@@ -164,6 +164,7 @@ body {
   /* Saut de page propre */
   .page-break {
     page-break-after: always;
+    break-after: page;
   }
 
   #print-section table {
