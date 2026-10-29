@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // RACHEL EAGLES - APPLICATION DE GESTION DE TRÉSORERIE (React 18)
 // The Fraternal Order of Eagles / Sargo Cambodia Eagles Club
 // ============================================================================
@@ -3029,7 +3029,7 @@ function RachelEaglesApp() {
       }
 
       // 3. FUSION DES FAMILLES OFFICIELLES (ORDRE ALPHABÉTIQUE)
-      const officialFamilies = [
+      const officialFamilyNames = [
         "Alalayang Agila",
         "Community Service",
         "En Rent..",
@@ -3038,11 +3038,26 @@ function RachelEaglesApp() {
         "Sharing of SCLEG",
         "Voluntary Donation"
       ];
-      let mergedFamilies = Array.from(new Set([
-        ...families,
-        ...(remoteData && remoteData.families ? remoteData.families : []),
-        ...officialFamilies
-      ])).sort((a, b) => a.localeCompare(b));
+      const familyMap = new Map();
+      officialFamilyNames.forEach(name => {
+        const id = 'fam_' + name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        familyMap.set(name.toLowerCase(), { id, name });
+      });
+      (families || []).forEach(f => {
+        const name = typeof f === 'string' ? f : (f && f.name ? f.name : '');
+        if (name && !familyMap.has(name.toLowerCase())) {
+          familyMap.set(name.toLowerCase(), typeof f === 'object' && f.id ? f : { id: 'fam_' + Date.now() + Math.random().toString(36).substr(2, 4), name });
+        }
+      });
+      if (remoteData && Array.isArray(remoteData.families)) {
+        remoteData.families.forEach(f => {
+          const name = typeof f === 'string' ? f : (f && f.name ? f.name : '');
+          if (name && !familyMap.has(name.toLowerCase())) {
+            familyMap.set(name.toLowerCase(), typeof f === 'object' && f.id ? f : { id: 'fam_' + Date.now() + Math.random().toString(36).substr(2, 4), name });
+          }
+        });
+      }
+      const mergedFamilies = Array.from(familyMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
 
       setTransactions(mergedTx);
       setMembers(mergedMembers);
@@ -3187,7 +3202,7 @@ function RachelEaglesApp() {
       }
 
       // 4. FUSION DES FAMILLES OFFICIELLES
-      const officialFamilies = [
+      const officialFamilyNames = [
         "Alalayang Agila",
         "Community Service",
         "En Rent..",
@@ -3196,11 +3211,26 @@ function RachelEaglesApp() {
         "Sharing of SCLEG",
         "Voluntary Donation"
       ];
-      let mergedFamilies = Array.from(new Set([
-        ...families,
-        ...(remoteData && remoteData.families ? remoteData.families : []),
-        ...officialFamilies
-      ])).sort((a, b) => a.localeCompare(b));
+      const familyMap = new Map();
+      officialFamilyNames.forEach(name => {
+        const id = 'fam_' + name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        familyMap.set(name.toLowerCase(), { id, name });
+      });
+      (families || []).forEach(f => {
+        const name = typeof f === 'string' ? f : (f && f.name ? f.name : '');
+        if (name && !familyMap.has(name.toLowerCase())) {
+          familyMap.set(name.toLowerCase(), typeof f === 'object' && f.id ? f : { id: 'fam_' + Date.now() + Math.random().toString(36).substr(2, 4), name });
+        }
+      });
+      if (remoteData && Array.isArray(remoteData.families)) {
+        remoteData.families.forEach(f => {
+          const name = typeof f === 'string' ? f : (f && f.name ? f.name : '');
+          if (name && !familyMap.has(name.toLowerCase())) {
+            familyMap.set(name.toLowerCase(), typeof f === 'object' && f.id ? f : { id: 'fam_' + Date.now() + Math.random().toString(36).substr(2, 4), name });
+          }
+        });
+      }
+      const mergedFamilies = Array.from(familyMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
 
       setTransactions(mergedTx);
       setMembers(mergedMembers);
