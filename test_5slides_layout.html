@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Preview 5 Slides Presentation Pack - Full Page Coverage</title>
+  <link rel="stylesheet" href="http://127.0.0.1:8085/styles.css?v=3.3">
+  <script src="http://127.0.0.1:8085/chart.umd.min.js"></script>
+  <style>
+    body {
+      background: #0f172a;
+      margin: 0;
+      padding: 30px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .sheet {
+      background: white;
+      width: 210mm;
+      height: 297mm; /* Exact A4 height */
+      margin: 0 auto 35px auto;
+      padding: 12mm 14mm;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+<div id="root">
+  <p style="color: white; text-align: center; font-weight: bold;">CHARGING EXPANDED 5 SLIDES...</p>
+</div>
+
+<script>
+window.onload = function() {
+  function makeChartUri(w, h, config) {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    c.style.position = 'fixed';
+    c.style.left = '-9999px';
+    document.body.appendChild(c);
+    const chart = new Chart(c.getContext('2d'), {
+      ...config,
+      options: { 
+        ...config.options, 
+        animation: false, 
+        responsive: false,
+        maintainAspectRatio: false 
+      }
+    });
+    chart.render();
+    const uri = c.toDataURL('image/png');
+    chart.destroy();
+    document.body.removeChild(c);
+    return uri;
+  }
+
+  // 1. Slide 2: HBar (Canvas 420x460 -> fits 336px column with 368px height)
+  const s2HBarUri = makeChartUri(420, 460, {
+    type: 'bar',
+    data: {
+      labels: ['Events & Meetings', 'Charity & Donation', 'Administration', 'Emergency Aid'],
+      datasets: [{
+        label: 'Montant ($)',
+        data: [480, 350, 220, 160],
+        backgroundColor: ['#2563eb', '#16a34a', '#d97706', '#dc2626'],
+        borderRadius: 8,
+        barPercentage: 0.65
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: { 
+        legend: { display: false },
+        tooltip: { enabled: false }
+      },
+      scales: {
+        x: { beginAtZero: true, ticks: { font: { size: 14, weight: 'bold' } } },
+        y: { ticks: { font: { size: 14, weight: 'bold' } } }
+      }
+    }
+  });
+
+  // 2. Slide 2: Pie % (Canvas 420x460 -> large circle + legend bottom)
+  const s2PieUri = makeChartUri(420, 460, {
+    type: 'pie',
+    data: {
+      labels: ['Events & Meetings (40%)', 'Charity & Donation (29%)', 'Administration (18%)', 'Emergency Aid (13%)'],
+      datasets: [{
+        data: [480, 350, 220, 160],
+        backgroundColor: ['#2563eb', '#16a34a', '#d97706', '#dc2626'],
+        borderWidth: 2,
+        borderColor: '#ffffff'
+      }]
+    },
+    options: {
+      layout: { padding: 8 },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 16, font: { size: 13, weight: 'bold' }, padding: 14 }
+        }
+      }
+    }
+  });
+
+  // 3. Slide 3: Weekly Bar (Canvas 440x460 -> fits column)
+  const s3WeekBarUri = makeChartUri(440, 460, {
+    type: 'bar',
+    data: {
+      labels: ['Sem 1 (01-07/10)', 'Sem 2 (08-14/10)', 'Sem 3 (15-21/10)', 'Sem 4 (22-28/10)'],
+      datasets: [
+        { label: 'Recettes ($)', data: [1200, 850, 0, 500], backgroundColor: '#16a34a', borderRadius: 8, barPercentage: 0.75, categoryPercentage: 0.8 },
+        { label: 'Dépenses ($)', data: [350, 480, 220, 160], backgroundColor: '#dc2626', borderRadius: 8, barPercentage: 0.75, categoryPercentage: 0.8 }
+      ]
+    },
+    options: {
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 14, weight: 'bold' }, padding: 12 } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { font: { size: 13, weight: 'bold' } } },
+        x: { ticks: { font: { size: 12.5, weight: 'bold' } } }
+      }
+    }
+  });
+
+  // 4. Slide 3: Pie % (Canvas 420x460)
+  const s3PieUri = makeChartUri(420, 460, {
+    type: 'pie',
+    data: {
+      labels: ['Recettes (68%)', 'Dépenses (32%)'],
+      datasets: [{
+        data: [2550, 1210],
+        backgroundColor: ['#16a34a', '#dc2626'],
+        borderWidth: 2,
+        borderColor: '#ffffff'
+      }]
+    },
+    options: {
+      layout: { padding: 8 },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 20, font: { size: 15, weight: 'bold' }, padding: 18 } }
+      }
+    }
+  });
+
+  // 5. Slide 4: Weekly Cash Flow Bar (Canvas 420x340)
+  const s4FlowBarUri = makeChartUri(420, 340, {
+    type: 'bar',
+    data: {
+      labels: ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4'],
+      datasets: [{
+        label: 'Flux Net ($)',
+        data: [850, 370, -220, 340],
+        backgroundColor: ['#16a34a', '#16a34a', '#dc2626', '#16a34a'],
+        borderRadius: 8,
+        barPercentage: 0.65
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { font: { size: 13, weight: 'bold' } } },
+        x: { ticks: { font: { size: 13, weight: 'bold' } } }
+      }
+    }
+  });
+
+  // 6. Slide 4: Doughnut % (Canvas 420x340)
+  const s4PieUri = makeChartUri(420, 340, {
+    type: 'doughnut',
+    data: {
+      labels: ['Solde Disponible (53%)', 'Dépenses Engagées (47%)'],
+      datasets: [{
+        data: [1340, 1210],
+        backgroundColor: ['#1e3a8a', '#94a3b8'],
+        borderWidth: 2,
+        borderColor: '#ffffff'
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 16, font: { size: 13, weight: 'bold' }, padding: 12 } }
+      }
+    }
+  });
+
+  // 7. Slide 4: Trend Line (Canvas 900x320)
+  const s4LineUri = makeChartUri(900, 320, {
+    type: 'line',
+    data: {
+      labels: ['02/10/2026', '05/10/2026', '09/10/2026', '14/10/2026', '18/10/2026', '22/10/2026', '26/10/2026'],
+      datasets: [{
+        label: 'Solde Net Cumulé de Trésorerie ($ USD)',
+        data: [1200, 850, 370, 1220, 1000, 840, 1340],
+        borderColor: '#1e3a8a',
+        backgroundColor: 'rgba(30, 58, 138, 0.12)',
+        fill: true,
+        tension: 0.25,
+        borderWidth: 4,
+        pointRadius: 6,
+        pointBackgroundColor: '#1e3a8a'
+      }]
+    },
+    options: {
+      plugins: { legend: { display: true, labels: { font: { size: 13.5, weight: 'bold' } } } },
+      scales: {
+        y: { ticks: { font: { size: 12.5, weight: 'bold' } } },
+        x: { ticks: { font: { size: 12.5, weight: 'bold' } } }
+      }
+    }
+  });
+
+  const root = document.getElementById('root');
+  root.innerHTML = `
+    <!-- ========================================== -->
+    <!-- SLIDE 1 : PAGE DE GARDE D'ATTENTE (PLEIN ECRAN) -->
+    <!-- ========================================== -->
+    <div class="sheet" id="slide1">
+      <div style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; text-align: center; box-sizing: border-box; padding: 20px 0;">
+        <!-- Logos Agrandis -->
+        <div style="display: flex; justify-content: center; align-items: center; gap: 48px; margin-top: 15px;">
+          <img src="http://127.0.0.1:8085/logo1.png" alt="Logo Eagles" style="width: 135px; height: 135px; object-fit: contain;">
+          <img src="http://127.0.0.1:8085/logo2.png" alt="Logo Sargo" style="width: 145px; height: 145px; object-fit: contain;">
+          <img src="http://127.0.0.1:8085/logo3.png" alt="Logo Rachel Eagles" style="width: 135px; height: 135px; object-fit: contain;">
+        </div>
+
+        <!-- Titres Institutionnels Agrandis -->
+        <div style="margin: 15px 0;">
+          <h1 style="font-size: 30px; font-weight: 900; color: #1e3a8a; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 14px 0; line-height: 1.25;">
+            THE FRATERNAL ORDER OF LADY EAGLES GROUP
+          </h1>
+          <h2 style="font-size: 17px; font-weight: 700; color: #d97706; text-transform: uppercase; letter-spacing: 1.2px; margin: 0 0 24px 0;">
+            Sargo Cambodia Lady Eagles Group &bull; Commission des Finances
+          </h2>
+          <div style="width: 200px; height: 5px; background: #1e3a8a; margin: 0 auto 30px auto; border-radius: 3px;"></div>
+
+          <!-- Cartouche Document Elargi -->
+          <div style="display: inline-block; background: #eff6ff; border: 3px solid #1e3a8a; border-radius: 20px; padding: 34px 70px; box-shadow: 0 12px 28px rgba(30, 58, 138, 0.15); width: 88%; box-sizing: border-box;">
+            <p style="font-size: 15px; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 12px 0;">
+              Application : Treasurer Financial Record
+            </p>
+            <h3 style="font-size: 28px; font-weight: 900; color: #1e3a8a; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px;">
+              RAPPORT OFFICIEL DE TR\u00c9SORERIE
+            </h3>
+            <p style="font-size: 19px; font-weight: 800; color: #475569; margin: 0 0 12px 0;">
+              ASSEMBL\u00c9E G\u00c9N\u00c9RALE MENSUELLE
+            </p>
+            <p style="font-size: 15px; color: #64748b; margin: 0; font-style: italic; font-weight: 700;">
+              P\u00e9riode d'audit : Du 01/10/2026 au 31/10/2026
+            </p>
+          </div>
+        </div>
+
+        <!-- Cadre d'attente / Bienvenue Elargi -->
+        <div style="background: #f8fafc; border: 2.5px dashed #94a3b8; border-radius: 20px; padding: 30px 45px; width: 90%; margin: 0 auto; box-sizing: border-box;">
+          <div style="display: inline-flex; align-items: center; gap: 8px; background: #fef3c7; color: #92400e; font-weight: 900; font-size: 14px; padding: 8px 22px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+            <span>\ud83c\udfdb\ufe0f S\u00c9ANCE EN COURS D'INSTALLATION</span>
+          </div>
+          <h4 style="font-size: 19px; font-weight: 900; color: #0f172a; margin: 0 0 12px 0;">
+            Recipient: Lady Eagles Group Members and Officers
+          </h4>
+          <p style="font-size: 14.5px; color: #475569; margin: 0; line-height: 1.75;">
+            Bienvenue \u00e0 tous les membres et officiers du Lady Eagles Group.<br>
+            Veuillez prendre place. La pr\u00e9sentation officielle d\u00e9butera d\u00e8s que l'assembl\u00e9e sera au complet.
+          </p>
+        </div>
+
+        <!-- Presentateurs & Signataires -->
+        <div style="margin-top: 15px;">
+          <div style="display: flex; justify-content: center; gap: 110px; margin-bottom: 24px;">
+            <div style="text-align: center; min-width: 230px;">
+              <p style="font-size: 11.5px; font-weight: 700; color: #64748b; margin: 0 0 4px 0; text-transform: uppercase;">
+                Issuer / Pr\u00e9sent\u00e9 par
+              </p>
+              <p style="font-size: 18px; font-weight: 900; color: #1e3a8a; margin: 0 0 3px 0;">Rachel Chua</p>
+              <p style="font-size: 13.5px; font-weight: 800; color: #475569; margin: 0;">
+                Group Treasurer
+              </p>
+            </div>
+            <div style="text-align: center; min-width: 230px;">
+              <p style="font-size: 11.5px; font-weight: 700; color: #64748b; margin: 0 0 4px 0; text-transform: uppercase;">
+                Endorsement / Approuv\u00e9 par
+              </p>
+              <p style="font-size: 18px; font-weight: 900; color: #1e3a8a; margin: 0 0 3px 0;">Sharon Llegado</p>
+              <p style="font-size: 13.5px; font-weight: 800; color: #475569; margin: 0;">
+                Group President
+              </p>
+            </div>
+          </div>
+
+          <p style="font-size: 13.5px; color: #64748b; margin: 0 0 16px 0; font-weight: 700;">
+            Date de S\u00e9ance : <strong>29/10/2026</strong> &bull; Phnom Penh, Cambodge
+          </p>
+          <img src="http://127.0.0.1:8085/footer_banner.jpg" alt="Official Footer" style="width: 100%; max-height: 60px; object-fit: contain;">
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SLIDE 2 : DEPENSES PAR FAMILLE (OCCUPE TOUTE LA PAGE) -->
+    <!-- ========================================== -->
+    <div class="sheet" id="slide2">
+      <div style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+        <!-- Header Slide 2 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <img src="http://127.0.0.1:8085/logo2.png" alt="Sargo" style="width: 52px; height: 52px; object-fit: contain;">
+            <div>
+              <h2 style="font-size: 14px; font-weight: 900; color: #1e3a8a; text-transform: uppercase; margin: 0;">
+                THE FRATERNAL ORDER OF LADY EAGLES GROUP
+              </h2>
+              <p style="font-size: 13px; font-weight: 900; color: #d97706; margin: 0;">
+                SLIDE 2 / 5 : R\u00c9PARTITION DES D\u00c9PENSES PAR FAMILLE BUDG\u00c9TAIRE
+              </p>
+            </div>
+          </div>
+          <div style="text-align: right; font-size: 11.5px; color: #64748b;">
+            <p style="margin: 0; font-weight: 800;">Du 01/10/2026 au 31/10/2026</p>
+            <p style="margin: 0;">S\u00e9ance du 29/10/2026</p>
+          </div>
+        </div>
+
+        <!-- 3 KPI Cards Elargies -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 18px;">
+          <div style="background: #fef2f2; border: 2.5px solid #fca5a5; border-radius: 12px; padding: 16px; text-align: center;">
+            <span style="font-size: 12px; font-weight: 800; color: #991b1b; text-transform: uppercase; display: block; margin-bottom: 4px;">
+              Total D\u00e9penses de la P\u00e9riode
+            </span>
+            <span style="font-size: 34px; font-weight: 900; color: #b91c1c;">$1,210.00</span>
+          </div>
+          <div style="background: #eff6ff; border: 2.5px solid #93c5fd; border-radius: 12px; padding: 16px; text-align: center;">
+            <span style="font-size: 12px; font-weight: 800; color: #1e40af; text-transform: uppercase; display: block; margin-bottom: 4px;">
+              Familles Budg\u00e9taires Actives
+            </span>
+            <span style="font-size: 34px; font-weight: 900; color: #1e3a8a;">4 Familles</span>
+          </div>
+          <div style="background: #fefce8; border: 2.5px solid #fde047; border-radius: 12px; padding: 16px; text-align: center;">
+            <span style="font-size: 12px; font-weight: 800; color: #854d0e; text-transform: uppercase; display: block; margin-bottom: 4px;">
+              Poste Principal de D\u00e9pense
+            </span>
+            <span style="font-size: 24px; font-weight: 900; color: #a16207;">Events & Meetings (40%)</span>
+          </div>
+        </div>
+
+        <!-- 2 GRANDS GRAPHIQUES : REMPLISSENT LES CARTES SANS ESPACE VIDE -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
+          <div style="background: #ffffff; border: 2px solid #cbd5e1; border-radius: 14px; padding: 14px; text-align: center;">
+            <h4 style="font-size: 13.5px; font-weight: 900; color: #1e3a8a; margin: 0 0 10px 0; text-transform: uppercase;">
+              Histogramme Horizontal des Familles ($ USD)
+            </h4>
+            <img src="${s2HBarUri}" alt="Expenses Horizontal Bar" style="width: 100%; height: 380px; object-fit: contain;">
+          </div>
+
+          <div style="background: #ffffff; border: 2px solid #cbd5e1; border-radius: 14px; padding: 14px; text-align: center;">
+            <h4 style="font-size: 13.5px; font-weight: 900; color: #1e3a8a; margin: 0 0 10px 0; text-transform: uppercase;">
+              R\u00e9partition des D\u00e9penses en % (Code Couleur)
+            </h4>
+            <img src="${s2PieUri}" alt="Expenses Pie %" style="width: 100%; height: 380px; object-fit: contain;">
+          </div>
+        </div>
+
+        <!-- Synthese d'analyse Elargie (AUCUN TABLEAU !) -->
+        <div style="background: #f8fafc; border-left: 6px solid #1e3a8a; border-radius: 0 12px 12px 0; padding: 18px 26px; font-size: 13.5px; color: #1e293b; line-height: 1.8; margin-bottom: 16px;">
+          <strong style="color: #1e3a8a; font-size: 14.5px;">Analyse Ex\u00e9cutive des Engagements Budg\u00e9taires :</strong><br>
+          &bull; Les activit\u00e9s de charit\u00e9 fraternelle et de coh\u00e9sion constituent <strong>69%</strong> de l'ensemble des d\u00e9caissements de la p\u00e9riode.<br>
+          &bull; Les frais administratifs de bureau restent strictement limit\u00e9s \u00e0 <strong>18%</strong>, garantissant un ratio d'efficience op\u00e9rationnelle exemplaire conform\u00e9ment aux d\u00e9lib\u00e9rations de l'Assembl\u00e9e G\u00e9n\u00e9rale.
+        </div>
+
+        <!-- Footer Slide 2 -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1.5px solid #cbd5e1; padding-top: 10px;">
+            <div style="font-size: 12.5px; font-weight: 900; color: #1e3a8a;">
+              Rachel Chua &bull; <span style="color: #64748b; font-weight: 700;">Group Treasurer</span>
+            </div>
+            <div style="font-size: 11.5px; color: #94a3b8; font-weight: 800;">
+              Pack Assembl\u00e9e G\u00e9n\u00e9rale &bull; Slide 2 / 5
+            </div>
+            <div style="font-size: 12.5px; font-weight: 900; color: #1e3a8a;">
+              Sharon Llegado &bull; <span style="color: #64748b; font-weight: 700;">Group President</span>
+            </div>
+          </div>
+          <img src="http://127.0.0.1:8085/footer_banner.jpg" alt="Official Footer" style="width: 100%; max-height: 52px; object-fit: contain; margin-top: 10px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SLIDE 3 : COMPARAISON DEBITS / CREDITS (OCCUPE TOUTE LA PAGE) -->
+    <!-- ========================================== -->
+    <div class="sheet" id="slide3">
+      <div style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+        <!-- Header Slide 3 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <img src="http://127.0.0.1:8085/logo2.png" alt="Sargo" style="width: 52px; height: 52px; object-fit: contain;">
+            <div>
+              <h2 style="font-size: 14px; font-weight: 900; color: #1e3a8a; text-transform: uppercase; margin: 0;">
+                THE FRATERNAL ORDER OF LADY EAGLES GROUP
+              </h2>
+              <p style="font-size: 13px; font-weight: 900; color: #d97706; margin: 0;">
+                SLIDE 3 / 5 : COMPARAISON RECETTES (CR\u00c9DITS) VS D\u00c9PENSES (D\u00c9BITS)
+              </p>
+            </div>
+          </div>
+          <div style="text-align: right; font-size: 11.5px; color: #64748b;">
+            <p style="margin: 0; font-weight: 800;">Du 01/10/2026 au 31/10/2026</p>
+            <p style="margin: 0;">S\u00e9ance du 29/10/2026</p>
+          </div>
+        </div>
+
+        <!-- 3 KPI Cards Elargies -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 18px;">
+          <div style="background: #f0fdf4; border: 2.5px solid #86efac; border-radius: 12px; padding: 16px; text-align: center;">
+            <span style="font-size: 12px; font-weight: 800; color: #166534; text-transform: uppercase; display: block; margin-bottom: 4px;">
+              Total Recettes (Incomes)
+            </span>
+            <span style="font-size: 34px; font-weight: 900; color: #15803d;">+$2,550.00</span>
+          </div>
+          <div style="background: #fef2f2; border: 2.5px solid #fca5a5; border-radius: 12px; padding: 16px; text-align: center;">
+            <span style="font-size: 12px; font-weight: 800; color: #991b1b; text-transform: uppercase; display: block; margin-bottom: 4px;">
+              Total D\u00e9penses (Debits)
+            </span>
+            <span style="font-size: 34px; font-weight: 900; color: #b91c1c;">-$1,210.00</span>
+          </div>
+          <div style="background: #eff6ff; border: 2.5px solid #93c5fd; border-radius: 12px; padding: 16px; text-align: center;">
+            <span style="font-size: 12px; font-weight: 800; color: #1e40af; text-transform: uppercase; display: block; margin-bottom: 4px;">
+              Exc\u00e9dent Net Disponible
+            </span>
+            <span style="font-size: 34px; font-weight: 900; color: #1e3a8a;">+$1,340.00</span>
+          </div>
+        </div>
+
+        <!-- 2 GRANDS GRAPHIQUES : HISTOGRAMME PAR SEMAINE + CAMEMBERT % -->
+        <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 16px; margin-bottom: 18px;">
+          <div style="background: #ffffff; border: 2px solid #cbd5e1; border-radius: 14px; padding: 14px; text-align: center;">
+            <h4 style="font-size: 13.5px; font-weight: 900; color: #1e3a8a; margin: 0 0 10px 0; text-transform: uppercase;">
+              Histogramme Hebdomadaire Recettes vs D\u00e9penses ($ USD)
+            </h4>
+            <img src="${s3WeekBarUri}" alt="Weekly Incomes vs Expenses" style="width: 100%; height: 380px; object-fit: contain;">
+          </div>
+
+          <div style="background: #ffffff; border: 2px solid #cbd5e1; border-radius: 14px; padding: 14px; text-align: center;">
+            <h4 style="font-size: 13.5px; font-weight: 900; color: #1e3a8a; margin: 0 0 10px 0; text-transform: uppercase;">
+              R\u00e9partition Globale en %
+            </h4>
+            <img src="${s3PieUri}" alt="Compare Pie %" style="width: 100%; height: 380px; object-fit: contain;">
+          </div>
+        </div>
+
+        <!-- Synthese (AUCUN TABLEAU !) -->
+        <div style="background: #f8fafc; border-left: 6px solid #16a34a; border-radius: 0 12px 12px 0; padding: 18px 26px; font-size: 13.5px; color: #1e293b; line-height: 1.8; margin-bottom: 16px;">
+          <strong style="color: #15803d; font-size: 14.5px;">Analyse de l'\u00c9quilibre et de la Solvabilit\u00e9 :</strong><br>
+          &bull; Le taux de couverture global s'\u00e9l\u00e8ve \u00e0 <strong>210%</strong> (les entr\u00e9es de fonds couvrent plus du double des engagements pris).<br>
+          &bull; La r\u00e9gularit\u00e9 des rentr\u00e9es des semaines 1 et 2 a permis de stabiliser la tr\u00e9sorerie et d'alimenter directement l'exc\u00e9dent fraternel disponible pour les projets de la mandature.
+        </div>
+
+        <!-- Footer Slide 3 -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1.5px solid #cbd5e1; padding-top: 10px;">
+            <div style="font-size: 12.5px; font-weight: 900; color: #1e3a8a;">
+              Rachel Chua &bull; <span style="color: #64748b; font-weight: 700;">Group Treasurer</span>
+            </div>
+            <div style="font-size: 11.5px; color: #94a3b8; font-weight: 800;">
+              Pack Assembl\u00e9e G\u00e9n\u00e9rale &bull; Slide 3 / 5
+            </div>
+            <div style="font-size: 12.5px; font-weight: 900; color: #1e3a8a;">
+              Sharon Llegado &bull; <span style="color: #64748b; font-weight: 700;">Group President</span>
+            </div>
+          </div>
+          <img src="http://127.0.0.1:8085/footer_banner.jpg" alt="Official Footer" style="width: 100%; max-height: 52px; object-fit: contain; margin-top: 10px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SLIDE 4 : EVOLUTION DE LA TRESORERIE PAR SEMAINE ET MOIS (OCCUPE TOUTE LA PAGE) -->
+    <!-- ========================================== -->
+    <div class="sheet" id="slide4">
+      <div style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+        <!-- Header Slide 4 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <img src="http://127.0.0.1:8085/logo2.png" alt="Sargo" style="width: 52px; height: 52px; object-fit: contain;">
+            <div>
+              <h2 style="font-size: 14px; font-weight: 900; color: #1e3a8a; text-transform: uppercase; margin: 0;">
+                THE FRATERNAL ORDER OF LADY EAGLES GROUP
+              </h2>
+              <p style="font-size: 13px; font-weight: 900; color: #d97706; margin: 0;">
+                SLIDE 4 / 5 : \u00c9VOLUTION DE LA TR\u00c9SORERIE PAR SEMAINE ET MOIS
+              </p>
+            </div>
+          </div>
+          <div style="text-align: right; font-size: 11.5px; color: #64748b;">
+            <p style="margin: 0; font-weight: 800;">Du 01/10/2026 au 31/10/2026</p>
+            <p style="margin: 0;">S\u00e9ance du 29/10/2026</p>
+          </div>
+        </div>
+
+        <!-- 3 KPI Cards -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">
+          <div style="background: #f8fafc; border: 2.5px solid #cbd5e1; border-radius: 12px; padding: 14px 16px; text-align: center;">
+            <span style="font-size: 11.5px; font-weight: 800; color: #475569; text-transform: uppercase; display: block; margin-bottom: 3px;">
+              Flux Hebdomadaire Moyen
+            </span>
+            <span style="font-size: 28px; font-weight: 900; color: #0f172a;">+$335.00 / sem</span>
+          </div>
+          <div style="background: #f0fdf4; border: 2.5px solid #86efac; border-radius: 12px; padding: 14px 16px; text-align: center;">
+            <span style="font-size: 11.5px; font-weight: 800; color: #166534; text-transform: uppercase; display: block; margin-bottom: 3px;">
+              Plus Forte Croissance
+            </span>
+            <span style="font-size: 28px; font-weight: 900; color: #15803d;">Semaine 1 (+$850)</span>
+          </div>
+          <div style="background: #eff6ff; border: 2.5px solid #93c5fd; border-radius: 12px; padding: 14px 16px; text-align: center;">
+            <span style="font-size: 11.5px; font-weight: 800; color: #1e40af; text-transform: uppercase; display: block; margin-bottom: 3px;">
+              Solde Net de Cl\u00f4ture
+            </span>
+            <span style="font-size: 28px; font-weight: 900; color: #1e3a8a;">$1,340.00</span>
+          </div>
+        </div>
+
+        <!-- LIGNE 1 : HISTOGRAMME FLUX HEBDO + CAMEMBERT STRUCTURE (AGRANDIS) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div style="background: #ffffff; border: 2px solid #cbd5e1; border-radius: 14px; padding: 12px; text-align: center;">
+            <h4 style="font-size: 13px; font-weight: 900; color: #1e3a8a; margin: 0 0 8px 0; text-transform: uppercase;">
+              Histogramme : Flux Net par Semaine ($ USD)
+            </h4>
+            <img src="${s4FlowBarUri}" alt="Weekly Flow Bar" style="width: 100%; height: 260px; object-fit: contain;">
+          </div>
+
+          <div style="background: #ffffff; border: 2px solid #cbd5e1; border-radius: 14px; padding: 12px; text-align: center;">
+            <h4 style="font-size: 13px; font-weight: 900; color: #1e3a8a; margin: 0 0 8px 0; text-transform: uppercase;">
+              Camembert : Structure des Liquidit\u00e9s Mensuelles
+            </h4>
+            <img src="${s4PieUri}" alt="Liquidity Doughnut" style="width: 100%; height: 260px; object-fit: contain;">
+          </div>
+        </div>
+
+        <!-- LIGNE 2 : GRANDE COURBE D'EVOLUTION CHRONOLOGIQUE (AGRANDIE) -->
+        <div style="background: #ffffff; border: 2px solid #cbd5e1; border-radius: 14px; padding: 12px; text-align: center; margin-bottom: 16px;">
+          <h4 style="font-size: 13px; font-weight: 900; color: #1e3a8a; margin: 0 0 8px 0; text-transform: uppercase;">
+            Courbe d'\u00c9volution Chronologique du Solde Cumul\u00e9 ($ USD)
+          </h4>
+          <img src="${s4LineUri}" alt="Treasury Trend Line" style="width: 100%; height: 240px; object-fit: contain;">
+        </div>
+
+        <!-- Synthese (AUCUN TABLEAU !) -->
+        <div style="background: #f8fafc; border-left: 6px solid #1e3a8a; border-radius: 0 12px 12px 0; padding: 16px 24px; font-size: 13px; color: #1e293b; line-height: 1.75; margin-bottom: 16px;">
+          <strong style="color: #1e3a8a;">Dynamique de Liquidit\u00e9 :</strong> La trajectoire montre une r\u00e9silience continue du Group, avec un point bas ma\u00eetris\u00e9 \u00e0 $370.00 et une remont\u00e9e franche cl\u00f4turant \u00e0 $1,340.00 sans recours \u00e0 aucun d\u00e9couvert.
+        </div>
+
+        <!-- Footer Slide 4 -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1.5px solid #cbd5e1; padding-top: 10px;">
+            <div style="font-size: 12.5px; font-weight: 900; color: #1e3a8a;">
+              Rachel Chua &bull; <span style="color: #64748b; font-weight: 700;">Group Treasurer</span>
+            </div>
+            <div style="font-size: 11.5px; color: #94a3b8; font-weight: 800;">
+              Pack Assembl\u00e9e G\u00e9n\u00e9rale &bull; Slide 4 / 5
+            </div>
+            <div style="font-size: 12.5px; font-weight: 900; color: #1e3a8a;">
+              Sharon Llegado &bull; <span style="color: #64748b; font-weight: 700;">Group President</span>
+            </div>
+          </div>
+          <img src="http://127.0.0.1:8085/footer_banner.jpg" alt="Official Footer" style="width: 100%; max-height: 52px; object-fit: contain; margin-top: 10px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SLIDE 5 : BILAN DE SANTE BUDGETAIRE & PISTES D'AMELIORATION (OCCUPE TOUTE LA PAGE) -->
+    <!-- ========================================== -->
+    <div class="sheet" id="slide5">
+      <div style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+        <!-- Header Slide 5 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <img src="http://127.0.0.1:8085/logo2.png" alt="Sargo" style="width: 52px; height: 52px; object-fit: contain;">
+            <div>
+              <h2 style="font-size: 14px; font-weight: 900; color: #1e3a8a; text-transform: uppercase; margin: 0;">
+                THE FRATERNAL ORDER OF LADY EAGLES GROUP
+              </h2>
+              <p style="font-size: 13px; font-weight: 900; color: #d97706; margin: 0;">
+                SLIDE 5 / 5 : BILAN DE SANT\u00c9 BUDG\u00c9TAIRE & PISTES D'AM\u00c9LIORATION
+              </p>
+            </div>
+          </div>
+          <div style="text-align: right; font-size: 11.5px; color: #64748b;">
+            <p style="margin: 0; font-weight: 800;">Du 01/10/2026 au 31/10/2026</p>
+            <p style="margin: 0;">S\u00e9ance du 29/10/2026</p>
+          </div>
+        </div>
+
+        <!-- Section 1 : Diagnostic Ecrit de la Sante Budgetaire -->
+        <div style="background: #f0fdf4; border: 2.5px solid #86efac; border-radius: 14px; padding: 22px 26px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <span style="background: #16a34a; color: white; font-size: 13px; font-weight: 900; padding: 5px 14px; border-radius: 14px; text-transform: uppercase;">
+              Diagnostic Financier
+            </span>
+            <h3 style="font-size: 17px; font-weight: 900; color: #14532d; margin: 0;">
+              Situation Financi\u00e8re Saine, Solvable et Exc\u00e9dentaire
+            </h3>
+          </div>
+          <p style="font-size: 14px; color: #166534; line-height: 1.85; margin: 0;">
+            L'audit comptable de la p\u00e9riode atteste d'une gestion rigoureuse et parfaitement \u00e9quilibr\u00e9e. Avec <strong>$2,550.00</strong> de recettes pour <strong>$1,210.00</strong> de d\u00e9penses, le Group d\u00e9gage un exc\u00e9dent net de <strong>$1,340.00</strong>. Le ratio d'autonomie financi\u00e8re de <strong>2.1x</strong> confirme que le Group est capable d'assurer la totalit\u00e9 de ses missions philanthropiques sans d\u00e9pendance ext\u00e9rieure.
+          </p>
+        </div>
+
+        <!-- Section 2 : Pistes d'Amelioration Strategique (4 Piliers) -->
+        <div style="background: #ffffff; border: 2px solid #cbd5e1; border-radius: 14px; padding: 22px 26px; margin-bottom: 20px;">
+          <h3 style="font-size: 15.5px; font-weight: 900; color: #1e3a8a; text-transform: uppercase; margin: 0 0 16px 0; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 8px;">
+            Pistes d'Am\u00e9lioration Strat\u00e9gique pour les Prochaines \u00c9ch\u00e9ances
+          </h3>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+            <div style="background: #f8fafc; border-left: 5.5px solid #2563eb; padding: 16px 20px; border-radius: 0 10px 10px 0;">
+              <h4 style="font-size: 13.5px; font-weight: 900; color: #1e3a8a; margin: 0 0 6px 0;">
+                1. Calendrier d'Appel des Cotisations
+              </h4>
+              <p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.65;">
+                Harmoniser les dates d'encaissement d\u00e8s les dix premiers jours du mois afin d'optimiser la pr\u00e9visibilit\u00e9 de la tr\u00e9sorerie.
+              </p>
+            </div>
+
+            <div style="background: #f8fafc; border-left: 5.5px solid #d97706; padding: 16px 20px; border-radius: 0 10px 10px 0;">
+              <h4 style="font-size: 13.5px; font-weight: 900; color: #92400e; margin: 0 0 6px 0;">
+                2. Cadrage Pr\u00e9ventif par Famille
+              </h4>
+              <p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.65;">
+                Fixer une enveloppe indicative pour les r\u00e9unions et \u00e9v\u00e9nements afin de d\u00e9dier au minimum 40% des d\u00e9penses aux actions caritatives.
+              </p>
+            </div>
+
+            <div style="background: #f8fafc; border-left: 5.5px solid #16a34a; padding: 16px 20px; border-radius: 0 10px 10px 0;">
+              <h4 style="font-size: 13.5px; font-weight: 900; color: #166534; margin: 0 0 6px 0;">
+                3. Fonds de R\u00e9serve Fraternel
+              </h4>
+              <p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.65;">
+                Allouer syst\u00e9matiquement 15% des exc\u00e9dents mensuels \u00e0 un fonds de secours d'urgence pour les membres du Group.
+              </p>
+            </div>
+
+            <div style="background: #f8fafc; border-left: 5.5px solid #7c3aed; padding: 16px 20px; border-radius: 0 10px 10px 0;">
+              <h4 style="font-size: 13.5px; font-weight: 900; color: #5b21b6; margin: 0 0 6px 0;">
+                4. Justificatifs & Num\u00e9risation 100%
+              </h4>
+              <p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.65;">
+                Maintenir l'exigence des factures et re\u00e7us enregistr\u00e9s dans l'application pour une tra\u00e7abilit\u00e9 int\u00e9grale et instantan\u00e9e.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3 : Resolution soumise au vote -->
+        <div style="background: #eff6ff; border: 2px dashed #3b82f6; border-radius: 12px; padding: 18px 24px; margin-bottom: 22px; font-size: 13.5px; color: #1e3a8a; line-height: 1.75;">
+          <strong style="font-size: 14px;">R\u00e9solution soumise \u00e0 l'Assembl\u00e9e G\u00e9n\u00e9rale :</strong><br>
+          <em>\u00ab Apr\u00e8s audition de la pr\u00e9sentation de Rachel Chua (Group Treasurer) et validation de Sharon Llegado (Group President), l'Assembl\u00e9e G\u00e9n\u00e9rale donne son quitus plein et entier pour la tenue des comptes de la p\u00e9riode et approuve les orientations budg\u00e9taires propos\u00e9es. \u00bb</em>
+        </div>
+
+        <!-- Section 4 : Signatures Solennelles Elargies -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; padding: 0 30px;">
+          <div style="text-align: center; min-width: 240px; border-top: 2.5px solid #1e3a8a; padding-top: 10px;">
+            <p style="font-size: 17px; font-weight: 900; color: #1e3a8a; margin: 0 0 4px 0;">Rachel Chua</p>
+            <p style="font-size: 13.5px; font-weight: 800; color: #475569; margin: 0 0 24px 0;">Group Treasurer</p>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0; font-weight: 600;">(Pr\u00e9sent\u00e9 & Certifi\u00e9 Conforme)</p>
+          </div>
+
+          <div style="text-align: center; font-size: 11.5px; color: #64748b;">
+            <p style="margin: 0; font-weight: 900; color: #0f172a;">THE FRATERNAL ORDER OF LADY EAGLES GROUP</p>
+            <p style="margin: 4px 0 0 0; font-style: italic; font-weight: 600;">Adoption en S\u00e9ance &bull; 29/10/2026</p>
+          </div>
+
+          <div style="text-align: center; min-width: 240px; border-top: 2.5px solid #1e3a8a; padding-top: 10px;">
+            <p style="font-size: 17px; font-weight: 900; color: #1e3a8a; margin: 0 0 4px 0;">Sharon Llegado</p>
+            <p style="font-size: 13.5px; font-weight: 800; color: #475569; margin: 0 0 24px 0;">Group President</p>
+            <p style="font-size: 11px; color: #94a3b8; margin: 0; font-weight: 600;">(Approuv\u00e9 & Adopt\u00e9 en Assembl\u00e9e)</p>
+          </div>
+        </div>
+
+        <!-- Footer Slide 5 -->
+        <div>
+          <img src="http://127.0.0.1:8085/footer_banner.jpg" alt="Official Footer" style="width: 100%; max-height: 54px; object-fit: contain; margin-top: 10px;">
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.title = 'EXPANDED_5_SLIDES_SUCCESS';
+};
+</script>
+</body>
+</html>
