@@ -472,7 +472,7 @@ const I18N = {
     modalNewMemberTitle: "Ajouter un Membre du Group",
     modalEditMemberTitle: "Modifier un Membre du Group",
     memberNameLabel: "Nom complet (avec titre) :",
-    memberPositionLabel: "Fonction / Rôle au sein du Club :",
+    memberPositionLabel: "Fonction / Rôle au sein du Group :",
     memberPhoneLabel: "Téléphone (Cambodge) :",
     memberAddressLabel: "Adresse au Cambodge :",
     memberWorkLabel: "Nature du Travail / Métier :",
@@ -485,6 +485,9 @@ const I18N = {
     memberDeletedSuccess: "Membre supprimé avec succès.",
     memberSavedSuccess: "Membre enregistré avec succès.",
     noMembersFound: "Aucun membre ne correspond à vos critères de recherche.",
+    btnExportMembersPdf: "Exporter l'Annuaire (PDF)",
+    viewModeCards: "Fiches",
+    viewModeTable: "Tableau",
 
     // Statistical Sub-Views
     statView1: "1. Journal & Grand Livre",
@@ -786,15 +789,15 @@ const I18N = {
     colDate: "Date",
     colType: "Type",
     colFamilyCategory: "Famille / Motif",
-    colRef: "Ref / Invoice",
-    colRemark: "Remark",
-    colAmount: "Amount",
-    colFrequency: "Frequency",
+    colRef: "Réf / Pièce",
+    colRemark: "Remarque",
+    colAmount: "Montant",
+    colFrequency: "Périodicité",
     colActions: "Actions",
-    colFamily: "Family",
-    colReason: "Reason",
-    syncShort: "Sync",
-    syncTooltip: "Local Network Sync (PC <-> Phone)",
+    colFamily: "Famille",
+    colReason: "Raison / Libellé",
+    syncShort: "Synchro",
+    syncTooltip: "Synchronisation Réseau Local (PC <-> Téléphone)",
 
     // Default reasons
     reasons: [
@@ -1734,7 +1737,7 @@ function BilingualDatePicker({
                     {isFr ? "Choisir une Date" : "Select Date"}
                   </h4>
                   <p className="text-[10px] text-blue-200">
-                    {selectedYMD ? formatDisplayDate(selectedYMD) : (isFr ? "Aucune date sÃ©lectionnÃ©e" : "No date selected")}
+                    {selectedYMD ? formatDisplayDate(selectedYMD) : (isFr ? "Aucune date sélectionnée" : "No date selected")}
                   </p>
                 </div>
               </div>
@@ -2314,8 +2317,8 @@ function RachelEaglesApp() {
     const isFr = lang === 'fr';
     const title = isFr ? "ANNUAIRE OFFICIEL DES MEMBRES DU GROUP" : "OFFICIAL GROUP MEMBERSHIP DIRECTORY";
     const subtitle = isFr
-      ? `The Fraternal Order of Lady Eagles Group â€¢ Effectif : ${listToExport.length} membre(s)`
-      : `The Fraternal Order of Lady Eagles Group â€¢ Active Roster: ${listToExport.length} member(s)`;
+      ? `The Fraternal Order of Lady Eagles Group • Effectif : ${listToExport.length} membre(s)`
+      : `The Fraternal Order of Lady Eagles Group • Active Roster: ${listToExport.length} member(s)`;
 
     setPrintDocumentData({
       type: 'members',
@@ -2380,7 +2383,7 @@ function RachelEaglesApp() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert(lang === 'fr' ? 'Veuillez sÃ©lectionner un fichier image valide (JPG, PNG).' : 'Please select a valid image file (JPG, PNG).');
+      alert(lang === 'fr' ? 'Veuillez sélectionner un fichier image valide (JPG, PNG).' : 'Please select a valid image file (JPG, PNG).');
       return;
     }
 
@@ -3584,7 +3587,7 @@ function RachelEaglesApp() {
         const lbl = formatItemLabel(top.name, lang);
         topIncText = lang === 'fr'
           ? `Le poste « ${lbl} » enregistre la plus forte progression avec +${formatUSD(top.diff)} (+${top.pct}% vs M-1), consacrant l'intensification des actions philanthropiques et de terrain.`
-          : `« ${lbl} » records the largest increase (+${formatUSD(top.diff)}, +${top.pct}% vs M-1), attesting to enhanced philanthropic focus and direct community initiatives.`;
+          : `"${lbl}" records the largest increase (+${formatUSD(top.diff)}, +${top.pct}% vs M-1), attesting to enhanced philanthropic focus and direct community initiatives.`;
       } else {
         topIncText = lang === 'fr'
           ? 'Les postes de dépenses demeurent stables et rigoureusement maîtrisés par rapport au mois précédent.'
@@ -3597,7 +3600,7 @@ function RachelEaglesApp() {
         const lbl = formatItemLabel(top.name, lang);
         topDecText = lang === 'fr'
           ? `À l'inverse, le poste « ${lbl} » affiche une réduction de -${formatUSD(Math.abs(top.diff))} (${top.pct}% vs M-1), confirmant la gestion économe et la rationalisation des coûts.`
-          : `Conversely, « ${lbl} » shows a notable reduction of -${formatUSD(Math.abs(top.diff))} (${top.pct}% vs M-1), confirming prudent cost containment.`;
+          : `Conversely, "${lbl}" shows a notable reduction of -${formatUSD(Math.abs(top.diff))} (${top.pct}% vs M-1), confirming prudent cost containment.`;
       } else {
         topDecText = lang === 'fr'
           ? 'Aucune dérive ni compression excessive n\'est constatée sur les autres familles budgétaires.'
@@ -4620,7 +4623,7 @@ function RachelEaglesApp() {
                     onClick={() => setForgotStep(2)}
                     className="w-full text-center text-xs text-slate-500 hover:text-slate-800 underline font-semibold"
                   >
-                    J'ai déjà un code de vérification &rsaquo;
+                    {lang === 'fr' ? "J'ai déjà un code de vérification \u203A" : "I already have a verification code \u203A"}
                   </button>
                 </div>
               )}
@@ -4630,7 +4633,7 @@ function RachelEaglesApp() {
                 <form onSubmit={handleConfirmNewPassword} className="space-y-4">
                   <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-[11px] text-blue-900">
                     <i className="fa-solid fa-circle-info mr-1.5 text-blue-700"></i>
-                    <span>Code envoyé vers : <b>Afamcherie@gmail.com</b> & <b>ericveyrat.iphone@gmail.com</b></span>
+                    <span>{lang === 'fr' ? "Code envoyé vers :" : "Code sent to:"} <b>Afamcherie@gmail.com</b> & <b>ericveyrat.iphone@gmail.com</b></span>
                   </div>
 
                   <div>
@@ -4789,7 +4792,7 @@ function RachelEaglesApp() {
       )}
 
 
-      {/* MODAL MEMBRE DU CLUB (AJOUT & MODIFICATION) */}
+      {/* MODAL MEMBRE DU GROUP (AJOUT & MODIFICATION) */}
       {isMemberModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all my-8">
@@ -4816,7 +4819,7 @@ function RachelEaglesApp() {
                   {memberFormData.photo ? (
                     <img
                       src={memberFormData.photo}
-                      alt="AperÃ§u photo"
+                      alt={lang === 'fr' ? "Aperçu photo" : "Photo preview"}
                       className="w-16 h-16 rounded-full object-cover border-2 border-amber-400 shadow-sm"
                     />
                   ) : (
@@ -4838,7 +4841,7 @@ function RachelEaglesApp() {
 
                 <div className="flex-grow space-y-1">
                   <label className="block text-xs font-bold text-slate-700">
-                    {lang === 'fr' ? "Photo d'identitÃ© du membre :" : "Member Portrait Photo:"}
+                    {lang === 'fr' ? "Photo d'identité du membre :" : "Member Portrait Photo:"}
                   </label>
                   <div className="flex flex-wrap items-center gap-2">
                     <label className="px-3 py-1.5 bg-blue-800 hover:bg-blue-900 text-white rounded-lg text-xs font-bold cursor-pointer inline-flex items-center gap-1.5 shadow-xs transition">
@@ -4854,12 +4857,12 @@ function RachelEaglesApp() {
                     {memberFormData.photo && (
                       <span className="text-[11px] text-green-700 font-semibold flex items-center gap-1">
                         <i className="fa-solid fa-check"></i>
-                        <span>{lang === 'fr' ? "Photo chargÃ©e" : "Photo loaded"}</span>
+                        <span>{lang === 'fr' ? "Photo chargée" : "Photo loaded"}</span>
                       </span>
                     )}
                   </div>
                   <p className="text-[10px] text-slate-400">
-                    {lang === 'fr' ? "Formats acceptÃ©s : JPG, PNG. Recadrage automatique carrÃ©." : "Formats: JPG, PNG. Automatic square cropping."}
+                    {lang === 'fr' ? "Formats acceptés : JPG, PNG. Recadrage automatique carré." : "Formats: JPG, PNG. Automatic square cropping."}
                   </p>
                 </div>
               </div>
@@ -4962,7 +4965,7 @@ function RachelEaglesApp() {
                       type="text"
                       value={memberFormData.emergencyContact}
                       onChange={(e) => setMemberFormData(p => ({ ...p, emergencyContact: e.target.value }))}
-                      placeholder="Nom du proche"
+                      placeholder={lang === 'fr' ? "Nom du proche" : "Emergency contact person"}
                       className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800 focus:outline-none"
                     />
                   </div>
@@ -5991,7 +5994,7 @@ function RachelEaglesApp() {
                       {t.membersTitle || "Annuaire Officiel des Membres"}
                     </h2>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      {t.membersSubtitle || "Gérez les membres du club, coordonnées, postes et contacts d'urgence."}
+                      {t.membersSubtitle || "Gérez les membres du Group, coordonnées, postes et contacts d'urgence."}
                     </p>
                   </div>
                 </div>
@@ -6079,7 +6082,7 @@ function RachelEaglesApp() {
                 </select>
               </div>
 
-              {/* COMMUTATEUR VUE CARTES / VUE TABLEAU (OPTIMISÃ‰ PC & TABLETTE) */}
+              {/* COMMUTATEUR VUE CARTES / VUE TABLEAU (OPTIMISÉ PC & TABLETTE) */}
               <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
                 <button
                   type="button"
@@ -6088,16 +6091,16 @@ function RachelEaglesApp() {
                   title={lang === 'fr' ? "Vue Grille / Cartes" : "Cards Grid View"}
                 >
                   <i className="fa-solid fa-grip"></i>
-                  <span className="hidden sm:inline">{lang === 'fr' ? 'Cartes' : 'Cards'}</span>
+                  <span className="hidden sm:inline">{t.viewModeCards || (lang === 'fr' ? 'Cartes' : 'Cards')}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMemberViewMode('table')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${memberViewMode === 'table' ? 'bg-white text-blue-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}
-                  title={lang === 'fr' ? "Vue Tableau / Liste (Ã‰dition rapide)" : "Table List View"}
+                  title={lang === 'fr' ? "Vue Tableau / Liste (Édition rapide)" : "Table / List View (Quick Edit)"}
                 >
                   <i className="fa-solid fa-table-list"></i>
-                  <span className="hidden sm:inline">{lang === 'fr' ? 'Tableau' : 'Table'}</span>
+                  <span className="hidden sm:inline">{t.viewModeTable || (lang === 'fr' ? 'Tableau' : 'Table')}</span>
                 </button>
               </div>
             </div>
@@ -7389,12 +7392,12 @@ function RachelEaglesApp() {
             <p className="text-[11px] text-slate-400 flex items-center justify-center sm:justify-end gap-2 mt-0.5">
               <span>TREASURER'S REPORT - Financial Record</span>
               {typeof window !== 'undefined' && (window.AndroidNative || /Android/i.test(navigator.userAgent)) ? (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-300" title="Version allÃ©gÃ©e optimisÃ©e pour Smartphone et Tablette">
-                  VERSION MOBILE & TABLETTE V1.0
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-300" title={lang === 'fr' ? "Version allégée optimisée pour Smartphone et Tablette" : "Lightweight version optimized for Smartphone and Tablet"}>
+                  {lang === 'fr' ? "VERSION MOBILE & TABLETTE V1.0" : "MOBILE & TABLET V1.0"}
                 </span>
               ) : (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-300" title="Ã‰dition PC avec Serveur Local de Synchronisation">
-                  VERSION PC & LAPTOP V1.0
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-300" title={lang === 'fr' ? "Édition PC avec Serveur Local de Synchronisation" : "PC Edition with Local Sync Server"}>
+                  {lang === 'fr' ? "VERSION PC & LAPTOP V1.0" : "PC & LAPTOP V1.0"}
                 </span>
               )}
             </p>
@@ -8456,21 +8459,21 @@ function RachelEaglesApp() {
               {printDocumentData.subtitle}
             </p>
             <p className="text-[10px] text-slate-500 mt-0.5">
-              {t.pdfGeneratedOn} {printDocumentData.dateGenerated} &bull; {printDocumentData.type === 'members' ? (lang === 'fr' ? "Document Officiel CertifiÃ©" : "Official Certified Document") : t.pdfCurrencyNote}
+              {t.pdfGeneratedOn} {printDocumentData.dateGenerated} &bull; {printDocumentData.type === 'members' ? (lang === 'fr' ? "Document Officiel Certifié" : "Official Certified Document") : t.pdfCurrencyNote}
             </p>
           </div>
 
           {printDocumentData.type === 'members' ? (
-            /* RENDU SPÃ‰CIFIQUE ANNUAIRE OFFICIEL DES MEMBRES */
+            /* RENDU SPÉCIFIQUE ANNUAIRE OFFICIEL DES MEMBRES */
             <div>
-              {/* Badges de synthÃ¨se du tableau des membres */}
+              {/* Badges de synthèse du tableau des membres */}
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', margin: '12px 0', padding: '8px 12px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '6px' }}>
                 <div style={{ textAlign: 'center', flex: 1 }}>
                   <span style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#64748b', display: 'block' }}>{lang === 'fr' ? 'Total Membres' : 'Total Members'}</span>
                   <span style={{ fontSize: '15px', fontWeight: '900', color: '#1e3a8a' }}>{printDocumentData.summary.total}</span>
                 </div>
                 <div style={{ textAlign: 'center', flex: 1 }}>
-                  <span style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#b45309', display: 'block' }}>{lang === 'fr' ? 'Bureau ExÃ©cutif' : 'Executive Board'}</span>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#b45309', display: 'block' }}>{lang === 'fr' ? 'Bureau Exécutif' : 'Executive Board'}</span>
                   <span style={{ fontSize: '15px', fontWeight: '900', color: '#b45309' }}>{printDocumentData.summary.exec}</span>
                 </div>
                 <div style={{ textAlign: 'center', flex: 1 }}>
@@ -8482,7 +8485,7 @@ function RachelEaglesApp() {
                   <span style={{ fontSize: '15px', fontWeight: '900', color: '#92400e' }}>{printDocumentData.summary.board}</span>
                 </div>
                 <div style={{ textAlign: 'center', flex: 1 }}>
-                  <span style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#475569', display: 'block' }}>{lang === 'fr' ? 'Membres AdhÃ©rents' : 'General Members'}</span>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#475569', display: 'block' }}>{lang === 'fr' ? 'Membres Adhérents' : 'General Members'}</span>
                   <span style={{ fontSize: '15px', fontWeight: '900', color: '#475569' }}>{printDocumentData.summary.general}</span>
                 </div>
               </div>
@@ -8553,15 +8556,15 @@ function RachelEaglesApp() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
                   <div style={{ fontSize: '9px', color: '#64748b' }}>
                     <p style={{ fontWeight: 'bold' }}>THE FRATERNAL ORDER OF LADY EAGLES GROUP</p>
-                    <p>{lang === 'fr' ? 'Annuaire Officiel CertifiÃ© - Registre du Group' : 'Official Certified Directory - Group Registry'}</p>
+                    <p>{lang === 'fr' ? 'Annuaire Officiel Certifié - Registre du Group' : 'Official Certified Directory - Group Registry'}</p>
                   </div>
                   <div style={{ display: 'flex', gap: '24px' }}>
                     <div style={{ textAlign: 'center', minWidth: '130px', borderTop: '1px solid #94a3b8', paddingTop: '4px' }}>
-                      <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a' }}>{lang === 'fr' ? 'La SecrÃ©taire' : 'The Secretary'}</p>
+                      <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a' }}>{lang === 'fr' ? 'La Secrétaire' : 'The Secretary'}</p>
                       <p style={{ fontSize: '8px', color: '#64748b', marginTop: '16px' }}>(Signature & Date)</p>
                     </div>
                     <div style={{ textAlign: 'center', minWidth: '130px', borderTop: '1px solid #94a3b8', paddingTop: '4px' }}>
-                      <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a' }}>{lang === 'fr' ? 'La PrÃ©sidente' : 'The President'}</p>
+                      <p style={{ fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a' }}>{lang === 'fr' ? 'La Présidente' : 'The President'}</p>
                       <p style={{ fontSize: '8px', color: '#64748b', marginTop: '16px' }}>(Signature & Date)</p>
                     </div>
                   </div>
@@ -9755,7 +9758,7 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
       steps: lang === 'fr' ? [
         "Vérifier et compléter les références de factures manquantes sur les débits passés.",
         "Effectuer une sauvegarde ZIP mensuelle complète certifiée conforme.",
-        "Sensibiliser les membres aux règles d'engagement de dépenses officielles du club."
+        "Sensibiliser les membres aux règles d'engagement de dépenses officielles du Group."
       ] : [
         "Review and update any missing invoice/ref numbers on historical records.",
         "Perform a certified full-month ZIP backup archive for official group records.",
@@ -9780,7 +9783,7 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
         : `Generate an auxiliary quarterly surplus of ${formatUSD(analyticsData.avgMonthlyDebits * 0.50)} via external channels.`,
       steps: lang === 'fr' ? [
         "Organiser un événement caritatif annuel Eagles avec billetterie et tombola.",
-        "Développer les articles officiels du club (polos, casquettes, insignes).",
+        "Développer les articles officiels du Group (polos, casquettes, insignes).",
         "Établir une convention avec 2 ou 3 entreprises partenaires bienfaitrices."
       ] : [
         "Organize an annual Eagles fraternal charity event with ticket sales and raffles.",
@@ -9813,9 +9816,9 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
         "Update time-phased action cards and roadmap for the subsequent quarter.",
         "Present the formal audit closure at the Quarterly General Membership Meeting."
       ],
-      owner: lang === 'fr' ? 'Président du Club & Trésorier' : 'Club President & Treasurer',
+      owner: lang === 'fr' ? 'Présidente du Group & Trésorière' : 'Group President & Treasurer',
       impact: lang === 'fr'
-        ? 'Pérennité de la gouvernance financière et distinction d’excellence pour le club.'
+        ? 'Pérennité de la gouvernance financière et distinction d’excellence pour le Group.'
         : 'Institutional governance maturity and recognized fiscal excellence within Philippine Eagles.'
     }
   ], [analyticsData, formatUSD, lang]);
@@ -10418,7 +10421,7 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
 
             <button
               type="button"
-              onClick={() => downloadFile(isFr ? 'MANUEL_UTILISATEUR_FR.pdf' : 'USER_MANUAL_EN.pdf')}
+              onClick={() => downloadFile(isFr ? 'GUIDE_SYNCHRONISATION_ET_UTILISATION_FR.pdf' : 'SYNCHRONIZATION_AND_USER_GUIDE_EN.pdf')}
               className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm transition"
               title={isFr ? "Télécharger le Manuel en PDF" : "Download Manual as PDF"}
             >
@@ -10540,7 +10543,7 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
                     <span>{isFr ? "Authentification Sécurisée" : "Secure Authentication"}</span>
                   </h5>
                   <p className="text-xs">
-                    {isFr ? "Identifiants par défaut :" : "Default credentials:"} <code className="bg-white px-1.5 py-0.5 rounded border font-mono">admin</code> / <code className="bg-white px-1.5 py-0.5 rounded border font-mono">eagles2026</code>.
+                    {isFr ? "Identifiants par défaut :" : "Default credentials:"} <code className="bg-white px-1.5 py-0.5 rounded border font-mono">tresorier</code> / <code className="bg-white px-1.5 py-0.5 rounded border font-mono">eagles2026</code>.
                     {isFr ? " Modifiables à tout moment dans l'onglet Paramètres." : " Can be modified anytime in Settings."}
                   </p>
                 </div>
@@ -10606,12 +10609,12 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                 <h4 className="font-black text-slate-900 text-sm flex items-center gap-2">
                   <i className="fa-solid fa-users text-purple-700"></i>
-                  <span>{isFr ? "Annuaire Officiel des 33 Membres Eagles" : "Official 33 Eagles Members Directory"}</span>
+                  <span>{isFr ? "Annuaire Officiel des Membres Eagles" : "Official Eagles Members Directory"}</span>
                 </h4>
                 <p className="text-xs text-slate-600">
                   {isFr
-                    ? "L'onglet Membres liste les 33 membres officiels du club (Présidente, Trésorière, Secrétaire, Directeurs, Membres) avec téléphone, métier, adresse au Cambodge et contacts d'urgence. Vous pouvez ajouter, modifier ou retirer des membres à tout moment."
-                    : "The Members tab features the 33 official group members (President, Treasurer, Secretary, Board of Directors, Members) with telephone, occupation, Cambodian address, and emergency contact details. You can add, edit, or remove members at any time."}
+                    ? "L'onglet Membres liste les 33 membres officiels du Group (Présidente, Trésorière, Secrétaire, Directeurs, Membres) avec téléphone, métier, adresse au Cambodge et contacts d'urgence. Vous pouvez ajouter, modifier ou retirer des membres à tout moment."
+                    : "The Members tab features the official group members (President, Treasurer, Secretary, Board of Directors, Members) with telephone, occupation, Cambodian address, and emergency contact details. You can add, edit, or remove members at any time."}
                 </p>
               </div>
             </div>
@@ -10627,7 +10630,7 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
                 <p className="text-xs text-slate-600">
                   {isFr
                     ? "Filtrez vos écritures par plage de dates, par date unique ou sur l'historique complet. Cliquez sur 'Exporter en PDF' pour générer un document A4 officiel avec en-tête Eagles, filigrane aigle centré et tableau complet des transactions."
-                    : "Filter records by custom date ranges, single date, or complete ledger history. Click 'Export to PDF' to generate an official A4 document with club crest header, watermarked eagle seal, and certified transactions table."}
+                    : "Filter records by custom date ranges, single date, or complete ledger history. Click 'Export to PDF' to generate an official A4 document with group crest header, watermarked eagle seal, and certified transactions table."}
                 </p>
               </div>
             </div>
@@ -10709,7 +10712,7 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => downloadFile(isFr ? 'MANUEL_UTILISATEUR_FR.pdf' : 'USER_MANUAL_EN.pdf')}
+              onClick={() => downloadFile(isFr ? 'GUIDE_SYNCHRONISATION_ET_UTILISATION_FR.pdf' : 'SYNCHRONIZATION_AND_USER_GUIDE_EN.pdf')}
               className="px-3.5 py-1.5 bg-red-700 hover:bg-red-800 text-white font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer"
             >
               <i className="fa-solid fa-file-pdf"></i>
@@ -10718,7 +10721,7 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
 
             <button
               type="button"
-              onClick={exportManualPdf}
+              onClick={() => window.open(isFr ? 'guide_synchro_fr.html' : 'guide_synchro_en.html', '_blank')}
               className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer"
             >
               <i className="fa-solid fa-print"></i>
