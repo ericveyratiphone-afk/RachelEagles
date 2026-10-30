@@ -131,7 +131,7 @@ body {
     top: 0;
     width: 100%;
     margin: 0;
-    padding: 10mm 15mm;
+    padding: 3mm 5mm;
     background: white !important;
     color: black !important;
     -webkit-print-color-adjust: exact;
@@ -184,6 +184,6 @@ body {
 
   @page {
     size: A4 portrait;
-    margin: 8mm;
+    margin: 4mm;
   }
 }

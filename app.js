@@ -1,4 +1,4 @@
-﻿// ============================================================================
+// ============================================================================
 // RACHEL EAGLES - APPLICATION DE GESTION DE TRÉSORERIE (React 18)
 // The Fraternal Order of Eagles / Sargo Cambodia Eagles Group
 // ============================================================================
@@ -2761,8 +2761,8 @@ function RachelEaglesApp() {
       trendBalanceData.push(runningBal);
     });
 
-    // Helper de génération offscreen Chart.js avec maintainAspectRatio: false
-    function makeOffscreenChart(w, h, config) {
+    // Helper de génération offscreen Chart.js avec maintainAspectRatio: false et plugins personnalisés
+    function makeOffscreenChart(w, h, config, customPlugins) {
       if (typeof window === 'undefined' || !window.Chart) return null;
       try {
         const c = document.createElement('canvas');
@@ -2773,6 +2773,7 @@ function RachelEaglesApp() {
         document.body.appendChild(c);
         const chart = new window.Chart(c.getContext('2d'), {
           ...config,
+          plugins: [...(config.plugins || []), ...(customPlugins || [])],
           options: {
             ...config.options,
             animation: false,
@@ -2791,8 +2792,195 @@ function RachelEaglesApp() {
       }
     }
 
-    // 1. SLIDE 2 : Histogramme Horizontal des Familles (420x460)
-    const s2HBarUri = makeOffscreenChart(420, 460, {
+    // --- PLUGINS PERSONNALISÉS POUR VALEURS DIRECTEMENT DANS LES GRAPHIQUES ---
+    const drawHBarValues = {
+      id: 'drawHBarValues',
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        const meta = chart.getDatasetMeta(0);
+        if (!meta || !meta.data) return;
+        ctx.save();
+        ctx.font = 'bold 13px sans-serif';
+        ctx.textBaseline = 'middle';
+        meta.data.forEach((bar, i) => {
+          const val = data.datasets[0].data[i];
+          if (val === undefined || val === null) return;
+          const str = '$' + Number(val).toLocaleString('en-US');
+          const barWidth = Math.abs(bar.x - bar.base);
+          if (barWidth > 65) {
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 3;
+            ctx.fillText(str, bar.x - 10, bar.y);
+          } else {
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#1e293b';
+            ctx.shadowColor = 'transparent';
+            ctx.fillText(str, bar.x + 8, bar.y);
+          }
+        });
+        ctx.restore();
+      }
+    };
+
+    const drawPieValues = {
+      id: 'drawPieValues',
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        const meta = chart.getDatasetMeta(0);
+        if (!meta || !meta.data) return;
+        const total = data.datasets[0].data.reduce((a, b) => a + (Number(b) || 0), 0);
+        if (total <= 0) return;
+
+        ctx.save();
+        meta.data.forEach((element, i) => {
+          const val = Number(data.datasets[0].data[i]) || 0;
+          const pct = Math.round((val / total) * 100);
+          if (pct < 4) return;
+
+          const angle = (element.startAngle + element.endAngle) / 2;
+          const radius = element.innerRadius > 0 
+            ? (element.innerRadius + element.outerRadius) / 2 
+            : element.outerRadius * 0.65;
+          const x = element.x + Math.cos(angle) * radius;
+          const y = element.y + Math.sin(angle) * radius;
+
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(0,0,0,0.7)';
+          ctx.shadowBlur = 4;
+          ctx.fillStyle = '#ffffff';
+
+          const valStr = '$' + Math.round(val).toLocaleString('en-US');
+          const pctStr = pct + '%';
+
+          if (pct >= 8) {
+            ctx.font = 'bold 12.5px sans-serif';
+            ctx.fillText(valStr, x, y - 7);
+            ctx.font = 'bold 11.5px sans-serif';
+            ctx.fillText(pctStr, x, y + 8);
+          } else {
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText(pctStr, x, y);
+          }
+        });
+        ctx.restore();
+      }
+    };
+
+    const drawWeeklyBarValues = {
+      id: 'drawWeeklyBarValues',
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        ctx.save();
+        data.datasets.forEach((dataset, dIdx) => {
+          const meta = chart.getDatasetMeta(dIdx);
+          if (!meta || !meta.data) return;
+          meta.data.forEach((bar, i) => {
+            const val = Number(dataset.data[i]) || 0;
+            if (val <= 0) return;
+            const str = '$' + Math.round(val).toLocaleString('en-US');
+            const barHeight = Math.abs(bar.base - bar.y);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            if (barHeight > 34) {
+              ctx.fillStyle = '#ffffff';
+              ctx.font = 'bold 11.5px sans-serif';
+              ctx.shadowColor = 'rgba(0,0,0,0.5)';
+              ctx.shadowBlur = 3;
+              ctx.fillText(str, bar.x, bar.y + 14);
+            } else {
+              ctx.fillStyle = dIdx === 0 ? '#15803d' : '#b91c1c';
+              ctx.font = 'bold 11px sans-serif';
+              ctx.shadowColor = 'transparent';
+              ctx.fillText(str, bar.x, bar.y - 7);
+            }
+          });
+        });
+        ctx.restore();
+      }
+    };
+
+    const drawNetFlowValues = {
+      id: 'drawNetFlowValues',
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        const meta = chart.getDatasetMeta(0);
+        if (!meta || !meta.data) return;
+        ctx.save();
+        meta.data.forEach((bar, i) => {
+          const val = Number(data.datasets[0].data[i]) || 0;
+          const str = (val >= 0 ? '+$' : '-$') + Math.round(Math.abs(val)).toLocaleString('en-US');
+          const barHeight = Math.abs(bar.base - bar.y);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          if (barHeight > 32) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 3;
+            ctx.fillText(str, bar.x, val >= 0 ? bar.y + 13 : bar.y - 13);
+          } else {
+            ctx.fillStyle = val >= 0 ? '#15803d' : '#b91c1c';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.shadowColor = 'transparent';
+            ctx.fillText(str, bar.x, val >= 0 ? bar.y - 8 : bar.y + 8);
+          }
+        });
+        ctx.restore();
+      }
+    };
+
+    const drawTrendLinePoints = {
+      id: 'drawTrendLinePoints',
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        const meta = chart.getDatasetMeta(0);
+        if (!meta || !meta.data) return;
+        ctx.save();
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+
+        const step = meta.data.length > 12 ? Math.ceil(meta.data.length / 8) : 1;
+
+        meta.data.forEach((pt, i) => {
+          if (i !== 0 && i !== meta.data.length - 1 && i % step !== 0) return;
+          const val = Number(data.datasets[0].data[i]) || 0;
+          const str = '$' + Math.round(val).toLocaleString('en-US');
+          const tw = ctx.measureText(str).width;
+
+          const px = pt.x;
+          const py = pt.y - 10;
+          const pillW = tw + 8;
+          const pillH = 16;
+
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+          ctx.shadowColor = 'rgba(0,0,0,0.18)';
+          ctx.shadowBlur = 3;
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(px - pillW / 2, py - pillH, pillW, pillH, 4);
+          } else {
+            ctx.rect(px - pillW / 2, py - pillH, pillW, pillH);
+          }
+          ctx.fill();
+
+          ctx.strokeStyle = '#1e3a8a';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.shadowColor = 'transparent';
+          ctx.fillStyle = '#1e3a8a';
+          ctx.fillText(str, px, py - 3);
+        });
+        ctx.restore();
+      }
+    };
+
+    // 1. SLIDE 2 : Histogramme Horizontal des Familles (440x420)
+    const s2HBarUri = makeOffscreenChart(440, 420, {
       type: 'bar',
       data: {
         labels: famLabels.length > 0 ? famLabels.map(l => formatItemLabel(l, lang)) : [lang === 'fr' ? 'Aucune' : 'None'],
@@ -2801,21 +2989,21 @@ function RachelEaglesApp() {
           data: famData.length > 0 ? famData : [0],
           backgroundColor: famColors.slice(0, famLabels.length),
           borderRadius: 8,
-          barPercentage: 0.65
+          barPercentage: 0.68
         }]
       },
       options: {
         indexAxis: 'y',
         plugins: { legend: { display: false } },
         scales: {
-          x: { beginAtZero: true, ticks: { font: { size: 14, weight: 'bold' } } },
-          y: { ticks: { font: { size: 14, weight: 'bold' } } }
+          x: { beginAtZero: true, ticks: { font: { size: 13, weight: 'bold' } } },
+          y: { ticks: { font: { size: 13.5, weight: 'bold' } } }
         }
       }
-    });
+    }, [drawHBarValues]);
 
-    // 2. SLIDE 2 : Camembert Familles avec % et Code Couleur (420x460)
-    const s2PieUri = makeOffscreenChart(420, 460, {
+    // 2. SLIDE 2 : Camembert Familles avec % et Valeurs (440x420)
+    const s2PieUri = makeOffscreenChart(440, 420, {
       type: 'pie',
       data: {
         labels: famLabelsWithPct.length > 0 ? famLabelsWithPct : [lang === 'fr' ? 'Aucune dépense' : 'No expenses'],
@@ -2827,18 +3015,18 @@ function RachelEaglesApp() {
         }]
       },
       options: {
-        layout: { padding: 8 },
+        layout: { padding: 6 },
         plugins: {
           legend: {
             position: 'bottom',
-            labels: { boxWidth: 16, font: { size: 13, weight: 'bold' }, padding: 14 }
+            labels: { boxWidth: 15, font: { size: 12.5, weight: 'bold' }, padding: 10 }
           }
         }
       }
-    });
+    }, [drawPieValues]);
 
-    // 3. SLIDE 3 : Histogramme Hebdomadaire Recettes vs Dépenses (440x460)
-    const s3WeekBarUri = makeOffscreenChart(440, 460, {
+    // 3. SLIDE 3 : Histogramme Hebdomadaire Recettes vs Dépenses (440x420)
+    const s3WeekBarUri = makeOffscreenChart(440, 420, {
       type: 'bar',
       data: {
         labels: weekLabels,
@@ -2863,25 +3051,25 @@ function RachelEaglesApp() {
       },
       options: {
         plugins: {
-          legend: { position: 'top', labels: { font: { size: 14, weight: 'bold' }, padding: 12 } }
+          legend: { position: 'top', labels: { font: { size: 13, weight: 'bold' }, padding: 10 } }
         },
         scales: {
-          y: { beginAtZero: true, ticks: { font: { size: 13, weight: 'bold' } } },
+          y: { beginAtZero: true, ticks: { font: { size: 12.5, weight: 'bold' } } },
           x: { ticks: { font: { size: 12.5, weight: 'bold' } } }
         }
       }
-    });
+    }, [drawWeeklyBarValues]);
 
-    // 4. SLIDE 3 : Camembert Recettes vs Dépenses en % (420x460)
+    // 4. SLIDE 3 : Camembert Recettes vs Dépenses en % et Valeurs (440x420)
     const totalVolume = totalC + totalD;
     const creditPct = totalVolume > 0 ? Math.round((totalC / totalVolume) * 100) : 50;
     const debitPct = totalVolume > 0 ? Math.round((totalD / totalVolume) * 100) : 50;
-    const s3PieUri = makeOffscreenChart(420, 460, {
+    const s3PieUri = makeOffscreenChart(440, 420, {
       type: 'pie',
       data: {
         labels: [
-          (lang === 'fr' ? 'Recettes' : 'Incomes') + ` (${creditPct}%)`,
-          (lang === 'fr' ? 'Dépenses' : 'Expenses') + ` (${debitPct}%)`
+          (lang === 'fr' ? 'Recettes' : 'Incomes') + ' (' + creditPct + '%)',
+          (lang === 'fr' ? 'Dépenses' : 'Expenses') + ' (' + debitPct + '%)'
         ],
         datasets: [{
           data: [totalC, totalD],
@@ -2891,15 +3079,15 @@ function RachelEaglesApp() {
         }]
       },
       options: {
-        layout: { padding: 8 },
+        layout: { padding: 6 },
         plugins: {
-          legend: { position: 'bottom', labels: { boxWidth: 20, font: { size: 15, weight: 'bold' }, padding: 18 } }
+          legend: { position: 'bottom', labels: { boxWidth: 18, font: { size: 14, weight: 'bold' }, padding: 14 } }
         }
       }
-    });
+    }, [drawPieValues]);
 
-    // 5. SLIDE 4 : Histogramme des Flux Nets par Semaine (+/-) (420x340)
-    const s4FlowBarUri = makeOffscreenChart(420, 340, {
+    // 5. SLIDE 4 : Histogramme des Flux Nets par Semaine (+/-) (440x290)
+    const s4FlowBarUri = makeOffscreenChart(440, 290, {
       type: 'bar',
       data: {
         labels: weekLabels,
@@ -2914,20 +3102,20 @@ function RachelEaglesApp() {
       options: {
         plugins: { legend: { display: false } },
         scales: {
-          y: { ticks: { font: { size: 13, weight: 'bold' } } },
-          x: { ticks: { font: { size: 13, weight: 'bold' } } }
+          y: { ticks: { font: { size: 12.5, weight: 'bold' } } },
+          x: { ticks: { font: { size: 12.5, weight: 'bold' } } }
         }
       }
-    });
+    }, [drawNetFlowValues]);
 
-    // 6. SLIDE 4 : Camembert Structure des Liquidités Mensuelles (420x340)
+    // 6. SLIDE 4 : Camembert Structure des Liquidités Mensuelles (440x290)
     const netBal = totalC - totalD;
-    const s4PieUri = makeOffscreenChart(420, 340, {
+    const s4PieUri = makeOffscreenChart(440, 290, {
       type: 'doughnut',
       data: {
         labels: [
-          (lang === 'fr' ? 'Solde Disponible' : 'Available Balance') + ` (${netBal > 0 ? Math.round((netBal / (Math.abs(netBal) + totalD)) * 100) : 0}%)`,
-          (lang === 'fr' ? 'Dépenses Engagées' : 'Engaged Expenses') + ` (${totalD > 0 ? Math.round((totalD / (Math.abs(netBal) + totalD)) * 100) : 0}%)`
+          (lang === 'fr' ? 'Solde Disponible' : 'Available Balance') + ' (' + (netBal > 0 ? Math.round((netBal / (Math.abs(netBal) + totalD)) * 100) : 0) + '%)',
+          (lang === 'fr' ? 'Dépenses Engagées' : 'Engaged Expenses') + ' (' + (totalD > 0 ? Math.round((totalD / (Math.abs(netBal) + totalD)) * 100) : 0) + '%)'
         ],
         datasets: [{
           data: [Math.max(0, netBal), totalD],
@@ -2938,17 +3126,17 @@ function RachelEaglesApp() {
       },
       options: {
         plugins: {
-          legend: { position: 'bottom', labels: { boxWidth: 16, font: { size: 13, weight: 'bold' }, padding: 12 } }
+          legend: { position: 'bottom', labels: { boxWidth: 15, font: { size: 12.5, weight: 'bold' }, padding: 10 } }
         }
       }
-    });
+    }, [drawPieValues]);
 
-    // 7. SLIDE 4 : Grande Courbe Chronologique du Solde Cumulé (900x320)
+    // 7. SLIDE 4 : Grande Courbe Chronologique du Solde Cumulé (900x290)
     const _nowDate = new Date();
     const _p2 = (v) => String(v).padStart(2, '0');
     const fallbackDate = _p2(_nowDate.getDate()) + '/' + _p2(_nowDate.getMonth() + 1) + '/' + _nowDate.getFullYear();
 
-    const s4LineUri = makeOffscreenChart(900, 320, {
+    const s4LineUri = makeOffscreenChart(900, 290, {
       type: 'line',
       data: {
         labels: trendLabels.length > 0 ? trendLabels : [fallbackDate],
@@ -2959,19 +3147,19 @@ function RachelEaglesApp() {
           backgroundColor: 'rgba(30, 58, 138, 0.12)',
           fill: true,
           tension: 0.25,
-          borderWidth: 4,
+          borderWidth: 3.5,
           pointRadius: 6,
           pointBackgroundColor: '#1e3a8a'
         }]
       },
       options: {
-        plugins: { legend: { display: true, labels: { font: { size: 13.5, weight: 'bold' } } } },
+        plugins: { legend: { display: true, labels: { font: { size: 13, weight: 'bold' } } } },
         scales: {
-          y: { ticks: { font: { size: 12.5, weight: 'bold' } } },
-          x: { ticks: { font: { size: 12.5, weight: 'bold' } } }
+          y: { ticks: { font: { size: 12, weight: 'bold' } } },
+          x: { ticks: { font: { size: 12, weight: 'bold' } } }
         }
       }
-    });
+    }, [drawTrendLinePoints]);
 
     const _now = new Date();
     const _p = (v) => String(v).padStart(2, '0');
@@ -6690,94 +6878,98 @@ function RachelEaglesApp() {
                =============================================================== */
             <div>
               {/* ========================================================= */}
-              {/* SLIDE 1 : PAGE DE GARDE D'ATTENTE (OCCUPANT PLEIN ECRAN)   */}
+              {/* SLIDE 1 : PAGE DE GARDE D'ATTENTE (100% SUR LA PAGE 1 !)  */}
               {/* ========================================================= */}
-              <div className="page-break" style={{ minHeight: '94vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', textAlign: 'center', padding: '20px 0', boxSizing: 'border-box' }}>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '48px', marginTop: '15px' }}>
-                  <img src="logo1.png" alt="Logo Eagles" style={{ width: '135px', height: '135px', objectFit: 'contain' }} />
-                  <img src="logo2.png" alt="Logo Sargo" style={{ width: '145px', height: '145px', objectFit: 'contain' }} />
-                  <img src="logo3.png" alt="Logo Rachel Eagles" style={{ width: '135px', height: '135px', objectFit: 'contain' }} />
+              <div className="page-break" style={{ minHeight: '272mm', maxHeight: '282mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', textAlign: 'center', padding: '2mm 6mm', boxSizing: 'border-box' }}>
+                {/* Logos tout en haut sans marge superflue */}
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '36px', marginTop: 0, paddingTop: 0 }}>
+                  <img src="logo1.png" alt="Logo Eagles" style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
+                  <img src="logo2.png" alt="Logo Sargo" style={{ width: '128px', height: '128px', objectFit: 'contain' }} />
+                  <img src="logo3.png" alt="Logo Lady Eagles" style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
                 </div>
 
-                <div style={{ margin: '15px 0' }}>
-                  <h1 style={{ fontSize: '30px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 14px 0', lineHeight: '1.25' }}>
+                <div style={{ margin: '8px 0' }}>
+                  {/* Phrase sans aucune coupure */}
+                  <h1 style={{ fontSize: '21.5px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '1.2px', margin: '0 0 10px 0', lineHeight: '1.25', whiteSpace: 'nowrap' }}>
                     THE FRATERNAL ORDER OF LADY EAGLES GROUP
                   </h1>
-                  <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#d97706', textTransform: 'uppercase', letterSpacing: '1.2px', margin: '0 0 24px 0' }}>
-                    Sargo Cambodia Lady Eagles Group &bull; Commission des Finances
+                  {/* Traduction en anglais Finance Committee */}
+                  <h2 style={{ fontSize: '15px', fontWeight: '700', color: '#d97706', textTransform: 'uppercase', letterSpacing: '1.2px', margin: '0 0 16px 0' }}>
+                    Sargo Cambodia Lady Eagles Group &bull; Finance Committee
                   </h2>
-                  <div style={{ width: '200px', height: '5px', background: '#1e3a8a', margin: '0 auto 30px auto', borderRadius: '3px' }}></div>
+                  <div style={{ width: '180px', height: '4px', background: '#1e3a8a', margin: '0 auto 18px auto', borderRadius: '2px' }}></div>
 
-                  <div style={{ display: 'inline-block', background: '#eff6ff', border: '3px solid #1e3a8a', borderRadius: '20px', padding: '34px 70px', boxShadow: '0 12px 28px rgba(30, 58, 138, 0.15)', width: '88%', boxSizing: 'border-box' }}>
-                    <p style={{ fontSize: '15px', fontWeight: '800', color: '#2563eb', textTransform: 'uppercase', letterSpacing: '2px', margin: '0 0 12px 0' }}>
+                  <div style={{ display: 'inline-block', background: '#eff6ff', border: '2.5px solid #1e3a8a', borderRadius: '16px', padding: '20px 48px', boxShadow: '0 10px 24px rgba(30, 58, 138, 0.12)', width: '92%', boxSizing: 'border-box' }}>
+                    <p style={{ fontSize: '13.5px', fontWeight: '800', color: '#2563eb', textTransform: 'uppercase', letterSpacing: '1.5px', margin: '0 0 8px 0' }}>
                       Application : Treasurer Financial Record
                     </p>
-                    <h3 style={{ fontSize: '28px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 12px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 8px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>
                       {lang === 'fr' ? "RAPPORT OFFICIEL DE TR\u00c9SORERIE" : "OFFICIAL TREASURY & FINANCIAL REPORT"}
                     </h3>
-                    <p style={{ fontSize: '19px', fontWeight: '800', color: '#475569', margin: '0 0 12px 0' }}>
+                    <p style={{ fontSize: '17px', fontWeight: '800', color: '#475569', margin: '0 0 8px 0' }}>
                       {lang === 'fr' ? "ASSEMBL\u00c9E G\u00c9N\u00c9RALE MENSUELLE" : "MONTHLY GENERAL ASSEMBLY"}
                     </p>
-                    <p style={{ fontSize: '15px', color: '#64748b', margin: 0, fontStyle: 'italic', fontWeight: '700' }}>
+                    <p style={{ fontSize: '13.5px', color: '#64748b', margin: 0, fontStyle: 'italic', fontWeight: '700' }}>
                       {lang === 'fr' ? "P\u00e9riode d'audit :" : "Audited Period:"} {printDocumentData.subtitle}
                     </p>
                   </div>
                 </div>
 
-                <div style={{ background: '#f8fafc', border: '2.5px dashed #94a3b8', borderRadius: '20px', padding: '30px 45px', width: '90%', margin: '0 auto', boxSizing: 'border-box' }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fef3c7', color: '#92400e', fontWeight: '900', fontSize: '14px', padding: '8px 22px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>
+                <div style={{ background: '#f8fafc', border: '2px dashed #94a3b8', borderRadius: '16px', padding: '18px 30px', width: '92%', margin: '0 auto', boxSizing: 'border-box' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fef3c7', color: '#92400e', fontWeight: '900', fontSize: '13px', padding: '6px 18px', borderRadius: '16px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
                     <span>🏛️ {lang === 'fr' ? "S\u00c9ANCE EN COURS D'INSTALLATION" : "GENERAL ASSEMBLY IN SESSION"}</span>
                   </div>
-                  <h4 style={{ fontSize: '19px', fontWeight: '900', color: '#0f172a', margin: '0 0 12px 0' }}>
+                  <h4 style={{ fontSize: '17px', fontWeight: '900', color: '#0f172a', margin: '0 0 8px 0' }}>
                     Recipient: Lady Eagles Group Members and Officers
                   </h4>
-                  <p style={{ fontSize: '14.5px', color: '#475569', margin: 0, lineHeight: '1.75' }}>
+                  <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: '1.65' }}>
                     {lang === 'fr' 
                       ? "Bienvenue \u00e0 tous les membres et officiers du Lady Eagles Group.\nVeuillez prendre place. La pr\u00e9sentation officielle d\u00e9butera d\u00e8s que l'assembl\u00e9e sera au complet." 
                       : "Welcome to all Lady Eagles Group Members and Officers.\nPlease take your seats. The official presentation will commence shortly once the assembly is in full session."}
                   </p>
                 </div>
 
-                <div style={{ margin: '15px 0' }}>
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '110px', marginBottom: '24px' }}>
-                    <div style={{ textAlign: 'center', minWidth: '230px' }}>
-                      <p style={{ fontSize: '11.5px', fontWeight: '700', color: '#64748b', margin: '0 0 4px 0', textTransform: 'uppercase' }}>
-                        Issuer / Pr\u00e9sent\u00e9 par
+                {/* Bas de page Slide 1 : Issuer Rachel Chua, Endorsement / Approved Sharon Llegado */}
+                <div style={{ margin: '8px 0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '90px', marginBottom: '14px' }}>
+                    <div style={{ textAlign: 'center', minWidth: '220px' }}>
+                      <p style={{ fontSize: '12px', fontWeight: '800', color: '#64748b', margin: '0 0 3px 0', textTransform: 'uppercase' }}>
+                        Issuer
                       </p>
-                      <p style={{ fontSize: '18px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 3px 0' }}>Rachel Chua</p>
-                      <p style={{ fontSize: '13.5px', fontWeight: '800', color: '#475569', margin: 0 }}>
+                      <p style={{ fontSize: '17.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 2px 0' }}>Rachel Chua</p>
+                      <p style={{ fontSize: '13px', fontWeight: '800', color: '#475569', margin: 0 }}>
                         Group Treasurer
                       </p>
                     </div>
-                    <div style={{ textAlign: 'center', minWidth: '230px' }}>
-                      <p style={{ fontSize: '11.5px', fontWeight: '700', color: '#64748b', margin: '0 0 4px 0', textTransform: 'uppercase' }}>
-                        Endorsement / Approuv\u00e9 par
+                    <div style={{ textAlign: 'center', minWidth: '220px' }}>
+                      <p style={{ fontSize: '12px', fontWeight: '800', color: '#64748b', margin: '0 0 3px 0', textTransform: 'uppercase' }}>
+                        Endorsement / Approved
                       </p>
-                      <p style={{ fontSize: '18px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 3px 0' }}>Sharon Llegado</p>
-                      <p style={{ fontSize: '13.5px', fontWeight: '800', color: '#475569', margin: 0 }}>
+                      <p style={{ fontSize: '17.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 2px 0' }}>Sharon Llegado</p>
+                      <p style={{ fontSize: '13px', fontWeight: '800', color: '#475569', margin: 0 }}>
                         Group President
                       </p>
                     </div>
                   </div>
 
-                  <p style={{ fontSize: '13.5px', color: '#64748b', margin: '0 0 16px 0', fontWeight: '700' }}>
+                  <p style={{ fontSize: '12.5px', color: '#64748b', margin: '0 0 10px 0', fontWeight: '700' }}>
                     {lang === 'fr' ? "Date de S\u00e9ance :" : "Session Date:"} <strong>{printDocumentData.assemblyDate}</strong> &bull; Phnom Penh, Cambodge
                   </p>
-                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '60px', objectFit: 'contain' }} />
+                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '46px', objectFit: 'contain' }} />
                 </div>
               </div>
 
               {/* ========================================================= */}
-              {/* SLIDE 2 : DEPENSES PAR FAMILLE (OCCUPANT PLEIN ECRAN)     */}
+              {/* SLIDE 2 : DEPENSES PAR FAMILLE (DEVIENT LA SLIDE 2)       */}
               {/* ========================================================= */}
-              <div className="page-break" style={{ minHeight: '94vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
+              <div className="page-break" style={{ minHeight: '272mm', maxHeight: '282mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '2mm 6mm', boxSizing: 'border-box' }}>
                 <div>
                   {/* Header Slide 2 */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2.5px solid #1e3a8a', paddingBottom: '10px', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <img src="logo2.png" alt="Sargo" style={{ width: '52px', height: '52px', objectFit: 'contain' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2.5px solid #1e3a8a', paddingBottom: '8px', marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img src="logo3.png" alt="Sargo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
                       <div>
-                        <h2 style={{ fontSize: '14px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: 0 }}>
+                        <h2 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: 0 }}>
                           THE FRATERNAL ORDER OF LADY EAGLES GROUP
                         </h2>
                         <p style={{ fontSize: '13px', fontWeight: '900', color: '#d97706', margin: 0 }}>
@@ -6785,107 +6977,108 @@ function RachelEaglesApp() {
                         </p>
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right', fontSize: '11.5px', color: '#64748b' }}>
+                    <div style={{ textAlign: 'right', fontSize: '11px', color: '#64748b' }}>
                       <p style={{ margin: 0, fontWeight: '800' }}>{printDocumentData.subtitle}</p>
                       <p style={{ margin: 0 }}>{lang === 'fr' ? "S\u00e9ance du" : "Session of"} {printDocumentData.assemblyDate}</p>
                     </div>
                   </div>
 
-                  {/* 3 KPI Cards Elargies */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '18px' }}>
-                    <div style={{ background: '#fef2f2', border: '2.5px solid #fca5a5', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '800', color: '#991b1b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                  {/* 3 KPI Cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '14px' }}>
+                    <div style={{ background: '#fef2f2', border: '2.5px solid #fca5a5', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#991b1b', textTransform: 'uppercase', display: 'block', marginBottom: '3px' }}>
                         {lang === 'fr' ? "Total D\u00e9penses P\u00e9riode" : "Total Period Expenses"}
                       </span>
-                      <span style={{ fontSize: '34px', fontWeight: '900', color: '#b91c1c' }}>
+                      <span style={{ fontSize: '30px', fontWeight: '900', color: '#b91c1c' }}>
                         {formatUSD(printDocumentData.totalDebits)}
                       </span>
                     </div>
 
-                    <div style={{ background: '#eff6ff', border: '2.5px solid #93c5fd', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '800', color: '#1e40af', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    <div style={{ background: '#eff6ff', border: '2.5px solid #93c5fd', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#1e40af', textTransform: 'uppercase', display: 'block', marginBottom: '3px' }}>
                         {lang === 'fr' ? "Familles Budg\u00e9taires Actives" : "Active Budget Families"}
                       </span>
-                      <span style={{ fontSize: '34px', fontWeight: '900', color: '#1e3a8a' }}>
+                      <span style={{ fontSize: '30px', fontWeight: '900', color: '#1e3a8a' }}>
                         {printDocumentData.activeFamiliesCount} {lang === 'fr' ? "Familles" : "Families"}
                       </span>
                     </div>
 
-                    <div style={{ background: '#fefce8', border: '2.5px solid #fde047', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '800', color: '#854d0e', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    <div style={{ background: '#fefce8', border: '2.5px solid #fde047', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#854d0e', textTransform: 'uppercase', display: 'block', marginBottom: '3px' }}>
                         {lang === 'fr' ? "Poste Principal de D\u00e9pense" : "Primary Expense Driver"}
                       </span>
-                      <span style={{ fontSize: '24px', fontWeight: '900', color: '#a16207' }}>
+                      <span style={{ fontSize: '22px', fontWeight: '900', color: '#a16207' }}>
                         {formatItemLabel(printDocumentData.topFamilyName, lang)} ({printDocumentData.topFamilyPct}%)
                       </span>
                     </div>
                   </div>
 
-                  {/* 2 GRANDS GRAPHIQUES : REMPLISSENT LES CARTES (HBAR + CAMEMBERT) */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '18px' }}>
-                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
-                      <h4 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
+                  {/* 2 GRANDS GRAPHIQUES AVEC VALEURS DANS LES COULEURS */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                      <h4 style={{ fontSize: '12.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
                         {lang === 'fr' ? "Histogramme Horizontal des Familles ($ USD)" : "Horizontal Family Histogram ($ USD)"}
                       </h4>
                       {printDocumentData.s2HBarUri ? (
-                        <img src={printDocumentData.s2HBarUri} alt="Expenses Horizontal Bar" style={{ width: '100%', height: '380px', objectFit: 'contain' }} />
+                        <img src={printDocumentData.s2HBarUri} alt="Expenses Horizontal Bar" style={{ width: '100%', height: '350px', objectFit: 'contain' }} />
                       ) : (
-                        <div style={{ height: '380px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                        <div style={{ height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                           {lang === 'fr' ? "Graphique indisponible" : "Chart unavailable"}
                         </div>
                       )}
                     </div>
 
-                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
-                      <h4 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
-                        {lang === 'fr' ? "R\u00e9partition des D\u00e9penses en % (Code Couleur)" : "Expenses % Share (Color Code)"}
+                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                      <h4 style={{ fontSize: '12.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                        {lang === 'fr' ? "R\u00e9partition des D\u00e9penses en % et Valeurs" : "Expenses % Share & Values"}
                       </h4>
                       {printDocumentData.s2PieUri ? (
-                        <img src={printDocumentData.s2PieUri} alt="Expenses Pie %" style={{ width: '100%', height: '380px', objectFit: 'contain' }} />
+                        <img src={printDocumentData.s2PieUri} alt="Expenses Pie %" style={{ width: '100%', height: '350px', objectFit: 'contain' }} />
                       ) : (
-                        <div style={{ height: '380px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                        <div style={{ height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                           {lang === 'fr' ? "Graphique indisponible" : "Chart unavailable"}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Synthèse d'analyse Elargie (AUCUN TABLEAU !) */}
-                  <div style={{ background: '#f8fafc', borderLeft: '6px solid #1e3a8a', borderRadius: '0 12px 12px 0', padding: '18px 26px', fontSize: '13.5px', color: '#1e293b', lineHeight: '1.8', marginBottom: '16px' }}>
-                    <strong style={{ color: '#1e3a8a', fontSize: '14.5px' }}>{lang === 'fr' ? "Analyse Ex\u00e9cutive des Engagements Budg\u00e9taires :" : "Executive Expense Breakdown Analysis:"}</strong><br />
-                    &bull; {lang === 'fr' ? `Le poste principal reste "${formatItemLabel(printDocumentData.topFamilyName, lang)}" concentrant ${printDocumentData.topFamilyPct}% des d\u00e9penses.` : `The leading expense item is "${formatItemLabel(printDocumentData.topFamilyName, lang)}", accounting for ${printDocumentData.topFamilyPct}% of spending.`}<br />
+                  {/* Synthèse d'analyse */}
+                  <div style={{ background: '#f8fafc', borderLeft: '5px solid #1e3a8a', borderRadius: '0 10px 10px 0', padding: '14px 20px', fontSize: '12.5px', color: '#1e293b', lineHeight: '1.7' }}>
+                    <strong style={{ color: '#1e3a8a', fontSize: '13.5px' }}>{lang === 'fr' ? "Analyse Ex\u00e9cutive des Engagements Budg\u00e9taires :" : "Executive Expense Breakdown Analysis:"}</strong><br />
+                    &bull; {lang === 'fr' ? `Le poste principal reste "${formatItemLabel(printDocumentData.topFamilyName, lang)}" concentrant ${printDocumentData.topFamilyPct}% des d\u00e9penses du Group.` : `The leading expense item is "${formatItemLabel(printDocumentData.topFamilyName, lang)}", accounting for ${printDocumentData.topFamilyPct}% of Group spending.`}<br />
                     &bull; {lang === 'fr' ? "Les charges opérationnelles sont maîtrisées conformément aux préconisations de gestion du Lady Eagles Group." : "Operational expenditures remain strictly aligned with the stewardship targets set by the Lady Eagles Group."}
                   </div>
                 </div>
 
-                {/* Footer Slide 2 */}
+                {/* Footer Slide 2 avec pagination seule au centre */}
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '10px' }}>
-                    <div style={{ fontSize: '12.5px', fontWeight: '900', color: '#1e3a8a' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '8px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
                       Rachel Chua &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
                     </div>
-                    <div style={{ fontSize: '11.5px', color: '#94a3b8', fontWeight: '800' }}>
-                      Pack Assembl\u00e9e G\u00e9n\u00e9rale &bull; Slide 2 / 5
+                    {/* Pagination seule */}
+                    <div style={{ fontSize: '12.5px', color: '#475569', fontWeight: '900' }}>
+                      Slide 2 / 5
                     </div>
-                    <div style={{ fontSize: '12.5px', fontWeight: '900', color: '#1e3a8a' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
                       Sharon Llegado &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group President</span>
                     </div>
                   </div>
-                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '52px', objectFit: 'contain', marginTop: '10px' }} />
+                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '44px', objectFit: 'contain', marginTop: '8px' }} />
                 </div>
               </div>
 
               {/* ========================================================= */}
-              {/* SLIDE 3 : COMPARAISON DEBITS / CREDITS (OCCUPANT PLEIN ECRAN) */}
+              {/* SLIDE 3 : COMPARAISON DEBITS / CREDITS (DEVIENT SLIDE 3)  */}
               {/* ========================================================= */}
-              <div className="page-break" style={{ minHeight: '94vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
+              <div className="page-break" style={{ minHeight: '272mm', maxHeight: '282mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '2mm 6mm', boxSizing: 'border-box' }}>
                 <div>
                   {/* Header Slide 3 */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2.5px solid #1e3a8a', paddingBottom: '10px', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <img src="logo2.png" alt="Sargo" style={{ width: '52px', height: '52px', objectFit: 'contain' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2.5px solid #1e3a8a', paddingBottom: '8px', marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img src="logo3.png" alt="Sargo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
                       <div>
-                        <h2 style={{ fontSize: '14px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: 0 }}>
+                        <h2 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: 0 }}>
                           THE FRATERNAL ORDER OF LADY EAGLES GROUP
                         </h2>
                         <p style={{ fontSize: '13px', fontWeight: '900', color: '#d97706', margin: 0 }}>
@@ -6893,107 +7086,108 @@ function RachelEaglesApp() {
                         </p>
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right', fontSize: '11.5px', color: '#64748b' }}>
+                    <div style={{ textAlign: 'right', fontSize: '11px', color: '#64748b' }}>
                       <p style={{ margin: 0, fontWeight: '800' }}>{printDocumentData.subtitle}</p>
                       <p style={{ margin: 0 }}>{lang === 'fr' ? "S\u00e9ance du" : "Session of"} {printDocumentData.assemblyDate}</p>
                     </div>
                   </div>
 
-                  {/* 3 KPI Cards Elargies */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '18px' }}>
-                    <div style={{ background: '#f0fdf4', border: '2.5px solid #86efac', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '800', color: '#166534', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                  {/* 3 KPI Cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '14px' }}>
+                    <div style={{ background: '#f0fdf4', border: '2.5px solid #86efac', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#166534', textTransform: 'uppercase', display: 'block', marginBottom: '3px' }}>
                         {lang === 'fr' ? "Total Recettes (Incomes)" : "Total Incomes (Credits)"}
                       </span>
-                      <span style={{ fontSize: '34px', fontWeight: '900', color: '#15803d' }}>
+                      <span style={{ fontSize: '30px', fontWeight: '900', color: '#15803d' }}>
                         +{formatUSD(printDocumentData.totalCredits)}
                       </span>
                     </div>
 
-                    <div style={{ background: '#fef2f2', border: '2.5px solid #fca5a5', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '800', color: '#991b1b', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    <div style={{ background: '#fef2f2', border: '2.5px solid #fca5a5', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#991b1b', textTransform: 'uppercase', display: 'block', marginBottom: '3px' }}>
                         {lang === 'fr' ? "Total D\u00e9penses (Debits)" : "Total Expenses (Debits)"}
                       </span>
-                      <span style={{ fontSize: '34px', fontWeight: '900', color: '#b91c1c' }}>
+                      <span style={{ fontSize: '30px', fontWeight: '900', color: '#b91c1c' }}>
                         -{formatUSD(printDocumentData.totalDebits)}
                       </span>
                     </div>
 
-                    <div style={{ background: '#eff6ff', border: '2.5px solid #93c5fd', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '800', color: '#1e40af', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    <div style={{ background: '#eff6ff', border: '2.5px solid #93c5fd', borderRadius: '12px', padding: '12px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#1e40af', textTransform: 'uppercase', display: 'block', marginBottom: '3px' }}>
                         {lang === 'fr' ? "Exc\u00e9dent Net Disponible" : "Net Available Balance"}
                       </span>
-                      <span style={{ fontSize: '34px', fontWeight: '900', color: printDocumentData.netBalance >= 0 ? '#1e3a8a' : '#dc2626' }}>
+                      <span style={{ fontSize: '30px', fontWeight: '900', color: printDocumentData.netBalance >= 0 ? '#1e3a8a' : '#dc2626' }}>
                         {printDocumentData.netBalance >= 0 ? '+' : ''}{formatUSD(printDocumentData.netBalance)}
                       </span>
                     </div>
                   </div>
 
-                  {/* 2 GRANDS GRAPHIQUES : HISTOGRAMME PAR SEMAINE + CAMEMBERT % */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '16px', marginBottom: '18px' }}>
-                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
-                      <h4 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
+                  {/* 2 GRANDS GRAPHIQUES AVEC VALEURS DANS LES COULEURS */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '14px', marginBottom: '14px' }}>
+                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                      <h4 style={{ fontSize: '12.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
                         {lang === 'fr' ? "Histogramme Hebdomadaire Recettes vs D\u00e9penses ($ USD)" : "Weekly Incomes vs Expenses Histogram ($ USD)"}
                       </h4>
                       {printDocumentData.s3WeekBarUri ? (
-                        <img src={printDocumentData.s3WeekBarUri} alt="Weekly Incomes vs Expenses" style={{ width: '100%', height: '380px', objectFit: 'contain' }} />
+                        <img src={printDocumentData.s3WeekBarUri} alt="Weekly Incomes vs Expenses" style={{ width: '100%', height: '350px', objectFit: 'contain' }} />
                       ) : (
-                        <div style={{ height: '380px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                        <div style={{ height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                           {lang === 'fr' ? "Donn\u00e9es hebdomadaires indisponibles" : "Weekly data unavailable"}
                         </div>
                       )}
                     </div>
 
-                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
-                      <h4 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
-                        {lang === 'fr' ? "R\u00e9partition Globale en %" : "Overall Distribution %"}
+                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                      <h4 style={{ fontSize: '12.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                        {lang === 'fr' ? "R\u00e9partition Globale en % et Valeurs" : "Overall Distribution % & Values"}
                       </h4>
                       {printDocumentData.s3PieUri ? (
-                        <img src={printDocumentData.s3PieUri} alt="Compare Pie %" style={{ width: '100%', height: '380px', objectFit: 'contain' }} />
+                        <img src={printDocumentData.s3PieUri} alt="Compare Pie %" style={{ width: '100%', height: '350px', objectFit: 'contain' }} />
                       ) : (
-                        <div style={{ height: '380px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                        <div style={{ height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                           {lang === 'fr' ? "Donn\u00e9es indisponibles" : "Data unavailable"}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Synthèse (AUCUN TABLEAU !) */}
-                  <div style={{ background: '#f8fafc', borderLeft: '6px solid #16a34a', borderRadius: '0 12px 12px 0', padding: '18px 26px', fontSize: '13.5px', color: '#1e293b', lineHeight: '1.8', marginBottom: '16px' }}>
-                    <strong style={{ color: '#15803d', fontSize: '14.5px' }}>{lang === 'fr' ? "Analyse de l'\u00c9quilibre Financier :" : "Financial Balance Assessment:"}</strong><br />
-                    &bull; {lang === 'fr' ? `Le taux de couverture atteint ${printDocumentData.healthRatio}x (les recettes couvrent largement toutes les charges).` : `Coverage ratio stands at ${printDocumentData.healthRatio}x (incomes comfortably cover all disbursements).`}<br />
-                    &bull; {lang === 'fr' ? "La r\u00e9partition confirme une gestion prudente et un exc\u00e9dent sain pour les projets futurs du Group." : "The breakdown attests to disciplined management and a healthy reserve for upcoming Group initiatives."}
+                  {/* Synthèse avec explication du ratio de couverture */}
+                  <div style={{ background: '#f8fafc', borderLeft: '5px solid #16a34a', borderRadius: '0 10px 10px 0', padding: '14px 20px', fontSize: '12.5px', color: '#1e293b', lineHeight: '1.7' }}>
+                    <strong style={{ color: '#15803d', fontSize: '13.5px' }}>{lang === 'fr' ? "Analyse de l'\u00c9quilibre Financier :" : "Financial Balance Assessment:"}</strong><br />
+                    &bull; {lang === 'fr' ? `Le taux de couverture budg\u00e9taire atteint ${printDocumentData.healthRatio}x (les recettes couvrent ${printDocumentData.healthRatio} fois l'int\u00e9gralit\u00e9 des d\u00e9penses engag\u00e9es).` : `Coverage ratio stands at ${printDocumentData.healthRatio}x (incomes comfortably cover ${printDocumentData.healthRatio} times all disbursements).`}<br />
+                    &bull; {lang === 'fr' ? "La structure confirme une gestion prudente et un exc\u00e9dent de s\u00e9curit\u00e9 pour les projets du Group." : "The breakdown attests to disciplined management and a healthy reserve for upcoming Group initiatives."}
                   </div>
                 </div>
 
-                {/* Footer Slide 3 */}
+                {/* Footer Slide 3 avec pagination seule */}
                 <div>
-                  <div style={{ display: 'flex', justifyCenter: 'space-between', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '10px' }}>
-                    <div style={{ fontSize: '12.5px', fontWeight: '900', color: '#1e3a8a' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '8px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
                       Rachel Chua &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
                     </div>
-                    <div style={{ fontSize: '11.5px', color: '#94a3b8', fontWeight: '800' }}>
-                      Pack Assembl\u00e9e G\u00e9n\u00e9rale &bull; Slide 3 / 5
+                    {/* Pagination seule */}
+                    <div style={{ fontSize: '12.5px', color: '#475569', fontWeight: '900' }}>
+                      Slide 3 / 5
                     </div>
-                    <div style={{ fontSize: '12.5px', fontWeight: '900', color: '#1e3a8a' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
                       Sharon Llegado &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group President</span>
                     </div>
                   </div>
-                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '52px', objectFit: 'contain', marginTop: '10px' }} />
+                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '44px', objectFit: 'contain', marginTop: '8px' }} />
                 </div>
               </div>
 
               {/* ========================================================= */}
-              {/* SLIDE 4 : EVOLUTION DE LA TRESORERIE PAR SEMAINE ET MOIS  */}
+              {/* SLIDE 4 : EVOLUTION DE LA TRESORERIE (DEVIENT SLIDE 4)    */}
               {/* ========================================================= */}
-              <div className="page-break" style={{ minHeight: '94vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
+              <div className="page-break" style={{ minHeight: '272mm', maxHeight: '282mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '2mm 6mm', boxSizing: 'border-box' }}>
                 <div>
                   {/* Header Slide 4 */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2.5px solid #1e3a8a', paddingBottom: '10px', marginBottom: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <img src="logo2.png" alt="Sargo" style={{ width: '52px', height: '52px', objectFit: 'contain' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2.5px solid #1e3a8a', paddingBottom: '8px', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img src="logo3.png" alt="Sargo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
                       <div>
-                        <h2 style={{ fontSize: '14px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: 0 }}>
+                        <h2 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: 0 }}>
                           THE FRATERNAL ORDER OF LADY EAGLES GROUP
                         </h2>
                         <p style={{ fontSize: '13px', fontWeight: '900', color: '#d97706', margin: 0 }}>
@@ -7001,119 +7195,120 @@ function RachelEaglesApp() {
                         </p>
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right', fontSize: '11.5px', color: '#64748b' }}>
+                    <div style={{ textAlign: 'right', fontSize: '11px', color: '#64748b' }}>
                       <p style={{ margin: 0, fontWeight: '800' }}>{printDocumentData.subtitle}</p>
                       <p style={{ margin: 0 }}>{lang === 'fr' ? "S\u00e9ance du" : "Session of"} {printDocumentData.assemblyDate}</p>
                     </div>
                   </div>
 
-                  {/* 3 KPI Cards */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '16px' }}>
-                    <div style={{ background: '#f8fafc', border: '2.5px solid #cbd5e1', borderRadius: '12px', padding: '14px 16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', display: 'block', marginBottom: '3px' }}>
+                  {/* 3 KPI Cards avec libellé explicite du taux de couverture */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '12px' }}>
+                    <div style={{ background: '#f8fafc', border: '2.5px solid #cbd5e1', borderRadius: '12px', padding: '10px 14px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
                         {lang === 'fr' ? "Flux Hebdomadaire Moyen" : "Average Weekly Flow"}
                       </span>
-                      <span style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a' }}>
+                      <span style={{ fontSize: '24px', fontWeight: '900', color: '#0f172a' }}>
                         {formatUSD(printDocumentData.netBalance / 4)} / {lang === 'fr' ? "sem" : "wk"}
                       </span>
                     </div>
 
-                    <div style={{ background: '#f0fdf4', border: '2.5px solid #86efac', borderRadius: '12px', padding: '14px 16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#166534', textTransform: 'uppercase', display: 'block', marginBottom: '3px' }}>
-                        {lang === 'fr' ? "Ratio de Solvabilit\u00e9" : "Solvency Ratio"}
+                    <div style={{ background: '#f0fdf4', border: '2.5px solid #86efac', borderRadius: '12px', padding: '10px 14px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#166534', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                        {lang === 'fr' ? "Taux de Couverture (Solvabilité)" : "Coverage & Solvency Ratio"}
                       </span>
-                      <span style={{ fontSize: '28px', fontWeight: '900', color: '#15803d' }}>
+                      <span style={{ fontSize: '24px', fontWeight: '900', color: '#15803d' }}>
                         {printDocumentData.healthRatio}x {lang === 'fr' ? "Couverture" : "Coverage"}
                       </span>
                     </div>
 
-                    <div style={{ background: '#eff6ff', border: '2.5px solid #93c5fd', borderRadius: '12px', padding: '14px 16px', textAlign: 'center' }}>
-                      <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#1e40af', textTransform: 'uppercase', display: 'block', marginBottom: '3px' }}>
+                    <div style={{ background: '#eff6ff', border: '2.5px solid #93c5fd', borderRadius: '12px', padding: '10px 14px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#1e40af', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
                         {lang === 'fr' ? "Solde Net de Cl\u00f4ture" : "Closing Net Cash"}
                       </span>
-                      <span style={{ fontSize: '28px', fontWeight: '900', color: '#1e3a8a' }}>
+                      <span style={{ fontSize: '24px', fontWeight: '900', color: '#1e3a8a' }}>
                         {formatUSD(printDocumentData.netBalance)}
                       </span>
                     </div>
                   </div>
 
-                  {/* LIGNE 1 : HISTOGRAMME FLUX HEBDO + CAMEMBERT STRUCTURE */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '14px', padding: '12px', textAlign: 'center' }}>
-                      <h4 style={{ fontSize: '13px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                  {/* LIGNE 1 : HISTOGRAMME FLUX HEBDO + CAMEMBERT AVEC VALEURS */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '12px' }}>
+                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '12px', padding: '8px', textAlign: 'center' }}>
+                      <h4 style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 6px 0', textTransform: 'uppercase' }}>
                         {lang === 'fr' ? "Histogramme : Flux Net par Semaine ($ USD)" : "Histogram: Weekly Net Flow ($ USD)"}
                       </h4>
                       {printDocumentData.s4FlowBarUri ? (
-                        <img src={printDocumentData.s4FlowBarUri} alt="Weekly Flow Bar" style={{ width: '100%', height: '260px', objectFit: 'contain' }} />
+                        <img src={printDocumentData.s4FlowBarUri} alt="Weekly Flow Bar" style={{ width: '100%', height: '230px', objectFit: 'contain' }} />
                       ) : (
-                        <div style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                        <div style={{ height: '230px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                           {lang === 'fr' ? "Donn\u00e9es indisponibles" : "Data unavailable"}
                         </div>
                       )}
                     </div>
 
-                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '14px', padding: '12px', textAlign: 'center' }}>
-                      <h4 style={{ fontSize: '13px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-                        {lang === 'fr' ? "Camembert : Structure des Liquidit\u00e9s Mensuelles" : "Pie Chart: Monthly Liquidity Structure"}
+                    <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '12px', padding: '8px', textAlign: 'center' }}>
+                      <h4 style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 6px 0', textTransform: 'uppercase' }}>
+                        {lang === 'fr' ? "Structure des Liquidit\u00e9s Mensuelles" : "Monthly Liquidity Structure"}
                       </h4>
                       {printDocumentData.s4PieUri ? (
-                        <img src={printDocumentData.s4PieUri} alt="Liquidity Doughnut" style={{ width: '100%', height: '260px', objectFit: 'contain' }} />
+                        <img src={printDocumentData.s4PieUri} alt="Liquidity Doughnut" style={{ width: '100%', height: '230px', objectFit: 'contain' }} />
                       ) : (
-                        <div style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                        <div style={{ height: '230px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                           {lang === 'fr' ? "Donn\u00e9es indisponibles" : "Data unavailable"}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* LIGNE 2 : GRANDE COURBE D'EVOLUTION CHRONOLOGIQUE */}
-                  <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '14px', padding: '12px', textAlign: 'center', marginBottom: '16px' }}>
-                    <h4 style={{ fontSize: '13px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-                      {lang === 'fr' ? "Courbe d'\u00c9volution Chronologique du Solde Cumul\u00e9 ($ USD)" : "Cumulative Cash Balance Chronological Curve ($ USD)"}
+                  {/* LIGNE 2 : GRANDE COURBE AVEC ÉTIQUETTES DE VALEUR SUR CHAQUE POINT */}
+                  <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '12px', padding: '8px', textAlign: 'center', marginBottom: '12px' }}>
+                    <h4 style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 6px 0', textTransform: 'uppercase' }}>
+                      {lang === 'fr' ? "Courbe d'\u00c9volution Chronologique du Solde Cumul\u00e9 ($ USD) avec \u00c9tiquettes" : "Cumulative Cash Balance Chronological Curve ($ USD) with Labels"}
                     </h4>
                     {printDocumentData.s4LineUri ? (
-                      <img src={printDocumentData.s4LineUri} alt="Treasury Trend Line" style={{ width: '100%', height: '240px', objectFit: 'contain' }} />
+                      <img src={printDocumentData.s4LineUri} alt="Treasury Trend Line" style={{ width: '100%', height: '220px', objectFit: 'contain' }} />
                     ) : (
-                      <div style={{ height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                      <div style={{ height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                         {lang === 'fr' ? "Courbe indisponible" : "Curve unavailable"}
                       </div>
                     )}
                   </div>
 
-                  {/* Synthèse (AUCUN TABLEAU !) */}
-                  <div style={{ background: '#f8fafc', borderLeft: '6px solid #1e3a8a', borderRadius: '0 12px 12px 0', padding: '16px 24px', fontSize: '13px', color: '#1e293b', lineHeight: '1.75', marginBottom: '16px' }}>
-                    <strong style={{ color: '#1e3a8a' }}>{lang === 'fr' ? "Dynamique de Tr\u00e9sorerie :" : "Treasury Dynamics:"}</strong> {lang === 'fr' ? `La trajectoire cumulative confirme la solvabilit\u00e9 durable du Group, clôturant \u00e0 ${formatUSD(printDocumentData.netBalance)} de disponible sans recours \u00e0 aucun découvert.` : `The cumulative trajectory affirms sustainable solvency, closing with ${formatUSD(printDocumentData.netBalance)} in liquid capital without any overdraft.`}
+                  {/* Synthèse */}
+                  <div style={{ background: '#f8fafc', borderLeft: '5px solid #1e3a8a', borderRadius: '0 10px 10px 0', padding: '12px 18px', fontSize: '12px', color: '#1e293b', lineHeight: '1.65' }}>
+                    <strong style={{ color: '#1e3a8a' }}>{lang === 'fr' ? "Dynamique de Tr\u00e9sorerie :" : "Treasury Dynamics:"}</strong> {lang === 'fr' ? `La trajectoire cumulative confirme la solvabilit\u00e9 p\u00e9renne du Group, clôturant \u00e0 ${formatUSD(printDocumentData.netBalance)} d'avoirs imm\u00e9diatement disponibles sans recours \u00e0 aucun d\u00e9couvert.` : `The cumulative trajectory affirms sustainable solvency, closing with ${formatUSD(printDocumentData.netBalance)} in liquid capital without any overdraft.`}
                   </div>
                 </div>
 
-                {/* Footer Slide 4 */}
+                {/* Footer Slide 4 avec pagination seule */}
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '10px' }}>
-                    <div style={{ fontSize: '12.5px', fontWeight: '900', color: '#1e3a8a' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '8px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
                       Rachel Chua &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
                     </div>
-                    <div style={{ fontSize: '11.5px', color: '#94a3b8', fontWeight: '800' }}>
-                      Pack Assembl\u00e9e G\u00e9n\u00e9rale &bull; Slide 4 / 5
+                    {/* Pagination seule */}
+                    <div style={{ fontSize: '12.5px', color: '#475569', fontWeight: '900' }}>
+                      Slide 4 / 5
                     </div>
-                    <div style={{ fontSize: '12.5px', fontWeight: '900', color: '#1e3a8a' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
                       Sharon Llegado &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group President</span>
                     </div>
                   </div>
-                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '52px', objectFit: 'contain', marginTop: '10px' }} />
+                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '44px', objectFit: 'contain', marginTop: '8px' }} />
                 </div>
               </div>
 
               {/* ========================================================= */}
-              {/* SLIDE 5 : BILAN DE SANTE BUDGETAIRE & PISTES D'AMELIORATION */}
+              {/* SLIDE 5 : BILAN & PISTES (100% SUR LA PAGE 5, ZERO OVERFLOW) */}
               {/* ========================================================= */}
-              <div style={{ minHeight: '94vh', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
+              <div style={{ minHeight: '272mm', maxHeight: '282mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '2mm 6mm', boxSizing: 'border-box' }}>
                 <div>
                   {/* Header Slide 5 */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2.5px solid #1e3a8a', paddingBottom: '10px', marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <img src="logo2.png" alt="Sargo" style={{ width: '52px', height: '52px', objectFit: 'contain' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2.5px solid #1e3a8a', paddingBottom: '8px', marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img src="logo3.png" alt="Sargo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
                       <div>
-                        <h2 style={{ fontSize: '14px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: 0 }}>
+                        <h2 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: 0 }}>
                           THE FRATERNAL ORDER OF LADY EAGLES GROUP
                         </h2>
                         <p style={{ fontSize: '13px', fontWeight: '900', color: '#d97706', margin: 0 }}>
@@ -7121,23 +7316,23 @@ function RachelEaglesApp() {
                         </p>
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right', fontSize: '11.5px', color: '#64748b' }}>
+                    <div style={{ textAlign: 'right', fontSize: '11px', color: '#64748b' }}>
                       <p style={{ margin: 0, fontWeight: '800' }}>{printDocumentData.subtitle}</p>
                       <p style={{ margin: 0 }}>{lang === 'fr' ? "S\u00e9ance du" : "Session of"} {printDocumentData.assemblyDate}</p>
                     </div>
                   </div>
 
                   {/* Section 1 : Diagnostic Ecrit de la Sante Budgetaire */}
-                  <div style={{ background: '#f0fdf4', border: '2.5px solid #86efac', borderRadius: '14px', padding: '22px 26px', marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                      <span style={{ background: '#16a34a', color: 'white', fontSize: '13px', fontWeight: '900', padding: '5px 14px', borderRadius: '14px', textTransform: 'uppercase' }}>
+                  <div style={{ background: '#f0fdf4', border: '2px solid #86efac', borderRadius: '12px', padding: '14px 18px', marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                      <span style={{ background: '#16a34a', color: 'white', fontSize: '11.5px', fontWeight: '900', padding: '4px 12px', borderRadius: '12px', textTransform: 'uppercase' }}>
                         {lang === 'fr' ? "Diagnostic Financier" : "Financial Diagnostics"}
                       </span>
-                      <h3 style={{ fontSize: '17px', fontWeight: '900', color: '#14532d', margin: 0 }}>
+                      <h3 style={{ fontSize: '15px', fontWeight: '900', color: '#14532d', margin: 0 }}>
                         {lang === 'fr' ? "Situation Financi\u00e8re Saine, Solvable et Exc\u00e9dentaire" : "Solvent, Healthy and Surplus Financial Standing"}
                       </h3>
                     </div>
-                    <p style={{ fontSize: '14px', color: '#166534', lineHeight: '1.85', margin: 0 }}>
+                    <p style={{ fontSize: '12.5px', color: '#166534', lineHeight: '1.65', margin: 0 }}>
                       {lang === 'fr' 
                         ? `L'audit comptable de la p\u00e9riode atteste d'une gestion rigoureuse et parfaitement \u00e9quilibr\u00e9e. Avec ${formatUSD(printDocumentData.totalCredits)} de recettes pour ${formatUSD(printDocumentData.totalDebits)} de d\u00e9penses, le Group d\u00e9gage un exc\u00e9dent net de ${formatUSD(printDocumentData.netBalance)}. Le ratio d'autonomie financi\u00e8re de ${printDocumentData.healthRatio}x confirme que le Group est capable d'assurer la totalit\u00e9 de ses missions philanthropiques sans d\u00e9pendance ext\u00e9rieure.`
                         : `Ledger auditing confirms disciplined, balanced stewardship. Incomes of ${formatUSD(printDocumentData.totalCredits)} exceed disbursements of ${formatUSD(printDocumentData.totalDebits)}, generating a net surplus of ${formatUSD(printDocumentData.netBalance)}. The ${printDocumentData.healthRatio}x coverage ratio demonstrates full philanthropic autonomy.`}
@@ -7145,44 +7340,44 @@ function RachelEaglesApp() {
                   </div>
 
                   {/* Section 2 : Pistes d'Amelioration Strategique (4 Piliers) */}
-                  <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '14px', padding: '22px 26px', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '15.5px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: '0 0 16px 0', borderBottom: '1.5px solid #e2e8f0', paddingBottom: '8px' }}>
+                  <div style={{ background: '#ffffff', border: '2px solid #cbd5e1', borderRadius: '12px', padding: '14px 18px', marginBottom: '14px' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: '900', color: '#1e3a8a', textTransform: 'uppercase', margin: '0 0 10px 0', borderBottom: '1.5px solid #e2e8f0', paddingBottom: '6px' }}>
                       {lang === 'fr' ? "Pistes d'Am\u00e9lioration Strat\u00e9gique pour les Prochaines \u00c9ch\u00e9ances" : "Strategic Recommendations & Optimization Initiatives"}
                     </h3>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
-                      <div style={{ background: '#f8fafc', borderLeft: '5.5px solid #2563eb', padding: '16px 20px', borderRadius: '0 10px 10px 0' }}>
-                        <h4 style={{ fontSize: '13.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 6px 0' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div style={{ background: '#f8fafc', borderLeft: '4.5px solid #2563eb', padding: '10px 14px', borderRadius: '0 8px 8px 0' }}>
+                        <h4 style={{ fontSize: '12.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 4px 0' }}>
                           {lang === 'fr' ? "1. Calendrier d'Appel des Cotisations" : "1. Structured Dues Schedule"}
                         </h4>
-                        <p style={{ fontSize: '12.5px', color: '#475569', margin: 0, lineHeight: '1.65' }}>
+                        <p style={{ fontSize: '11.5px', color: '#475569', margin: 0, lineHeight: '1.55' }}>
                           {lang === 'fr' ? "Harmoniser les dates d'encaissement d\u00e8s les dix premiers jours du mois afin d'optimiser la pr\u00e9visibilit\u00e9 de la tr\u00e9sorerie." : "Streamline member dues collections within the first ten days of each month for cash flow predictability."}
                         </p>
                       </div>
 
-                      <div style={{ background: '#f8fafc', borderLeft: '5.5px solid #d97706', padding: '16px 20px', borderRadius: '0 10px 10px 0' }}>
-                        <h4 style={{ fontSize: '13.5px', fontWeight: '900', color: '#92400e', margin: '0 0 6px 0' }}>
+                      <div style={{ background: '#f8fafc', borderLeft: '4.5px solid #d97706', padding: '10px 14px', borderRadius: '0 8px 8px 0' }}>
+                        <h4 style={{ fontSize: '12.5px', fontWeight: '900', color: '#92400e', margin: '0 0 4px 0' }}>
                           {lang === 'fr' ? "2. Cadrage Pr\u00e9ventif par Famille" : "2. Preventive Budget Ceilings"}
                         </h4>
-                        <p style={{ fontSize: '12.5px', color: '#475569', margin: 0, lineHeight: '1.65' }}>
+                        <p style={{ fontSize: '11.5px', color: '#475569', margin: 0, lineHeight: '1.55' }}>
                           {lang === 'fr' ? "Fixer une enveloppe indicative pour les r\u00e9unions et \u00e9v\u00e9nements afin de d\u00e9dier au minimum 40% des d\u00e9penses aux actions caritatives." : "Maintain clear category caps ensuring a minimum of 40% of expenditure is allocated to charitable causes."}
                         </p>
                       </div>
 
-                      <div style={{ background: '#f8fafc', borderLeft: '5.5px solid #16a34a', padding: '16px 20px', borderRadius: '0 10px 10px 0' }}>
-                        <h4 style={{ fontSize: '13.5px', fontWeight: '900', color: '#166534', margin: '0 0 6px 0' }}>
+                      <div style={{ background: '#f8fafc', borderLeft: '4.5px solid #16a34a', padding: '10px 14px', borderRadius: '0 8px 8px 0' }}>
+                        <h4 style={{ fontSize: '12.5px', fontWeight: '900', color: '#166534', margin: '0 0 4px 0' }}>
                           {lang === 'fr' ? "3. Fonds de R\u00e9serve Fraternel" : "3. Fraternal Emergency Reserve"}
                         </h4>
-                        <p style={{ fontSize: '12.5px', color: '#475569', margin: 0, lineHeight: '1.65' }}>
+                        <p style={{ fontSize: '11.5px', color: '#475569', margin: 0, lineHeight: '1.55' }}>
                           {lang === 'fr' ? "Allouer syst\u00e9matiquement 15% des exc\u00e9dents mensuels \u00e0 un fonds de secours d'urgence pour les membres du Group." : "Systematically designate 15% of monthly net surplus into a dedicated contingency relief fund."}
                         </p>
                       </div>
 
-                      <div style={{ background: '#f8fafc', borderLeft: '5.5px solid #7c3aed', padding: '16px 20px', borderRadius: '0 10px 10px 0' }}>
-                        <h4 style={{ fontSize: '13.5px', fontWeight: '900', color: '#5b21b6', margin: '0 0 6px 0' }}>
+                      <div style={{ background: '#f8fafc', borderLeft: '4.5px solid #7c3aed', padding: '10px 14px', borderRadius: '0 8px 8px 0' }}>
+                        <h4 style={{ fontSize: '12.5px', fontWeight: '900', color: '#5b21b6', margin: '0 0 4px 0' }}>
                           {lang === 'fr' ? "4. Justificatifs & Num\u00e9risation 100%" : "4. 100% Digital Invoicing & Receipts"}
                         </h4>
-                        <p style={{ fontSize: '12.5px', color: '#475569', margin: 0, lineHeight: '1.65' }}>
+                        <p style={{ fontSize: '11.5px', color: '#475569', margin: 0, lineHeight: '1.55' }}>
                           {lang === 'fr' ? "Maintenir l'exigence des factures et re\u00e7us enregistr\u00e9s dans l'application pour une tra\u00e7abilit\u00e9 int\u00e9grale et instantan\u00e9e." : "Uphold systematic invoice and receipt uploads in the app for immediate and transparent auditability."}
                         </p>
                       </div>
@@ -7190,37 +7385,49 @@ function RachelEaglesApp() {
                   </div>
 
                   {/* Section 3 : Resolution soumise au vote */}
-                  <div style={{ background: '#eff6ff', border: '2px dashed #3b82f6', borderRadius: '12px', padding: '18px 24px', marginBottom: '22px', fontSize: '13.5px', color: '#1e3a8a', lineHeight: '1.75' }}>
-                    <strong style={{ fontSize: '14px' }}>{lang === 'fr' ? "R\u00e9solution soumise \u00e0 l'Assembl\u00e9e G\u00e9n\u00e9rale :" : "Formal Resolution Submitted to Assembly Vote:"}</strong><br />
+                  <div style={{ background: '#eff6ff', border: '2px dashed #3b82f6', borderRadius: '10px', padding: '12px 18px', marginBottom: '14px', fontSize: '12px', color: '#1e3a8a', lineHeight: '1.6' }}>
+                    <strong style={{ fontSize: '12.5px' }}>{lang === 'fr' ? "R\u00e9solution soumise \u00e0 l'Assembl\u00e9e G\u00e9n\u00e9rale :" : "Formal Resolution Submitted to Assembly Vote:"}</strong><br />
                     <em>{lang === 'fr' 
                       ? "\u00ab Apr\u00e8s audition de la pr\u00e9sentation de Rachel Chua (Group Treasurer) et validation de Sharon Llegado (Group President), l'Assembl\u00e9e G\u00e9n\u00e9rale donne son quitus plein et entier pour la tenue des comptes de la p\u00e9riode et approuve les orientations budg\u00e9taires propos\u00e9es. \u00bb" 
                       : "\u201cUpon review of the treasury presentation delivered by Rachel Chua (Group Treasurer) and endorsed by Sharon Llegado (Group President), the General Assembly fully approves accounts for the period and adopts proposed budget directions.\u201d"}</em>
                   </div>
 
-                  {/* Section 4 : Signatures Solennelles Elargies */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '15px', padding: '0 30px' }}>
-                    <div style={{ textAlign: 'center', minWidth: '240px', borderTop: '2.5px solid #1e3a8a', paddingTop: '10px' }}>
-                      <p style={{ fontSize: '17px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 4px 0' }}>Rachel Chua</p>
-                      <p style={{ fontSize: '13.5px', fontWeight: '800', color: '#475569', margin: '0 0 24px 0' }}>Group Treasurer</p>
-                      <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, fontWeight: '600' }}>({lang === 'fr' ? "Pr\u00e9sent\u00e9 & Certifi\u00e9 Conforme" : "Presented & Certified Conforming"})</p>
+                  {/* Section 4 : Signatures Solennelles (Bien calées sur Slide 5) */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px', marginBottom: '8px' }}>
+                    <div style={{ textAlign: 'center', minWidth: '220px', borderTop: '2px solid #1e3a8a', paddingTop: '8px' }}>
+                      <p style={{ fontSize: '15px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 2px 0' }}>Rachel Chua</p>
+                      <p style={{ fontSize: '12px', fontWeight: '800', color: '#475569', margin: '0 0 14px 0' }}>Group Treasurer</p>
+                      <p style={{ fontSize: '10.5px', color: '#94a3b8', margin: 0, fontWeight: '600' }}>({lang === 'fr' ? "Pr\u00e9sent\u00e9 & Certifi\u00e9 Conforme" : "Presented & Certified Conforming"})</p>
                     </div>
 
-                    <div style={{ textAlign: 'center', fontSize: '11.5px', color: '#64748b' }}>
+                    <div style={{ textAlign: 'center', fontSize: '11px', color: '#64748b' }}>
                       <p style={{ margin: 0, fontWeight: '900', color: '#0f172a' }}>THE FRATERNAL ORDER OF LADY EAGLES GROUP</p>
-                      <p style={{ margin: '4px 0 0 0', fontStyle: 'italic', fontWeight: '600' }}>{lang === 'fr' ? "Adoption en S\u00e9ance" : "Session Adoption"} &bull; {printDocumentData.assemblyDate}</p>
+                      <p style={{ margin: '2px 0 0 0', fontStyle: 'italic', fontWeight: '600' }}>{lang === 'fr' ? "Adoption en S\u00e9ance" : "Session Adoption"} &bull; {printDocumentData.assemblyDate}</p>
                     </div>
 
-                    <div style={{ textAlign: 'center', minWidth: '240px', borderTop: '2.5px solid #1e3a8a', paddingTop: '10px' }}>
-                      <p style={{ fontSize: '17px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 4px 0' }}>Sharon Llegado</p>
-                      <p style={{ fontSize: '13.5px', fontWeight: '800', color: '#475569', margin: '0 0 24px 0' }}>Group President</p>
-                      <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, fontWeight: '600' }}>({lang === 'fr' ? "Approuv\u00e9 & Adopt\u00e9 en Assembl\u00e9e" : "Approved & Adopted in Assembly"})</p>
+                    <div style={{ textAlign: 'center', minWidth: '220px', borderTop: '2px solid #1e3a8a', paddingTop: '8px' }}>
+                      <p style={{ fontSize: '15px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 2px 0' }}>Sharon Llegado</p>
+                      <p style={{ fontSize: '12px', fontWeight: '800', color: '#475569', margin: '0 0 14px 0' }}>Group President</p>
+                      <p style={{ fontSize: '10.5px', color: '#94a3b8', margin: 0, fontWeight: '600' }}>({lang === 'fr' ? "Approuv\u00e9 & Adopt\u00e9 en Assembl\u00e9e" : "Approved & Adopted in Assembly"})</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Footer Slide 5 */}
+                {/* Footer Slide 5 avec pagination seule */}
                 <div>
-                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '54px', objectFit: 'contain', marginTop: '10px' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '8px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
+                      Rachel Chua &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
+                    </div>
+                    {/* Pagination seule */}
+                    <div style={{ fontSize: '12.5px', color: '#475569', fontWeight: '900' }}>
+                      Slide 5 / 5
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
+                      Sharon Llegado &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group President</span>
+                    </div>
+                  </div>
+                  <img src="footer_banner.jpg" alt="Official Footer" style={{ width: '100%', maxHeight: '44px', objectFit: 'contain', marginTop: '8px' }} />
                 </div>
               </div>
             </div>
