@@ -1301,20 +1301,44 @@ const DEFAULT_TRANSACTIONS = [
 
 const FAMILIES_TRANSLATION = {
   fr: {
+    // English -> French translations
     'Alalayang Agila': 'Alalayang Agila',
-    'Community Service': 'Community Service',
-    'En Rent': 'En Rent',
-    'Monthly dues': 'Monthly dues',
-    'Petty Cash': 'Petty Cash',
-    'Sharing of SCLEG': 'Sharing of SCLEG',
-    'Voluntary Donation': 'Voluntary Donation',
+    'Community Service': 'Service Communautaire',
+    'En Rent': 'Loyer / Salle',
+    'Monthly dues': 'Cotisations mensuelles',
+    'Petty Cash': 'Petite Caisse',
+    'Sharing of SCLEG': 'Partage SCLEG',
+    'Voluntary Donation': 'Donation Volontaire',
     'Membership Dues': 'Cotisations membres',
     'Donations & Benefactors': 'Dons & Mécènes',
+    'Charity & Donations': 'Dons & Caritatif',
+    'Organization Grants': 'Subvention organisation',
+    'Fundraising Event': 'Levée de fonds événementielle',
     'Jerseys & Merchandising': 'Jerseys & Produits dérivés',
+    'Advance Refund': 'Remboursement avance',
+    'Other Income': 'Autre recette',
+    'Other': 'Autre',
+    'Events & Meetings': 'Événements & Réunions',
+    'Logistics & Travel': 'Logistique & Déplacements',
+    'Supplies & Banking': 'Fournitures & Banque',
+    'Communication & Web': 'Communication & Web',
+    'Emergency Aid': 'Aide d\'urgence',
+    'Uncategorized': 'Non classé',
     'General': 'Général',
-    'Other Income': 'Autre recette'
+    'No expenses': 'Aucune dépense',
+    'None': 'Aucun',
+    'All history': 'Tout l\'historique',
+    'All Months': 'Tous les mois',
+    'All months': 'Tous les mois',
+    'Fuel & Transport': 'Carburant & Transport',
+    'Van Rental': 'Location Van',
+    'Office Bill': 'Facture Bureau',
+    'Electricity': 'Électricité',
+    'Water': 'Eau',
+    'Maintenance': 'Maintenance'
   },
   en: {
+    // Standard English Identity Mappings
     'Alalayang Agila': 'Alalayang Agila',
     'Community Service': 'Community Service',
     'En Rent': 'En Rent',
@@ -1324,19 +1348,130 @@ const FAMILIES_TRANSLATION = {
     'Voluntary Donation': 'Voluntary Donation',
     'Membership Dues': 'Membership Dues',
     'Donations & Benefactors': 'Donations & Benefactors',
+    'Charity & Donations': 'Charity & Donations',
+    'Organization Grants': 'Organization Grants',
+    'Fundraising Event': 'Fundraising Event',
     'Jerseys & Merchandising': 'Jerseys & Merchandising',
+    'Advance Refund': 'Advance Refund',
+    'Other Income': 'Other Income',
+    'Other': 'Other',
+    'Events & Meetings': 'Events & Meetings',
+    'Logistics & Travel': 'Logistics & Travel',
+    'Supplies & Banking': 'Supplies & Banking',
+    'Communication & Web': 'Communication & Web',
+    'Emergency Aid': 'Emergency Aid',
+    'Uncategorized': 'Uncategorized',
     'General': 'General',
-    'Other Income': 'Other Income'
+    'No expenses': 'No expenses',
+    'None': 'None',
+    'All history': 'All history',
+    'All Months': 'All Months',
+    'All months': 'All months',
+
+    // Comprehensive French -> English Reverse Mappings
+    // 1. Dues & Contributions
+    'Cotisations des membres': 'Membership Dues',
+    'Cotisations membres': 'Membership Dues',
+    'Cotisations mensuelles': 'Monthly dues',
+    'Cotisation': 'Membership Dues',
+    'Cotisations': 'Membership Dues',
+
+    // 2. Donations & Benefactors
+    'Dons et bienfaiteurs': 'Donations & Benefactors',
+    'Dons & Mécènes': 'Donations & Benefactors',
+    'Dons & Mcnes': 'Donations & Benefactors',
+    'Dons & MAccA"nes': 'Donations & Benefactors',
+    'Dons & Caritatif': 'Charity & Donations',
+    'Dons caritatifs': 'Charity & Donations',
+    'Donation Volontaire': 'Voluntary Donation',
+    'Donations Volontaires': 'Voluntary Donation',
+    'Dons': 'Donations & Benefactors',
+
+    // 3. Grants & Fundraising
+    'Subvention organisation': 'Organization Grants',
+    'Subventions': 'Organization Grants',
+    'Levée de fonds événementielle': 'Fundraising Event',
+    'Leve de fonds vnementielle': 'Fundraising Event',
+    'LevAce de fonds AcvAcnementielle': 'Fundraising Event',
+    'Levée de fonds': 'Fundraising Event',
+
+    // 4. Jerseys & Merchandising
+    'Vente de jerseys & insignes': 'Jerseys & Merchandising',
+    'Jerseys & Produits dérivés': 'Jerseys & Merchandising',
+    'Jerseys & Produits drivs': 'Jerseys & Merchandising',
+    'Jerseys & Produits dAcrivAcs': 'Jerseys & Merchandising',
+    'Jerseys': 'Jerseys & Merchandising',
+
+    // 5. Refunds & Other Income
+    'Remboursement avance': 'Advance Refund',
+    'Remboursement': 'Advance Refund',
+    'Autre recette': 'Other Income',
+    'Autre': 'Other',
+    'Autres': 'Other',
+
+    // 6. Expense Families
+    'Événements & Réunions': 'Events & Meetings',
+    'vnements & Runions': 'Events & Meetings',
+    'AcvAcnements & RAcunions': 'Events & Meetings',
+    'Événements': 'Events & Meetings',
+    'Logistique & Déplacements': 'Logistics & Travel',
+    'Logistique & Dplacements': 'Logistics & Travel',
+    'Logistique & DAcplacements': 'Logistics & Travel',
+    'Logistique': 'Logistics & Travel',
+    'Fournitures & Banque': 'Supplies & Banking',
+    'Fournitures': 'Supplies',
+    'Banque': 'Banking',
+    'Frais bancaires': 'Bank Fees',
+    'Communication & Web': 'Communication & Web',
+    'Aide d\'urgence': 'Emergency Aid',
+    'Aide d urgence': 'Emergency Aid',
+    'Petite Caisse': 'Petty Cash',
+    'Petite caisse': 'Petty Cash',
+    'Loyer': 'Rent & Venue',
+    'Loyer / Salle': 'En Rent',
+    'Loyer bureau': 'Office Rent',
+    'Action Communautaire': 'Community Service',
+    'Service Communautaire': 'Community Service',
+    'Partage SCLEG': 'Sharing of SCLEG',
+    'Carburant': 'Fuel & Transport',
+    'Carburant & Transport': 'Fuel & Transport',
+    'Location van': 'Van Rental',
+    'Location Van': 'Van Rental',
+    'Facture bureau': 'Office Bill',
+    'Facture Bureau': 'Office Bill',
+    'Électricité': 'Electricity',
+    'Electricité': 'Electricity',
+    'Electricite': 'Electricity',
+    'Eau': 'Water',
+    'Maintenance': 'Maintenance',
+    'Repas & Restauration': 'Meals & Catering',
+
+    // 7. General & Fallbacks
+    'Non classé': 'Uncategorized',
+    'Non class': 'Uncategorized',
+    'Non classAc': 'Uncategorized',
+    'Non classe': 'Uncategorized',
+    'Général': 'General',
+    'Gnral': 'General',
+    'GAcnAcral': 'General',
+    'Aucune dépense': 'No expenses',
+    'Aucune dpense': 'No expenses',
+    'Aucune': 'None',
+    'Aucun': 'None',
+    'Tous les mois': 'All Months',
+    'Tout l\'historique': 'All history'
   }
 };
 
 function formatItemLabel(val, targetLang) {
   if (!val) return val;
-  var dict = FAMILIES_TRANSLATION[targetLang];
+  const langKey = targetLang === 'fr' ? 'fr' : 'en';
+  const dict = FAMILIES_TRANSLATION[langKey];
   if (dict && dict[val]) return dict[val];
   if (dict) {
-    for (var k in dict) {
-      if (k.toLowerCase() === String(val).toLowerCase()) return dict[k];
+    const clean = String(val).trim().toLowerCase();
+    for (const k in dict) {
+      if (k.toLowerCase() === clean) return dict[k];
     }
   }
   return val;
@@ -2634,7 +2769,7 @@ function RachelEaglesApp() {
     if (statsFilterType === 'debit') parts.push(lang === 'fr' ? "Débits" : "Debits");
     if (statsFilterType === 'credit') parts.push(lang === 'fr' ? "Crédits" : "Credits");
 
-    if (statsFilterFamily !== 'all') parts.push(`${lang === 'fr' ? 'Famille' : 'Family'}: ${statsFilterFamily}`);
+    if (statsFilterFamily !== 'all') parts.push(`${lang === 'fr' ? 'Famille' : 'Family'}: ${formatItemLabel(statsFilterFamily, lang)}`);
     if (statsFilterPerson !== 'all') parts.push(`${lang === 'fr' ? 'Membre' : 'Member'}: ${statsFilterPerson}`);
 
     return parts.join(' • ');
@@ -8359,8 +8494,8 @@ function RachelEaglesApp() {
                     <th style={{ padding: '5px 4px', textAlign: 'center', width: '28px' }}>#</th>
                     <th style={{ padding: '5px 6px', textAlign: 'left', width: '27%' }}>{lang === 'fr' ? 'Nom Complet' : 'Full Name'}</th>
                     <th style={{ padding: '5px 6px', textAlign: 'left', width: '22%' }}>{lang === 'fr' ? 'Fonction' : 'Position'}</th>
-                    <th style={{ padding: '5px 6px', textAlign: 'left', width: '14%' }}>{lang === 'fr' ? 'TÃ©lÃ©phone' : 'Phone'}</th>
-                    <th style={{ padding: '5px 6px', textAlign: 'left', width: '20%' }}>{lang === 'fr' ? 'MÃ©tier & Adresse' : 'Work & Address'}</th>
+                    <th style={{ padding: '5px 6px', textAlign: 'left', width: '14%' }}>{lang === 'fr' ? 'Téléphone' : 'Phone'}</th>
+                    <th style={{ padding: '5px 6px', textAlign: 'left', width: '20%' }}>{lang === 'fr' ? 'Métier & Adresse' : 'Work & Address'}</th>
                     <th style={{ padding: '5px 6px', textAlign: 'left', width: '17%' }}>{lang === 'fr' ? 'Urgence' : 'Emergency'}</th>
                   </tr>
                 </thead>
@@ -9187,7 +9322,7 @@ function StatView3Component({ transactions, activeFilterDescription, families, f
               <tr>
                 <th>{t.colFamily || t.family}</th>
                 <th className="text-right">{t.colAmount || t.totalDebits}</th>
-                <th className="text-right">Part (%)</th>
+                <th className="text-right">{lang === 'fr' ? 'Part (%)' : 'Share (%)'}</th>
               </tr>
             </thead>
             <tbody>
@@ -9366,7 +9501,7 @@ function StatView5Component({ transactions, activeFilterDescription, families, f
                     active ? 'bg-blue-800 text-white border-blue-800' : 'bg-slate-50 text-slate-600 border-slate-200'
                   }`}
                 >
-                  {f.name}
+                  {formatItemLabel(f.name, lang)}
                 </button>
               );
             })}
@@ -9734,7 +9869,7 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-500 text-blue-950">
-                AUDIT OFFICIEL
+                {lang === 'fr' ? 'AUDIT OFFICIEL' : 'OFFICIAL AUDIT'}
               </span>
               <span className="text-xs text-blue-200">THE FRATERNAL ORDER OF LADY EAGLES GROUP</span>
             </div>
@@ -9994,7 +10129,7 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
                       type="button"
                       onClick={() => toggleActionStatus(card.id)}
                       className={`px-3 py-1 rounded-full text-xs font-bold border transition shadow-sm flex items-center gap-1.5 flex-shrink-0 cursor-pointer ${statusBadgeClass}`}
-                      title="Changer le statut"
+                      title={lang === 'fr' ? 'Changer le statut' : 'Change status'}
                     >
                       <i className={`fa-solid ${status === 'done' ? 'fa-check' : status === 'in_progress' ? 'fa-spinner fa-spin' : 'fa-circle-dot'}`}></i>
                       <span>{statusLabel}</span>
@@ -10082,7 +10217,7 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
                       type="button"
                       onClick={() => toggleActionStatus(card.id)}
                       className={`px-3 py-1 rounded-full text-xs font-bold border transition shadow-sm flex items-center gap-1.5 flex-shrink-0 cursor-pointer ${statusBadgeClass}`}
-                      title="Changer le statut"
+                      title={lang === 'fr' ? 'Changer le statut' : 'Change status'}
                     >
                       <i className={`fa-solid ${status === 'done' ? 'fa-check' : status === 'in_progress' ? 'fa-spinner fa-spin' : 'fa-circle-dot'}`}></i>
                       <span>{statusLabel}</span>
@@ -10170,7 +10305,7 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
                       type="button"
                       onClick={() => toggleActionStatus(card.id)}
                       className={`px-3 py-1 rounded-full text-xs font-bold border transition shadow-sm flex items-center gap-1.5 flex-shrink-0 cursor-pointer ${statusBadgeClass}`}
-                      title="Changer le statut"
+                      title={lang === 'fr' ? 'Changer le statut' : 'Change status'}
                     >
                       <i className={`fa-solid ${status === 'done' ? 'fa-check' : status === 'in_progress' ? 'fa-spinner fa-spin' : 'fa-circle-dot'}`}></i>
                       <span>{statusLabel}</span>
