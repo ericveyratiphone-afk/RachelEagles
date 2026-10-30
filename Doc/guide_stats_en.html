@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Official Statistics &amp; General Assembly Reporting Guide - Rachel Eagles</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm 12mm 12mm;
+      @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+      font-size: 9pt;
+      line-height: 1.42;
+    }
+    .header {
+      border-bottom: 2.5px solid #1e3a8a;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-logos {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .header-logos img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+    }
+    .header-titles {
+      text-align: right;
+    }
+    .header-titles h1 {
+      margin: 0;
+      font-size: 13pt;
+      color: #1e3a8a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 900;
+    }
+    .header-titles p {
+      margin: 2px 0 0 0;
+      font-size: 8pt;
+      color: #64748b;
+      font-weight: 700;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .badge-blue { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+    .badge-green { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .badge-amber { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-purple { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+    .badge-red { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    h2 {
+      color: #1e3a8a;
+      font-size: 10.5pt;
+      border-left: 3.5px solid #d97706;
+      padding-left: 8px;
+      margin: 12px 0 6px 0;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    h3 {
+      color: #0f172a;
+      font-size: 9.5pt;
+      margin: 8px 0 4px 0;
+      font-weight: 700;
+    }
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .kpi-mini {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .kpi-label { font-size: 7.5pt; color: #64748b; font-weight: 700; text-transform: uppercase; }
+    .kpi-val { font-size: 11pt; font-weight: 900; margin-top: 2px; }
+    .text-green { color: #16a34a; }
+    .text-red { color: #dc2626; }
+    .text-blue { color: #2563eb; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 6px 0 10px 0;
+      font-size: 8.5pt;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 5px 7px;
+      text-align: left;
+    }
+    th {
+      background: #f1f5f9;
+      color: #1e3a8a;
+      font-weight: 800;
+      font-size: 8pt;
+      text-transform: uppercase;
+    }
+    tr:nth-child(even) { background: #f8fafc; }
+
+    .callout {
+      border-left: 3.5px solid #2563eb;
+      background: #eff6ff;
+      padding: 7px 10px;
+      border-radius: 0 5px 5px 0;
+      margin: 8px 0;
+      font-size: 8.5pt;
+    }
+    .callout-amber {
+      border-left: 3.5px solid #d97706;
+      background: #fffbeb;
+    }
+    .callout-green {
+      border-left: 3.5px solid #16a34a;
+      background: #f0fdf4;
+    }
+    .page-break-after {
+      page-break-after: always;
+    }
+    .footer-sign {
+      margin-top: 14px;
+      border-top: 1.5px solid #cbd5e1;
+      padding-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8.5pt;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= PAGE 1 ================= -->
+  <div class="header">
+    <div class="header-logos">
+      <img src="logo1.png" alt="Philippine Eagles">
+      <img src="logo2.png" alt="Sargo Eagles Club">
+      <img src="logo3.png" alt="Sargo Lady Eagles Group">
+    </div>
+    <div class="header-titles">
+      <h1>Statistics &amp; General Assembly Report Guide</h1>
+      <p>THE FRATERNAL ORDER OF LADY EAGLES GROUP &bull; SARGO CAMBODIA</p>
+      <span class="badge badge-blue">Official V1.0 Release</span>
+      <span class="badge badge-green">Production Ready</span>
+    </div>
+  </div>
+
+  <h2>1. Overview &amp; Statistics Executive Dashboard</h2>
+  <p>The <strong>Rachel Eagles (V1.0)</strong> treasury management system integrates a real-time financial intelligence and statistical engine enabling the Group Treasurer (<strong>Rachel Chua</strong>) and the Executive Board to steer group resources with rigorous precision.</p>
+
+  <div class="grid-3">
+    <div class="kpi-mini">
+      <div class="kpi-label">Total Incomes (Credits)</div>
+      <div class="kpi-val text-green">+$9,350.00</div>
+      <span style="font-size:7pt; color:#16a34a;">Dues, Donations, Events</span>
+    </div>
+    <div class="kpi-mini">
+      <div class="kpi-label">Total Expenses (Debits)</div>
+      <div class="kpi-val text-red">-$5,000.00</div>
+      <span style="font-size:7pt; color:#dc2626;">Charity, Operations, Logistics</span>
+    </div>
+    <div class="kpi-mini">
+      <div class="kpi-label">Net Available Cash</div>
+      <div class="kpi-val text-blue">+$4,350.00</div>
+      <span style="font-size:7pt; color:#2563eb;">Immediate bank &amp; vault cash</span>
+    </div>
+  </div>
+
+  <div class="callout callout-green">
+    <strong>Key Financial Indicator: Budget Coverage Ratio</strong><br>
+    Calculated via the formula <code>Total Incomes / Total Expenses</code>. 
+    For example: <strong>1.8x</strong> indicates that recorded revenues cover 1.8 times the total outflows (180% coverage), ensuring absolute solvency without any overdraft hazard.
+  </div>
+
+  <h2>2. The 4 Statistical Charts &amp; Their Interpretation</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:28%;">Chart Name</th>
+        <th style="width:24%;">Visual Type</th>
+        <th>Analytical Purpose for Treasury</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Budget Families Histogram</strong></td>
+        <td><span class="badge badge-purple">Horizontal Bars</span></td>
+        <td>Ranks expenditures across budget categories (<em>Charity &amp; Donations, Events, Logistics, Admin</em>). In-bar dollar values ($) are directly printed inside the colored bars.</td>
+      </tr>
+      <tr>
+        <td><strong>Expenditure Breakdown</strong></td>
+        <td><span class="badge badge-amber">Pie / Donut %</span></td>
+        <td>Reveals the percentage share of each category against 100%. Ensures compliance with bylaws (e.g. at least 40% dedicated to humanitarian actions).</td>
+      </tr>
+      <tr>
+        <td><strong>Weekly Incomes vs Expenses</strong></td>
+        <td><span class="badge badge-green">Dual Column Bars</span></td>
+        <td>Compares week-by-week credits (green) against debits (red). Identifies liquidity timing discrepancies between payment collection weeks and expense weeks.</td>
+      </tr>
+      <tr>
+        <td><strong>Chronological Cumulative Curve</strong></td>
+        <td><span class="badge badge-blue">Timeline Trend Line</span></td>
+        <td>Tracks continuous net cash accumulation over time. Every milestone point includes a clear numeric badge ($) for high readability during projector presentations.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. Modular General Assembly Report Engine</h2>
+  <p>By clicking the <strong>&ldquo;General Assembly Report (PDF)&rdquo;</strong> button in the application, Rachel Chua accesses a <strong>modular configuration modal</strong> tailored to the type of assembly:</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3 style="color:#1e3a8a; margin-top:0;">Option A: Strict Single Month (Non-Cumulative)</h3>
+      <p style="font-size:8pt; margin:0 0 6px 0;"><strong>Best for:</strong> Regular Monthly General Assemblies.</p>
+      <ul style="font-size:8pt; margin:0; padding-left:14px; color:#475569;">
+        <li>Only transactions of the audited month are counted.</li>
+        <li>Includes official <strong>Opening Carryover Balance</strong> (prior retained surplus).</li>
+        <li>Displays monthly net surplus and final <strong>Closing Cash Balance</strong>.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="color:#1e3a8a; margin-top:0;">Option B: Annual Consolidation or Cumulative</h3>
+      <p style="font-size:8pt; margin:0 0 6px 0;"><strong>Best for:</strong> Annual General Assemblies &amp; Year-End Audits.</p>
+      <ul style="font-size:8pt; margin:0; padding-left:14px; color:#475569;">
+        <li>Consolidates all 12 months of the active fiscal year.</li>
+        <li>Aggregates annual membership dues and major event balances.</li>
+        <li>All-time cumulative mode available since Group foundation.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-sign">
+    <div>Official V1.0 Guide &bull; Rachel Eagles Accounting System</div>
+    <div>Page 1 / 2</div>
+  </div>
+
+  <div class="page-break-after"></div>
+
+  <!-- ================= PAGE 2 ================= -->
+  <div class="header">
+    <div class="header-logos">
+      <img src="logo1.png" alt="Philippine Eagles">
+      <img src="logo2.png" alt="Sargo Eagles Club">
+      <img src="logo3.png" alt="Sargo Lady Eagles Group">
+    </div>
+    <div class="header-titles">
+      <h1>Comparative Diagnostics &amp; Assembly Procedure</h1>
+      <p>THE FRATERNAL ORDER OF LADY EAGLES GROUP &bull; SARGO CAMBODIA</p>
+      <span class="badge badge-purple">Advanced Reporting</span>
+    </div>
+  </div>
+
+  <h2>4. Multi-Month Comparative Slide (M-3, M-2, M-1, M Trajectory)</h2>
+  <p>To provide dynamic strategic insight, the Treasurer can check <strong>&ldquo;Include Monthly Comparative Trajectory&rdquo;</strong>. This generates an executive comparative slide featuring:</p>
+
+  <div class="card">
+    <div class="grid-3" style="margin-bottom:6px;">
+      <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:4px 6px; border-radius:4px; text-align:center;">
+        <span style="font-size:7.5pt; font-weight:bold; color:#166534;">INCOMES GROWTH (VS M-1)</span><br>
+        <span style="font-size:10pt; font-weight:900; color:#16a34a;">+$2,450.00 (+16%)</span>
+      </div>
+      <div style="background:#fffbeb; border:1px solid #fde68a; padding:4px 6px; border-radius:4px; text-align:center;">
+        <span style="font-size:7.5pt; font-weight:bold; color:#92400e;">EXPENSES VARIANCE</span><br>
+        <span style="font-size:10pt; font-weight:900; color:#d97706;">+$1,200.00 (+9%)</span>
+      </div>
+      <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:4px 6px; border-radius:4px; text-align:center;">
+        <span style="font-size:7.5pt; font-weight:bold; color:#1e40af;">4-MONTH AVERAGE NET</span><br>
+        <span style="font-size:10pt; font-weight:900; color:#2563eb;">+$3,550.00 / mo</span>
+      </div>
+    </div>
+    <p style="font-size:8.5pt; margin:4px 0 0 0; color:#334155;">
+      <strong>Multi-Series Trajectory Lines:</strong> Features 3 distinct trend lines (<span style="color:#16a34a; font-weight:bold;">Green = Incomes</span>, <span style="color:#dc2626; font-weight:bold;">Red = Expenses</span>, <span style="color:#2563eb; font-weight:bold;">Blue = Net Surplus</span>). Every point is labeled with its exact dollar value, making verbal presentations seamless.
+    </p>
+  </div>
+
+  <h2>5. Automated Budget Family Variance Analysis</h2>
+  <p>An integrated financial AI engine automatically composes a written diagnostic comparing the current month against the previous month (M-1):</p>
+
+  <div class="grid-2">
+    <div style="border-left:3.5px solid #16a34a; background:#f0fdf4; padding:8px 10px; border-radius:0 6px 6px 0;">
+      <h3 style="color:#166534; margin:0 0 4px 0; font-size:8.5pt; text-transform:uppercase;">
+        &#128200; Top Growth / Strategic Priorities
+      </h3>
+      <p style="font-size:8pt; margin:0; color:#14532d;">
+        Automatically highlights the highest spending growth (e.g.: <em>"The 'Charity &amp; Donation' category recorded the highest growth at +$920.00 (+38% vs M-1), reflecting direct expansion of group humanitarian missions."</em>).
+      </p>
+    </div>
+
+    <div style="border-left:3.5px solid #2563eb; background:#eff6ff; padding:8px 10px; border-radius:0 6px 6px 0;">
+      <h3 style="color:#1e40af; margin:0 0 4px 0; font-size:8.5pt; text-transform:uppercase;">
+        &#128201; Cost Reductions / Prudent Savings
+      </h3>
+      <p style="font-size:8pt; margin:0; color:#1e3a8a;">
+        Highlights disciplined savings (e.g.: <em>"Conversely, 'Logistics &amp; Travel' showed a healthy -$380.00 drop (-29% vs M-1), confirming operational streamlining."</em>).
+      </p>
+    </div>
+  </div>
+
+  <h2>6. Assembly Presentation Protocol &amp; Optimal Print Setup</h2>
+  <div class="card">
+    <div class="grid-2">
+      <div>
+        <h3 style="margin-top:0;">&#128203; Presentation Protocol</h3>
+        <ul style="font-size:8pt; margin:0; padding-left:14px; color:#334155;">
+          <li><strong>Slide 1 (Welcome Screen):</strong> Displayed while members arrive (confidential financial figures remain hidden).</li>
+          <li><strong>Slides 2 &amp; 3 (Financials):</strong> Review category histograms, breakdown, and coverage ratio.</li>
+          <li><strong>Slide 4 (Comparative):</strong> Present 4-month trajectory and growth dynamics.</li>
+          <li><strong>Final Slide (Adoption):</strong> Strategic improvement resolutions and formal vote.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-top:0;">&#128424;&#65039; Optimal Print / PDF Settings</h3>
+        <ul style="font-size:8pt; margin:0; padding-left:14px; color:#334155;">
+          <li><strong>Page Size:</strong> Strict A4 Portrait.</li>
+          <li><strong>Margins:</strong> Set to "Minimum" (4mm) or "None".</li>
+          <li><strong>Background Graphics:</strong> Always check the box in the browser print dialog.</li>
+          <li><strong>Output:</strong> Exactly 1 slide per printed sheet, zero page spillover.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-amber" style="margin-top:10px;">
+    <strong>Official Adoption &amp; Discharge of Accounts:</strong><br>
+    Upon presentation conclusion, Group Treasurer <strong>Rachel Chua</strong> and Group President <strong>Sharon Llegado</strong> sign the final slide, certifying audit completion and formal registration in official Group records.
+  </div>
+
+  <div class="footer-sign">
+    <div>Official V1.0 Guide &bull; The Fraternal Order of Lady Eagles Group</div>
+    <div>Page 2 / 2</div>
+  </div>
+
+</body>
+</html>

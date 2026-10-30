@@ -1,0 +1,495 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Official Synchronization & Button Operations Guide - Rachel Eagles</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm 14mm 14mm;
+      @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        font-size: 9pt;
+        color: #64748b;
+      }
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+      font-size: 10pt;
+      line-height: 1.45;
+    }
+    .header {
+      border-bottom: 2px solid #1e3a8a;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-logos {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .header-logos img {
+      width: 46px;
+      height: 46px;
+      object-fit: contain;
+    }
+    .header-titles {
+      text-align: right;
+    }
+    .header-titles h1 {
+      margin: 0;
+      font-size: 14pt;
+      color: #1e3a8a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 900;
+    }
+    .header-titles p {
+      margin: 2px 0 0 0;
+      font-size: 8pt;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .badge-blue { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+    .badge-green { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .badge-amber { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-purple { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+
+    h2 {
+      color: #1e3a8a;
+      font-size: 11.5pt;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      border-left: 4px solid #1e3a8a;
+      padding-left: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    h3 {
+      color: #0f172a;
+      font-size: 10pt;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+    p {
+      margin: 0 0 6px 0;
+    }
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+    }
+    .card-highlight {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+    }
+    .card-info {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 5px 7px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      background: #1e3a8a;
+      color: #ffffff;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 8pt;
+    }
+    tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .btn-visual {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 8pt;
+      font-weight: bold;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+    .btn-blue { background: #2563eb; }
+    .btn-green { background: #16a34a; }
+    .btn-red { background: #dc2626; }
+    .btn-amber { background: #d97706; }
+    .btn-purple { background: #7c3aed; }
+    .btn-slate { background: #475569; }
+
+    .scenario-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .scenario-num {
+      background: #1e3a8a;
+      color: #ffffff;
+      font-weight: 900;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 9pt;
+      margin-top: 2px;
+    }
+    .scenario-content {
+      flex: 1;
+    }
+    .page-break {
+      page-break-after: always;
+      break-after: page;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1 : MULTI-DEVICE SYNCHRONIZATION & SCENARIOS -->
+  <div class="header">
+    <div class="header-logos">
+      <img src="logo1.png" alt="Eagles Logo 1">
+      <img src="logo2.png" alt="Eagles Logo 2">
+      <img src="logo3.png" alt="Eagles Logo 3">
+    </div>
+    <div class="header-titles">
+      <h1>Practical Synchronization Guide</h1>
+      <p>The Fraternal Order of Lady Eagles &bull; Sargo Cambodia Eagles &bull; Version 3.0</p>
+    </div>
+  </div>
+
+  <h2>1. Understanding Synchronization in Plain English</h2>
+  <div class="card card-info">
+    <p><strong>Core Objective:</strong> Record an expense or income on any device (your desktop PC, your smartphone, or your wife's tablet) without <strong>EVER</strong> having to retype it somewhere else. All devices stay continuously balanced down to the exact cent.</p>
+  </div>
+
+  <h3>The "Smart Merge" Guarantee (Zero Overwrites & Zero Data Loss)</h3>
+  <p>A major concern in computing is that one device might accidentally overwrite or erase work done on another. In Rachel Eagles, this risk is <strong>technically impossible</strong> thanks to non-destructive smart merging:</p>
+  <ul>
+    <li>If your PC contains entry <strong>A</strong> and your phone records entry <strong>B</strong>, syncing merges them into <strong>A + B</strong>. Both devices gain the full updated ledger.</li>
+    <li>If you capture a member's picture with your smartphone camera, the photo transfers to the PC and displays inside the official desktop directory.</li>
+    <li>The 7 official expenditure families always stay strictly arranged in alphabetical order.</li>
+  </ul>
+
+  <h2>2. Dual Synchronization Channels: Local Wi-Fi vs 5G Mobile Cloud</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 22%;">Mode</th>
+        <th style="width: 28%;">When to use it?</th>
+        <th style="width: 50%;">How it works in practice</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-blue">Local Wi-Fi</span></td>
+        <td>At home or office when PC and mobile share the same Wi-Fi router.</td>
+        <td>Direct device-to-device communication on port 8085. Blazing fast (0.2s), secure, and does not require external internet.</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-purple">5G Mobile Cloud</span></td>
+        <td>On the go, during meetings, club charity events, or abroad.</td>
+        <td>Phone pushes encrypted records to your secure Cloud vault (GitHub Contents API). Whenever the PC starts up, it pulls all updates.</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">Smart Sync (Auto)</span></td>
+        <td><strong>Recommended Default</strong></td>
+        <td>Tests in 800ms whether the home PC is reachable over Wi-Fi. If yes, syncs locally; if away on cellular data, routes via 5G Cloud automatically!</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. Concrete Real-World Scenarios</h2>
+
+  <div class="card scenario-box">
+    <div class="scenario-num">1</div>
+    <div class="scenario-content">
+      <strong>Outdoor Scenario (Smartphone over 5G):</strong> You are attending a Rachel Eagles assembly. A brother hands you <strong>$250 cash</strong> for the <em>Community Service</em> fund. You open the app on your phone, click <em>+ New Credit</em>, type $250 and tap <strong>🔄</strong>. In the evening at home, you turn on your PC: the $250 entry is already logged in the general ledger!
+    </div>
+  </div>
+
+  <div class="card scenario-box">
+    <div class="scenario-num">2</div>
+    <div class="scenario-content">
+      <strong>Office Scenario (Home PC):</strong> You review 8 utility and supplies receipts using your widescreen monitor, keyboard, and mouse. You click <strong>🔄 Sync</strong> in the top header. When your wife turns on her tablet or when you pick up your phone, all 8 receipts appear instantly with the recalculation of the net balance.
+    </div>
+  </div>
+
+  <div class="card scenario-box">
+    <div class="scenario-num">3</div>
+    <div class="scenario-content">
+      <strong>Member Picture Scenario:</strong> You take a portrait of a new member using your smartphone camera in the <em>Members</em> tab. Once synced, their official photo—compressed into an optimized 280x280 square—shows on the PC ready for printing the certified membership booklet.
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- PAGE 2 : COMPLETE BUTTON DIRECTORY & VISUAL GUIDE -->
+  <div class="header">
+    <div class="header-logos">
+      <img src="logo1.png" alt="Eagles Logo 1">
+      <img src="logo2.png" alt="Eagles Logo 2">
+      <img src="logo3.png" alt="Eagles Logo 3">
+    </div>
+    <div class="header-titles">
+      <h1>Visual Directory of All Buttons</h1>
+      <p>Comprehensive inventory of interface controls, icons and actions &bull; Rachel Eagles v3.0</p>
+    </div>
+  </div>
+
+  <h2>4. The Top Header Bar (Accessible from Everywhere)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Button / Item</th>
+        <th style="width: 20%;">Visual Representation</th>
+        <th style="width: 55%;">Role & Operation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Quick Sync Button</strong></td>
+        <td><span class="btn-visual btn-blue">🔄 Sync</span></td>
+        <td><strong>Most essential button:</strong> triggers instant bidirectional synchronization. A colored status dot indicates connection health: <br>
+        &bull; 🟢 Green = Connected and up to date.<br>
+        &bull; 🔵 Blue = Sync currently in progress.<br>
+        &bull; 🔴 Red = Offline (prompts 5G Cloud fallback).</td>
+      </tr>
+      <tr>
+        <td><strong>Language Switcher</strong></td>
+        <td><span class="btn-visual btn-slate">🌐 EN / FR</span></td>
+        <td>Instantly switches the complete user interface, form labels, charts, and date picker between English and French.</td>
+      </tr>
+      <tr>
+        <td><strong>Info Button</strong></td>
+        <td><span class="btn-visual btn-amber">ℹ INFO</span></td>
+        <td>Displays the official club identification panel (foundation date, active roster counts, currency settings, app version).</td>
+      </tr>
+      <tr>
+        <td><strong>Logout / Exit Button</strong></td>
+        <td><span class="btn-visual btn-slate">⏻</span></td>
+        <td>Allows secure session locking or clean application shutdown.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>5. The 8 Main Navigation Tabs & Action Buttons</h2>
+
+  <h3>1. Home Tab (Dashboard & Balances)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Button</th>
+        <th>Color</th>
+        <th>Action Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>+ New Debit</strong></td>
+        <td><span class="btn-visual btn-red">+ New Debit</span></td>
+        <td>Opens quick form to record an expenditure with category, date, payee and amount.</td>
+      </tr>
+      <tr>
+        <td><strong>+ New Credit</strong></td>
+        <td><span class="btn-visual btn-green">+ New Credit</span></td>
+        <td>Opens quick form to log an income, dues payment or donation received.</td>
+      </tr>
+      <tr>
+        <td><strong>View Analytics</strong></td>
+        <td><span class="btn-visual btn-blue">📊 Analytics</span></td>
+        <td>Jumps directly to visual spending trends and category breakdown charts.</td>
+      </tr>
+      <tr>
+        <td><strong>Share Shortcuts</strong></td>
+        <td><span class="btn-visual btn-slate">📱 WhatsApp / Email</span></td>
+        <td>Generates a formatted treasury summary ready to forward to executive officers.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>2. Debits & Credits Tabs (General Ledger)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Button</th>
+        <th>Color</th>
+        <th>Action Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Date Range Filter</strong></td>
+        <td><span class="btn-visual btn-slate">📅 Calendar</span></td>
+        <td>Filters ledger entries across custom periods with bilingual date pickers.</td>
+      </tr>
+      <tr>
+        <td><strong>Export to PDF</strong></td>
+        <td><span class="btn-visual btn-red">📄 Export PDF</span></td>
+        <td>Generates official A4 certified ledger sheets with crest, eagle seal watermark and totals.</td>
+      </tr>
+      <tr>
+        <td><strong>Edit / Delete</strong></td>
+        <td><span class="btn-visual btn-amber">✏️</span> <span class="btn-visual btn-red">🗑️</span></td>
+        <td>Available on every row to adjust amounts, payees or remove erroneous records.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- PAGE 3 : MEMBERS, AUDIT REPORTS, OFFLINE BACKUP & FAQ -->
+  <div class="header">
+    <div class="header-logos">
+      <img src="logo1.png" alt="Eagles Logo 1">
+      <img src="logo2.png" alt="Eagles Logo 2">
+      <img src="logo3.png" alt="Eagles Logo 3">
+    </div>
+    <div class="header-titles">
+      <h1>Directory, Advisory & Offline Safety</h1>
+      <p>Detailed operating procedures &bull; Rachel Eagles v3.0</p>
+    </div>
+  </div>
+
+  <h3>3. Members Tab (Directory & Portrait Photos)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Button</th>
+        <th>Appearance</th>
+        <th>Functional Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Add Member</strong></td>
+        <td><span class="btn-visual btn-green">+ Add Member</span></td>
+        <td>Opens profile modal to register name, club rank, phone, email, profession and emergency contact.</td>
+      </tr>
+      <tr>
+        <td><strong>Cards / Table Switcher</strong></td>
+        <td><span class="btn-visual btn-slate">🎴 Cards / 📋 Table</span></td>
+        <td>Toggles between visual photo cards (ideal for tablets) and high-density spreadsheet view (ideal for PC).</td>
+      </tr>
+      <tr>
+        <td><strong>Select Member Photo</strong></td>
+        <td><span class="btn-visual btn-blue">📷 Photo</span></td>
+        <td>Opens smartphone camera or PC file explorer. Auto-crops and compresses into 280x280 square JPEG to keep database light.</td>
+      </tr>
+      <tr>
+        <td><strong>Export Members PDF</strong></td>
+        <td><span class="btn-visual btn-purple">📄 Directory PDF</span></td>
+        <td>Prints certified membership roster booklet with color portraits and club titles.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>4. Analytics, Reports & Audit Tab</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Button</th>
+        <th>Appearance</th>
+        <th>Functional Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Official Audit Report</strong></td>
+        <td><span class="btn-visual btn-red">📄 Export Audit PDF</span></td>
+        <td>Generates time-phased audit roadmaps with 6 action cards (0-30d, 30-60d, 60-90d).</td>
+      </tr>
+      <tr>
+        <td><strong>3-Month Forecast Report</strong></td>
+        <td><span class="btn-visual btn-amber">📄 Export Forecast</span></td>
+        <td>Projects cash flow requirements and liquidity safety targets.</td>
+      </tr>
+      <tr>
+        <td><strong>Interactive Action Badges</strong></td>
+        <td><span class="badge badge-amber">To Plan</span> / <span class="badge badge-green">Completed</span></td>
+        <td>Clicking toggles progress status. State is persistently synced across all devices.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>5. PC Sync & Backup Tab (Offline Operations)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Button</th>
+        <th>Appearance</th>
+        <th>Functional Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Download Complete Backup (.json)</strong></td>
+        <td><span class="btn-visual btn-purple">💾 Backup (.json)</span></td>
+        <td>Exports 100% self-contained file with all transactions, members and photos. Perfect for USB flash drives.</td>
+      </tr>
+      <tr>
+        <td><strong>Restore / Merge (.json)</strong></td>
+        <td><span class="btn-visual btn-blue">📂 Restore</span></td>
+        <td>Safely imports and merges offline backups without needing any Wi-Fi or cellular network.</td>
+      </tr>
+      <tr>
+        <td><strong>Generate ZIP Archive</strong></td>
+        <td><span class="btn-visual btn-amber">📦 ZIP Archive</span></td>
+        <td>Creates compressed package with CSV and transactions filtered by chosen date range.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>6. Troubleshooting & Frequently Asked Questions</h2>
+  <div class="card card-highlight">
+    <p><strong>1. What if local Wi-Fi sync reports a connection error?</strong><br>
+    Ensure your PC and phone are connected to the same local Wi-Fi router. If you are away from home, simply switch to <strong>5G Cloud</strong> mode with one tap.</p>
+    <p><strong>2. How to transfer data if there is NO network at all (no Wi-Fi, no 5G)?</strong><br>
+    Navigate to <em>PC Sync & Backup</em>, click <em>Download Complete Backup (.json)</em>. Copy this small file to a USB thumb drive or transfer it via cable to the PC, then click <em>Restore / Merge</em>. All records merge seamlessly!</p>
+    <p><strong>3. Are member photos preserved during synchronization?</strong><br>
+    Yes, 100%. All compressed photos are embedded directly into both the JSON backups and the 5G Cloud vault.</p>
+  </div>
+
+  <div style="text-align: center; margin-top: 15px; color: #64748b; font-size: 8pt; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+    The Fraternal Order of Lady Eagles Group &bull; Rachel Eagles Treasury Management System v3.0-light &bull; Official Certified Operations Manual.
+  </div>
+
+</body>
+</html>
+

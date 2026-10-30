@@ -1,0 +1,498 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Guide Officiel de Synchronisation et Utilisation des Boutons - Rachel Eagles</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm 14mm 14mm;
+      @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        font-size: 9pt;
+        color: #64748b;
+      }
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+      font-size: 10pt;
+      line-height: 1.45;
+    }
+    .header {
+      border-bottom: 2px solid #1e3a8a;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-logos {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .header-logos img {
+      width: 46px;
+      height: 46px;
+      object-fit: contain;
+    }
+    .header-titles {
+      text-align: right;
+    }
+    .header-titles h1 {
+      margin: 0;
+      font-size: 14pt;
+      color: #1e3a8a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 900;
+    }
+    .header-titles p {
+      margin: 2px 0 0 0;
+      font-size: 8pt;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .badge-blue { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+    .badge-green { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .badge-amber { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-purple { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+
+    h2 {
+      color: #1e3a8a;
+      font-size: 11.5pt;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      border-left: 4px solid #1e3a8a;
+      padding-left: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    h3 {
+      color: #0f172a;
+      font-size: 10pt;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+    p {
+      margin: 0 0 6px 0;
+    }
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+    }
+    .card-highlight {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+    }
+    .card-info {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+    }
+    .table-container {
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 5px 7px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      background: #1e3a8a;
+      color: #ffffff;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 8pt;
+    }
+    tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .btn-visual {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 8pt;
+      font-weight: bold;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+    .btn-blue { background: #2563eb; }
+    .btn-green { background: #16a34a; }
+    .btn-red { background: #dc2626; }
+    .btn-amber { background: #d97706; }
+    .btn-purple { background: #7c3aed; }
+    .btn-slate { background: #475569; }
+
+    .scenario-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .scenario-num {
+      background: #1e3a8a;
+      color: #ffffff;
+      font-weight: 900;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 9pt;
+      margin-top: 2px;
+    }
+    .scenario-content {
+      flex: 1;
+    }
+    .page-break {
+      page-break-after: always;
+      break-after: page;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1 : SYNCHRONISATION MULTI-APPAREILS & SCENARIOS -->
+  <div class="header">
+    <div class="header-logos">
+      <img src="logo1.png" alt="Eagles Logo 1">
+      <img src="logo2.png" alt="Eagles Logo 2">
+      <img src="logo3.png" alt="Eagles Logo 3">
+    </div>
+    <div class="header-titles">
+      <h1>Guide Pratique de Synchronisation</h1>
+      <p>The Fraternal Order of Lady Eagles &bull; Sargo Cambodia Eagles &bull; Version 3.0</p>
+    </div>
+  </div>
+
+  <h2>1. Comprendre la Synchronisation sans Jargon Technique</h2>
+  <div class="card card-info">
+    <p><strong>Objectif essentiel :</strong> Pouvoir saisir une dépense ou une recette sur n'importe quel appareil (votre PC de bureau, votre smartphone ou la tablette de votre femme) sans <strong>JAMAIS</strong> avoir à la retaper ailleurs. Tous les appareils restent automatiquement équilibrés au centime près.</p>
+  </div>
+
+  <h3>Le principe du "Smart Merge" (Fusion Intelligente sans écrasement)</h3>
+  <p>Une des plus grandes craintes en informatique est qu'un appareil « écrase » ou « efface » le travail fait sur un autre. Dans Rachel Eagles, ce risque est <strong>strictement impossible</strong> grâce à la fusion intelligente :</p>
+  <ul>
+    <li>Si votre PC contient l'écriture <strong>A</strong> et que votre téléphone a enregistré l'écriture <strong>B</strong>, la synchronisation réunit <strong>A + B</strong>. Les deux appareils ont alors l'intégralité des données.</li>
+    <li>Si vous photographiez un membre depuis votre smartphone, la photo voyage vers le PC et s'intègre automatiquement dans l'annuaire de bureau.</li>
+    <li>Les 7 familles de dépenses officielles restent toujours rigoureusement ordonnées par ordre alphabétique.</li>
+  </ul>
+
+  <h2>2. Les Deux Chemins de Connexion : Wi-Fi Direct vs 5G Cloud</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 22%;">Mode</th>
+        <th style="width: 28%;">Quand l'utiliser ?</th>
+        <th style="width: 50%;">Fonctionnement concret</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-blue">Wi-Fi Local</span></td>
+        <td>À la maison ou au bureau, quand PC et Mobile sont sur la même Box.</td>
+        <td>Communication directe de machine à machine (port 8085). Ultrarapide (0,2 seconde), sécurisée et ne nécessite pas de connexion internet extérieure.</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-purple">5G Cloud Mobile</span></td>
+        <td>En déplacement, au club, en réunion extérieure ou à l'étranger.</td>
+        <td>Le téléphone dépose les écritures chiffrées dans votre coffre Cloud sécurisé (GitHub Vault). Dès que le PC s'allume, il récupère automatiquement les mises à jour.</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">Smart Sync (Auto)</span></td>
+        <td><strong>Recommandé au quotidien</strong></td>
+        <td>L'application teste en 800ms si le PC de la maison est à portée Wi-Fi. S'il l'est, elle synchronise en Wi-Fi. Sinon, elle bascule instantanément en 5G Cloud en toute transparence !</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. Exemples Concrets de la Vie Courante</h2>
+
+  <div class="card scenario-box">
+    <div class="scenario-num">1</div>
+    <div class="scenario-content">
+      <strong>Scénario Extérieur (Smartphone 5G) :</strong> Vous assistez à une réunion du club Rachel Eagles. Un frère vous remet <strong>$250 en espèces</strong> pour l'action <em>Community Service</em>. Vous ouvrez l'application sur votre téléphone, cliquez sur <em>+ New Credit</em>, saisissez $250 et touchez le bouton <strong>🔄</strong>. Le soir en rentrant chez vous, vous allumez votre PC : les $250 sont déjà enregistrés dans le grand livre !
+    </div>
+  </div>
+
+  <div class="card scenario-box">
+    <div class="scenario-num">2</div>
+    <div class="scenario-content">
+      <strong>Scénario Bureau (PC Maison) :</strong> Vous traitez 8 factures de fournitures sur votre grand écran avec clavier et souris. Vous cliquez sur <strong>🔄 Sync</strong> en haut de l'écran PC. Lorsque votre femme allume sa tablette ou que vous reprenez votre smartphone, les 8 factures apparaissent instantanément avec le nouveau solde net calculé.
+    </div>
+  </div>
+
+  <div class="card scenario-box">
+    <div class="scenario-num">3</div>
+    <div class="scenario-content">
+      <strong>Scénario Photos & Membres :</strong> Vous photographiez un nouveau membre avec l'appareil photo de votre smartphone dans l'onglet <em>Members</em>. Après synchronisation, sa photo d'identité au format carré parfait (280x280) apparaît sur le PC, prête pour l'édition de l'annuaire officiel PDF imprimable.
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- PAGE 2 : GUIDE VISUEL DES BOUTONS DE L'APPLICATION -->
+  <div class="header">
+    <div class="header-logos">
+      <img src="logo1.png" alt="Eagles Logo 1">
+      <img src="logo2.png" alt="Eagles Logo 2">
+      <img src="logo3.png" alt="Eagles Logo 3">
+    </div>
+    <div class="header-titles">
+      <h1>Guide Visuel de Tous les Boutons</h1>
+      <p>Inventaire exhaustif des contrôles, icônes et actions &bull; Rachel Eagles v3.0</p>
+    </div>
+  </div>
+
+  <h2>4. La Barre d'En-Tête Supérieure (Accessible Partout)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Bouton / Élément</th>
+        <th style="width: 20%;">Visuel / Symbole</th>
+        <th style="width: 55%;">Rôle & Fonctionnement</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Bouton Synchro Rapide</strong></td>
+        <td><span class="btn-visual btn-blue">🔄 Sync</span></td>
+        <td><strong>Le bouton le plus important :</strong> déclenche la synchronisation bidirectionnelle instantanée. Une pastille colorée indique l'état : <br>
+        &bull; 🟢 Vert = Connecté et à jour.<br>
+        &bull; 🔵 Bleu = Synchronisation en cours.<br>
+        &bull; 🔴 Rouge = Hors ligne (propose l'alternative 5G).</td>
+      </tr>
+      <tr>
+        <td><strong>Bascule de Langue</strong></td>
+        <td><span class="btn-visual btn-slate">🌐 FR / EN</span></td>
+        <td>Bascule instantanément toute l'interface, les formulaires, les graphiques et le calendrier entre le Français et l'Anglais.</td>
+      </tr>
+      <tr>
+        <td><strong>Bouton Info</strong></td>
+        <td><span class="btn-visual btn-amber">ℹ INFO</span></td>
+        <td>Affiche le panneau récapitulatif officiel du club (date de fondation, effectifs, devises, version active).</td>
+      </tr>
+      <tr>
+        <td><strong>Bouton Quitter</strong></td>
+        <td><span class="btn-visual btn-slate">⏻</span></td>
+        <td>Permet de fermer la session ou de masquer l'application en toute sécurité.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>5. Les 8 Onglets Principaux & Leurs Boutons d'Action</h2>
+
+  <h3>1. Onglet Accueil (Home / Dashboard)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Bouton</th>
+        <th>Couleur</th>
+        <th>Description de l'action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>+ New Debit</strong></td>
+        <td><span class="btn-visual btn-red">+ New Debit</span></td>
+        <td>Ouvre le formulaire rapide pour saisir une dépense avec catégorie, date et montant.</td>
+      </tr>
+      <tr>
+        <td><strong>+ New Credit</strong></td>
+        <td><span class="btn-visual btn-green">+ New Credit</span></td>
+        <td>Ouvre le formulaire rapide pour enregistrer une recette ou cotisation reçue.</td>
+      </tr>
+      <tr>
+        <td><strong>View Analytics</strong></td>
+        <td><span class="btn-visual btn-blue">📊 Analytics</span></td>
+        <td>Bascule directement vers les graphiques d'évolution et la répartition des dépenses.</td>
+      </tr>
+      <tr>
+        <td><strong>Boutons Partage</strong></td>
+        <td><span class="btn-visual btn-slate">📱 WhatsApp / Mail</span></td>
+        <td>Génère un récapitulatif textuel du solde actuel prêt à être envoyé au comité par message.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>2. Onglets Débits & Crédits (Grand Livre Comptable)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Bouton</th>
+        <th>Couleur</th>
+        <th>Description de l'action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Filtrer par Date</strong></td>
+        <td><span class="btn-visual btn-slate">📅 Calendrier</span></td>
+        <td>Permet de choisir une plage de dates personnalisée (du ... au ...) avec calendrier bilingue.</td>
+      </tr>
+      <tr>
+        <td><strong>Exporter en PDF</strong></td>
+        <td><span class="btn-visual btn-red">📄 Export PDF</span></td>
+        <td>Génère le document A4 officiel certifié avec en-tête des Eagles, filigrane et totaux.</td>
+      </tr>
+      <tr>
+        <td><strong>Modifier / Supprimer</strong></td>
+        <td><span class="btn-visual btn-amber">✏️</span> <span class="btn-visual btn-red">🗑️</span></td>
+        <td>Présent sur chaque ligne d'écriture pour corriger une erreur ou supprimer une transaction.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- PAGE 3 : MEMBRES, ANALYTIQUE, SYNCHRO & FAQ -->
+  <div class="header">
+    <div class="header-logos">
+      <img src="logo1.png" alt="Eagles Logo 1">
+      <img src="logo2.png" alt="Eagles Logo 2">
+      <img src="logo3.png" alt="Eagles Logo 3">
+    </div>
+    <div class="header-titles">
+      <h1>Annuaire, Rapports & Procédures de Secours</h1>
+      <p>Guide opérationnel détaillé &bull; Rachel Eagles v3.0</p>
+    </div>
+  </div>
+
+  <h3>3. Onglet Membres (Directory & Photos)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Bouton</th>
+        <th>Aspect</th>
+        <th>Fonctionnalité</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Ajouter un Membre</strong></td>
+        <td><span class="btn-visual btn-green">+ Add Member</span></td>
+        <td>Crée une nouvelle fiche (nom, fonction au club, téléphone, email, profession).</td>
+      </tr>
+      <tr>
+        <td><strong>Bascule Vue Grille / Tableau</strong></td>
+        <td><span class="btn-visual btn-slate">🎴 Cartes / 📋 Tableau</span></td>
+        <td>Bascule entre la vue en fiches illustrées avec grandes photos et la vue en tableau compact pour PC.</td>
+      </tr>
+      <tr>
+        <td><strong>Sélectionner une Photo</strong></td>
+        <td><span class="btn-visual btn-blue">📷 Photo</span></td>
+        <td>Ouvre l'appareil photo du smartphone ou l'explorateur PC. Recadre et compresse automatiquement en carré 280x280 pour ne pas alourdir la base.</td>
+      </tr>
+      <tr>
+        <td><strong>Export Annuaire PDF</strong></td>
+        <td><span class="btn-visual btn-purple">📄 Annuaire PDF</span></td>
+        <td>Édite le livret officiel des membres du club avec trombinoscope, fonctions et coordonnées.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>4. Onglet Rapports d'Audit & Prévisions</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Bouton</th>
+        <th>Aspect</th>
+        <th>Fonctionnalité</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Rapport Officiel d'Audit</strong></td>
+        <td><span class="btn-visual btn-red">📄 Export Audit PDF</span></td>
+        <td>Génère le rapport d'audit avec les 6 fiches d'action chronologiques (0-30j, 30-60j, 60-90j).</td>
+      </tr>
+      <tr>
+        <td><strong>Rapport Prévisionnel 3 Mois</strong></td>
+        <td><span class="btn-visual btn-amber">📄 Export Forecast</span></td>
+        <td>Calcule et imprime les projections budgétaires et le seuil de sécurité de liquidités.</td>
+      </tr>
+      <tr>
+        <td><strong>Badges d'Action Interactifs</strong></td>
+        <td><span class="badge badge-amber">À Planifier</span> / <span class="badge badge-green">Réalisé</span></td>
+        <td>En cliquant sur un badge, vous changez son état dans le temps. Ce statut est synchronisé sur tous vos appareils.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>5. Onglet Synchro PC & Sauvegarde de Secours (Offline)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Bouton</th>
+        <th>Aspect</th>
+        <th>Fonctionnalité</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Télécharger Sauvegarde (.json)</strong></td>
+        <td><span class="btn-visual btn-purple">💾 Sauvegarde (.json)</span></td>
+        <td>Exporte un fichier complet autonome contenant 100% de vos comptes, membres et photos. Parfait pour une copie sur clé USB.</td>
+      </tr>
+      <tr>
+        <td><strong>Restaurer / Fusionner (.json)</strong></td>
+        <td><span class="btn-visual btn-blue">📂 Restaurer</span></td>
+        <td>Permet de recharger ou de fusionner une sauvegarde depuis un fichier sans avoir besoin de réseau.</td>
+      </tr>
+      <tr>
+        <td><strong>Générer Archive ZIP</strong></td>
+        <td><span class="btn-visual btn-amber">📦 Archive ZIP</span></td>
+        <td>Crée un fichier compressé contenant les transactions de la période sélectionnée.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>6. Aide & Résolution des Situations Imprévues</h2>
+  <div class="card card-highlight">
+    <p><strong>1. Que faire si la synchronisation Wi-Fi indique une erreur ?</strong><br>
+    Vérifiez que votre PC et votre smartphone sont bien connectés sur la même box Wi-Fi. Si vous êtes à l'extérieur, basculez simplement sur le mode <strong>5G Cloud</strong> d'un seul clic.</p>
+    <p><strong>2. Comment transférer les données si je n'ai AUCUN réseau (ni Wi-Fi ni 5G) ?</strong><br>
+    Allez dans l'onglet <em>PC Sync & Backup</em>, cliquez sur <em>Télécharger Sauvegarde (.json)</em>. Copiez ce petit fichier sur une clé USB ou envoyez-le par câble sur le PC, puis cliquez sur <em>Restaurer / Fusionner</em>. Toutes vos écritures sont réintégrées instantanément !</p>
+    <p><strong>3. Mes photos de membres sont-elles sauvegardées ?</strong><br>
+    Oui, absolument. Les photos compressées sont intégrées directement au cœur des sauvegardes et du coffre Cloud 5G.</p>
+  </div>
+
+  <div style="text-align: center; margin-top: 15px; color: #64748b; font-size: 8pt; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+    The Fraternal Order of Lady Eagles Group &bull; Rachel Eagles Treasury Management System v3.0-light &bull; Document officiel certifié conforme.
+  </div>
+
+</body>
+</html>
+
