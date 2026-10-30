@@ -349,7 +349,7 @@ const I18N = {
     offlineSyncDesc: "Transfer complete data without Wi-Fi via USB drive, WhatsApp or email.",
     exportJsonBtn: "Download Complete Backup (.json)",
     importJsonBtn: "Restore / Merge from JSON File",
-    versionLightBadge: "VERSION LIGHT v3.0",
+    versionLightBadge: "VERSION OFFICIELLE V1.0",
     bannerLogosTitle: "Application Banner Logos",
     bannerLogosDesc: "Enable or disable the 3 official logos displayed at the top of the application.",
     logo1Title: "Logo 1: Philippine Eagles Emblem",
@@ -749,7 +749,7 @@ const I18N = {
     offlineSyncDesc: "Transférez l'intégralité des données sans Wi-Fi via clé USB, WhatsApp ou email.",
     exportJsonBtn: "Télécharger la Sauvegarde Complète (.json)",
     importJsonBtn: "Restaurer / Fusionner depuis un Fichier (.json)",
-    versionLightBadge: "VERSION LIGHT v3.0",
+    versionLightBadge: "VERSION OFFICIELLE V1.0",
     bannerLogosTitle: "Logos en Bannière de l'Application",
     bannerLogosDesc: "Activez ou désactivez les 3 logos officiels affichés en tête de l'application selon votre préférence.",
     logo1Title: "Logo 1 : Philippine Eagles Emblem",
@@ -7255,11 +7255,11 @@ function RachelEaglesApp() {
               <span>TREASURER'S REPORT - Financial Record</span>
               {typeof window !== 'undefined' && (window.AndroidNative || /Android/i.test(navigator.userAgent)) ? (
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-300" title="Version allÃ©gÃ©e optimisÃ©e pour Smartphone et Tablette">
-                  VERSION MOBILE LIGHT v3.0
+                  VERSION MOBILE & TABLETTE V1.0
                 </span>
               ) : (
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-300" title="Ã‰dition PC avec Serveur Local de Synchronisation">
-                  VERSION PC v3.0
+                  VERSION PC & LAPTOP V1.0
                 </span>
               )}
             </p>
@@ -10256,7 +10256,7 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
             <div>
               <h3 className="text-base sm:text-lg font-black tracking-wide flex items-center gap-2">
                 <span>{isFr ? "Manuel d'Utilisation Officiel" : "Official User Manual & Guide"}</span>
-                <span className="text-[10px] uppercase px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black">v2.0</span>
+                <span className="text-[10px] uppercase px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black">v1.0</span>
               </h3>
               <p className="text-[11px] text-blue-200 font-medium">THE FRATERNAL ORDER OF LADY EAGLES GROUP &bull; Sargo Cambodia Eagles</p>
             </div>
