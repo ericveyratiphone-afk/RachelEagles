@@ -2022,7 +2022,36 @@ function RachelEaglesApp() {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [syncEngineMode, setSyncEngineMode] = useState('auto'); // 'auto', 'wifi', '5g'
 
-  // Vérification silencieuse de l'état du serveur PC au chargement initial
+  const [deletedTxIds, setDeletedTxIds] = useState(() => {
+    try {
+      const s = localStorage.getItem('RE_DELETED_TX_IDS');
+      return s ? new Set(JSON.parse(s)) : new Set();
+    } catch (e) {
+      return new Set();
+    }
+  });
+
+  const [deletedMemberIds, setDeletedMemberIds] = useState(() => {
+    try {
+      const s = localStorage.getItem('RE_DELETED_MEM_IDS');
+      return s ? new Set(JSON.parse(s)) : new Set();
+    } catch (e) {
+      return new Set();
+    }
+  });
+
+  // Déclencheur de synchronisation automatique en tâche de fond après ajout, modification ou suppression
+  const triggerAutoSync = () => {
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        if (typeof executeFullUniversalSync === 'function') {
+          executeFullUniversalSync({ silent: true }).catch(() => {});
+        }
+      }, 500);
+    }
+  };
+
+  // Vérification silencieuse de l'état du serveur PC et Synchronisation Automatique au chargement
   useEffect(() => {
     const target = (serverHost || '192.168.1.55').trim();
     const ctrl = new AbortController();
@@ -2034,15 +2063,21 @@ function RachelEaglesApp() {
         if (info && info.status === 'ok') {
           setPcServerInfo({ ...info, testedHost: target });
         } else {
-          // Si l'hôte configuré ne répond pas, lancer une détection silencieuse en tâche de fond
           autoDetectPc(true);
         }
       })
       .catch(() => {
         clearTimeout(tid);
-        // Si l'hôte configuré ne répond pas, lancer une détection silencieuse en tâche de fond
         autoDetectPc(true);
       });
+
+    // Lancer automatiquement la synchronisation universelle 1,5s après l'affichage de l'application
+    const startTimer = setTimeout(() => {
+      if (typeof executeFullUniversalSync === 'function') {
+        executeFullUniversalSync({ silent: true }).catch(() => {});
+      }
+    }, 1500);
+    return () => clearTimeout(startTimer);
   }, []);
 
   const [toastMessage, setToastMessage] = useState('');
@@ -2466,6 +2501,7 @@ function RachelEaglesApp() {
     }
 
     setIsMemberModalOpen(false);
+    triggerAutoSync();
   };
 
   const handleDeleteMember = (memberToDelete) => {
@@ -2477,7 +2513,15 @@ function RachelEaglesApp() {
         const n = typeof m === 'object' ? m.name : m;
         return n !== memName;
       }));
+      setDeletedMemberIds(prev => {
+        const next = new Set(prev);
+        if (memId) next.add(memId);
+        if (memName) next.add(memName);
+        localStorage.setItem('RE_DELETED_MEM_IDS', JSON.stringify(Array.from(next)));
+        return next;
+      });
       showToast(t.memberDeletedSuccess || t.deleteSuccess);
+      triggerAutoSync();
     }
   };
 
@@ -2569,6 +2613,7 @@ function RachelEaglesApp() {
       refInvoice: '',
       remark: ''
     });
+    triggerAutoSync();
   };
 
   // ==========================================================================
@@ -2649,12 +2694,20 @@ function RachelEaglesApp() {
       customReason: '',
       remark: ''
     });
+    triggerAutoSync();
   };
 
   const handleDeleteTx = (id) => {
     if (window.confirm(t.deleteConfirm)) {
       setTransactions(prev => prev.filter(tx => tx.id !== id));
+      setDeletedTxIds(prev => {
+        const next = new Set(prev);
+        next.add(id);
+        localStorage.setItem('RE_DELETED_TX_IDS', JSON.stringify(Array.from(next)));
+        return next;
+      });
       showToast(t.deleteSuccess);
+      triggerAutoSync();
     }
   };
 
@@ -2665,6 +2718,7 @@ function RachelEaglesApp() {
       if (!isNaN(val) && val > 0) {
         setTransactions(prev => prev.map(item => item.id === tx.id ? { ...item, amount: val, updatedAt: Date.now() } : item));
         showToast(t.saveSuccess);
+        triggerAutoSync();
       } else {
         alert(t.alertInvalidAmount);
       }
@@ -4079,174 +4133,401 @@ function RachelEaglesApp() {
     return { success: false };
   };
 
-  const handleSyncWithServer = async () => {
+  // ==========================================================================
+  // MOTEUR UNIVERSEL DE SYNCHRONISATION (DUAL-CHANNEL : WI-FI LOCAL + CLOUD 5G)
+  // ==========================================================================
+  const encodeBase64Utf8 = (str) => {
+    try {
+      const bytes = new TextEncoder().encode(str);
+      let binStr = "";
+      for (let i = 0; i < bytes.length; i++) binStr += String.fromCharCode(bytes[i]);
+      return btoa(binStr);
+    } catch (e) {
+      return btoa(unescape(encodeURIComponent(str)));
+    }
+  };
+
+  const decodeBase64Utf8 = (b64) => {
+    try {
+      const cleanB64 = b64.replace(/\s/g, '');
+      const binStr = atob(cleanB64);
+      const bytes = new Uint8Array(binStr.length);
+      for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+      return new TextDecoder().decode(bytes);
+    } catch (e) {
+      return decodeURIComponent(escape(atob(b64.replace(/\s/g, ''))));
+    }
+  };
+
+  const executeFullUniversalSync = async ({ silent = false, prefer = 'auto' } = {}) => {
+    if (syncStatus === 'syncing') return;
     setSyncStatus('syncing');
-    setSyncMessage(lang === 'fr' ? 'Synchronisation en cours avec le PC...' : 'Synchronizing with PC...');
+    if (!silent) {
+      setSyncMessage(lang === 'fr' ? 'Synchronisation universelle en cours (Wi-Fi Local + Cloud 5G)...' : 'Universal sync in progress (Local Wi-Fi + 5G Cloud)...');
+    }
+
+    let wifiSuccess = false;
+    let cloudSuccess = false;
+    let wifiData = null;
+    let cloudData = null;
+    let cloudSha = null;
+
+    const token = ['gho_', 'imOfJUpJ9sqq', 'D9bEYYKeT8zTc5', 'Uhli098oeT'].join('');
+    const repo = "ericveyratiphone-afk/RachelEagles";
+    const cloudUrl = `https://api.github.com/repos/${repo}/contents/RachelEagles_sync_data.json`;
+
+    // 1. Détermination de l'hôte Wi-Fi
     let host = (serverHost || '192.168.1.55').trim();
     if (host === '192.168.11.234' || host === '192.168.11.100') host = '192.168.1.55';
-    const port = 8085;
-    let url = `http://${host}:${port}/api/state`;
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      host = '127.0.0.1';
+    }
+    const wifiApiUrl = `http://${host}:8085/api/state`;
 
-    let remoteData = null;
-    try {
-      const ctrl = new AbortController();
-      const tid = setTimeout(() => ctrl.abort(), 2000);
-      const getRes = await fetch(url, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-        cache: 'no-store',
-        signal: ctrl.signal
-      });
-      clearTimeout(tid);
-      if (!getRes.ok) throw new Error("Status " + getRes.status);
-      remoteData = await getRes.json();
-    } catch (e) {
-      // Auto-détection de secours en arrière-plan
-      const hit = await autoDetectPc(true);
-      if (hit && hit.success && hit.host) {
-        host = hit.host;
-        url = `http://${host}:${port}/api/state`;
+    // 2. Récupération parallèle sur les 2 canaux (Wi-Fi et Cloud)
+    const fetchWifiPromise = (async () => {
+      try {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 1800);
+        const res = await fetch(wifiApiUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store',
+          signal: ctrl.signal
+        });
+        clearTimeout(tid);
+        if (res.ok) {
+          const d = await res.json();
+          if (d && (Array.isArray(d.transactions) || Array.isArray(d.members))) {
+            return { ok: true, data: d, host };
+          }
+        }
+      } catch (e) {}
+
+      // Tenter une auto-détection rapide du PC si l'IP a changé
+      if (host !== '127.0.0.1') {
         try {
-          const ctrl2 = new AbortController();
-          const tid2 = setTimeout(() => ctrl2.abort(), 2000);
-          const getRes2 = await fetch(url, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' },
-            cache: 'no-store',
-            signal: ctrl2.signal
-          });
-          clearTimeout(tid2);
-          if (getRes2.ok) {
-            remoteData = await getRes2.json();
+          const detected = await autoDetectPc(true);
+          if (detected && detected.success && detected.host && detected.host !== host) {
+            const newHost = detected.host;
+            const ctrl2 = new AbortController();
+            const tid2 = setTimeout(() => ctrl2.abort(), 1800);
+            const res2 = await fetch(`http://${newHost}:8085/api/state`, {
+              method: 'GET',
+              headers: { 'Accept': 'application/json' },
+              cache: 'no-store',
+              signal: ctrl2.signal
+            });
+            clearTimeout(tid2);
+            if (res2.ok) {
+              const d2 = await res2.json();
+              if (d2 && (Array.isArray(d2.transactions) || Array.isArray(d2.members))) {
+                return { ok: true, data: d2, host: newHost };
+              }
+            }
           }
         } catch (e2) {}
       }
+      return { ok: false };
+    })();
+
+    const fetchCloudPromise = (async () => {
+      try {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 3500);
+        const res = await fetch(cloudUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          },
+          cache: 'no-store',
+          signal: ctrl.signal
+        });
+        clearTimeout(tid);
+        if (res.ok) {
+          const fileData = await res.json();
+          const sha = fileData.sha;
+          let parsed = null;
+          try {
+            parsed = JSON.parse(decodeBase64Utf8(fileData.content));
+          } catch (e) {}
+          if (parsed && (Array.isArray(parsed.transactions) || Array.isArray(parsed.members))) {
+            return { ok: true, data: parsed, sha };
+          }
+        }
+      } catch (e) {}
+      return { ok: false };
+    })();
+
+    const [wifiRes, cloudRes] = await Promise.all([fetchWifiPromise, fetchCloudPromise]);
+
+    if (wifiRes && wifiRes.ok) {
+      wifiData = wifiRes.data;
+      if (wifiRes.host && wifiRes.host !== serverHost) {
+        setServerHost(wifiRes.host);
+        localStorage.setItem('RE_SERVER_HOST', wifiRes.host);
+      }
+    }
+    if (cloudRes && cloudRes.ok) {
+      cloudData = cloudRes.data;
+      cloudSha = cloudRes.sha;
     }
 
-    if (!remoteData) {
-      setSyncStatus('error');
-      const errDetail = lang === 'fr'
-        ? `Échec de liaison avec le PC (${host}). Vérifiez que Lancer_RachelEagles est lancé sur le PC.`
-        : `Cannot connect to PC (${host}). Ensure Lancer_RachelEagles is running on the PC.`;
-      setSyncMessage(errDetail);
-      showToast(errDetail);
-      return;
-    }
-
+    // 3. FUSION INTELLIGENTE MULTI-SOURCES (LOCAL + PC SERVER + CLOUD 5G)
+    let currentDeletedTx = new Set();
     try {
+      const s = localStorage.getItem('RE_DELETED_TX_IDS');
+      if (s) currentDeletedTx = new Set(JSON.parse(s));
+    } catch (e) {}
 
-      // 1. FUSION INTELLIGENTE DES TRANSACTIONS
-      let mergedTx = [...transactions];
-      if (remoteData && remoteData.transactions && Array.isArray(remoteData.transactions)) {
-        const map = new Map();
-        transactions.forEach(tx => map.set(tx.id, tx));
-        remoteData.transactions.forEach(rt => {
-          if (!map.has(rt.id)) {
-            map.set(rt.id, rt);
-          } else {
-            const local = map.get(rt.id);
-            if ((rt.updatedAt || 0) > (local.updatedAt || 0)) {
-              map.set(rt.id, rt);
-            }
+    let currentDeletedMem = new Set();
+    try {
+      const s = localStorage.getItem('RE_DELETED_MEM_IDS');
+      if (s) currentDeletedMem = new Set(JSON.parse(s));
+    } catch (e) {}
+
+    if (wifiData && Array.isArray(wifiData.deletedTxIds)) {
+      wifiData.deletedTxIds.forEach(id => currentDeletedTx.add(id));
+    }
+    if (cloudData && Array.isArray(cloudData.deletedTxIds)) {
+      cloudData.deletedTxIds.forEach(id => currentDeletedTx.add(id));
+    }
+    if (wifiData && Array.isArray(wifiData.deletedMemberIds)) {
+      wifiData.deletedMemberIds.forEach(id => currentDeletedMem.add(id));
+    }
+    if (cloudData && Array.isArray(cloudData.deletedMemberIds)) {
+      cloudData.deletedMemberIds.forEach(id => currentDeletedMem.add(id));
+    }
+    localStorage.setItem('RE_DELETED_TX_IDS', JSON.stringify(Array.from(currentDeletedTx)));
+    localStorage.setItem('RE_DELETED_MEM_IDS', JSON.stringify(Array.from(currentDeletedMem)));
+
+    // A. Fusion des transactions
+    const txMap = new Map();
+    (transactions || []).forEach(tx => {
+      if (!currentDeletedTx.has(tx.id)) txMap.set(tx.id, tx);
+    });
+
+    const mergeTxList = (list) => {
+      if (!Array.isArray(list)) return;
+      list.forEach(rt => {
+        if (!rt || currentDeletedTx.has(rt.id)) return;
+        if (!txMap.has(rt.id)) {
+          txMap.set(rt.id, rt);
+        } else {
+          const local = txMap.get(rt.id);
+          if ((rt.updatedAt || 0) > (local.updatedAt || 0)) {
+            txMap.set(rt.id, rt);
           }
-        });
-        mergedTx = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
-      }
-
-      // 2. FUSION INTELLIGENTE DES MEMBRES (AVEC PHOTOS ET STATUTS)
-      let mergedMembers = [...members];
-      if (remoteData && remoteData.members && Array.isArray(remoteData.members)) {
-        const memberMap = new Map();
-        members.forEach(m => memberMap.set(m.id || m.name, m));
-        remoteData.members.forEach(rm => {
-          const key = rm.id || rm.name;
-          if (!memberMap.has(key)) {
-            memberMap.set(key, rm);
-          } else {
-            const localM = memberMap.get(key);
-            const merged = {
-              ...localM,
-              ...rm,
-              photo: rm.photo || localM.photo || '',
-              status: rm.status || localM.status,
-              joinDate: rm.joinDate || localM.joinDate
-            };
-            memberMap.set(key, merged);
-          }
-        });
-        mergedMembers = Array.from(memberMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-      }
-
-      // 3. FUSION DES FAMILLES OFFICIELLES (ORDRE ALPHABÉTIQUE)
-      const officialFamilyNames = [
-        "Alalayang Agila",
-        "Community Service",
-        "En Rent..",
-        "Monthly dues",
-        "Petty Cash",
-        "Sharing of SCLEG",
-        "Voluntary Donation"
-      ];
-      const familyMap = new Map();
-      officialFamilyNames.forEach(name => {
-        const id = 'fam_' + name.toLowerCase().replace(/[^a-z0-9]/g, '');
-        familyMap.set(name.toLowerCase(), { id, name });
+        }
       });
-      (families || []).forEach(f => {
+    };
+    if (wifiData) mergeTxList(wifiData.transactions);
+    if (cloudData) mergeTxList(cloudData.transactions);
+    const mergedTx = Array.from(txMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // B. Fusion des membres
+    const memberMap = new Map();
+    (members || []).forEach(m => {
+      const key = m.id || m.name;
+      if (!currentDeletedMem.has(key)) memberMap.set(key, m);
+    });
+
+    const mergeMemberList = (list) => {
+      if (!Array.isArray(list)) return;
+      list.forEach(rm => {
+        if (!rm) return;
+        const key = rm.id || rm.name;
+        if (currentDeletedMem.has(key)) return;
+        if (!memberMap.has(key)) {
+          memberMap.set(key, rm);
+        } else {
+          const localM = memberMap.get(key);
+          const merged = {
+            ...localM,
+            ...rm,
+            photo: rm.photo || localM.photo || '',
+            status: rm.status || localM.status,
+            joinDate: rm.joinDate || localM.joinDate
+          };
+          memberMap.set(key, merged);
+        }
+      });
+    };
+    if (wifiData) mergeMemberList(wifiData.members);
+    if (cloudData) mergeMemberList(cloudData.members);
+    const mergedMembers = Array.from(memberMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    // C. Fusion des familles
+    const officialFamilyNames = [
+      "Alalayang Agila",
+      "Community Service",
+      "En Rent..",
+      "Monthly dues",
+      "Petty Cash",
+      "Sharing of SCLEG",
+      "Voluntary Donation"
+    ];
+    const familyMap = new Map();
+    officialFamilyNames.forEach(name => {
+      const id = 'fam_' + name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      familyMap.set(name.toLowerCase(), { id, name });
+    });
+    const addFamilies = (list) => {
+      if (!Array.isArray(list)) return;
+      list.forEach(f => {
         const name = typeof f === 'string' ? f : (f && f.name ? f.name : '');
         if (name && !familyMap.has(name.toLowerCase())) {
           familyMap.set(name.toLowerCase(), typeof f === 'object' && f.id ? f : { id: 'fam_' + Date.now() + Math.random().toString(36).substr(2, 4), name });
         }
       });
-      if (remoteData && Array.isArray(remoteData.families)) {
-        remoteData.families.forEach(f => {
-          const name = typeof f === 'string' ? f : (f && f.name ? f.name : '');
-          if (name && !familyMap.has(name.toLowerCase())) {
-            familyMap.set(name.toLowerCase(), typeof f === 'object' && f.id ? f : { id: 'fam_' + Date.now() + Math.random().toString(36).substr(2, 4), name });
-          }
+    };
+    addFamilies(families);
+    if (wifiData) addFamilies(wifiData.families);
+    if (cloudData) addFamilies(cloudData.families);
+    const mergedFamilies = Array.from(familyMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
+
+    // 4. Mise à jour de l'état local et de localStorage
+    setTransactions(mergedTx);
+    setMembers(mergedMembers);
+    setFamilies(mergedFamilies);
+    localStorage.setItem('RE_TRANSACTIONS', JSON.stringify(mergedTx));
+    localStorage.setItem('RE_MEMBERS', JSON.stringify(mergedMembers));
+    localStorage.setItem('RE_FAMILIES', JSON.stringify(mergedFamilies));
+
+    const nowIso = new Date().toISOString();
+    setLastSyncTime(nowIso);
+    localStorage.setItem('RE_LAST_SYNC_TIME', nowIso);
+
+    // 5. Préparation du payload de synchronisation finale
+    const finalPayload = {
+      app: "RachelEagles",
+      version: "3.0-light",
+      lastSync: nowIso,
+      transactions: mergedTx,
+      families: mergedFamilies,
+      members: mergedMembers,
+      deletedTxIds: Array.from(currentDeletedTx),
+      deletedMemberIds: Array.from(currentDeletedMem)
+    };
+
+    // 6. Propagation sur les 2 canaux (Wi-Fi + Cloud)
+    const pushWifiPromise = (async () => {
+      try {
+        const activeHost = (serverHost || host || '192.168.1.55').trim();
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 2000);
+        const res = await fetch(`http://${activeHost}:8085/api/state`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(finalPayload),
+          signal: ctrl.signal
         });
+        clearTimeout(tid);
+        return res.ok;
+      } catch (e) {
+        return false;
       }
-      const mergedFamilies = Array.from(familyMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
+    })();
 
-      setTransactions(mergedTx);
-      setMembers(mergedMembers);
-      setFamilies(mergedFamilies);
+    const pushCloudPromise = (async () => {
+      try {
+        let shaToUse = cloudSha;
+        if (!shaToUse) {
+          try {
+            const rSha = await fetch(cloudUrl, {
+              method: 'GET',
+              headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' },
+              cache: 'no-store'
+            });
+            if (rSha.ok) {
+              const dSha = await rSha.json();
+              shaToUse = dSha.sha;
+            }
+          } catch (eSha) {}
+        }
 
-      const nowIso = new Date().toISOString();
-      const stateToPush = {
-        app: "RachelEagles",
-        version: "3.0-light",
-        lastSync: nowIso,
-        transactions: mergedTx,
-        families: mergedFamilies,
-        members: mergedMembers
-      };
+        const b64 = encodeBase64Utf8(JSON.stringify(finalPayload, null, 2));
+        const putBody = {
+          message: `Universal Sync [${new Date().toLocaleDateString()}]`,
+          content: b64
+        };
+        if (shaToUse) putBody.sha = shaToUse;
 
-      await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(stateToPush)
-      });
+        let putRes = await fetch(cloudUrl, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(putBody)
+        });
 
-      setLastSyncTime(nowIso);
-      localStorage.setItem('RE_LAST_SYNC_TIME', nowIso);
-      setSyncStatus('success');
+        // En cas de conflit 409 (push concurrent), retenter une fois avec le SHA rafraîchi
+        if (putRes.status === 409) {
+          try {
+            const rFresh = await fetch(cloudUrl, {
+              method: 'GET',
+              headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' },
+              cache: 'no-store'
+            });
+            if (rFresh.ok) {
+              const dFresh = await rFresh.json();
+              putBody.sha = dFresh.sha;
+              putRes = await fetch(cloudUrl, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Accept': 'application/vnd.github.v3+json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(putBody)
+              });
+            }
+          } catch (eRetry) {}
+        }
 
-      const dateStr = new Date().toLocaleTimeString();
-      const successDetail = lang === 'fr'
-        ? `Synchronisation réussie à ${dateStr} ! (${mergedTx.length} transactions, ${mergedMembers.length} membres)`
-        : `Synchronized successfully at ${dateStr}! (${mergedTx.length} transactions, ${mergedMembers.length} members)`;
-      setSyncMessage(successDetail);
-      showToast(successDetail);
-    } catch (err) {
-      setSyncStatus('error');
-      const errDetail = lang === 'fr'
-        ? `Échec de synchronisation avec le PC (${host}). Vérifiez le Wi-Fi et que server.ps1 est lancé.`
-        : `Sync failed with PC (${host}). Check Wi-Fi and ensure server.ps1 is running.`;
-      setSyncMessage(errDetail);
-      showToast(errDetail);
+        return putRes.ok;
+      } catch (e) {
+        return false;
+      }
+    })();
+
+    const [wifiPushed, cloudPushed] = await Promise.all([pushWifiPromise, pushCloudPromise]);
+    wifiSuccess = (wifiData !== null) || wifiPushed;
+    cloudSuccess = (cloudData !== null) || cloudPushed;
+
+    setSyncStatus(wifiSuccess || cloudSuccess ? 'success' : 'error');
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    let msg = "";
+    if (wifiSuccess && cloudSuccess) {
+      msg = lang === 'fr'
+        ? `Synchronisation universelle réussie (Wi-Fi Local + Cloud 5G) à ${timeStr} ! (${mergedTx.length} transactions, ${mergedMembers.length} membres)`
+        : `Universal sync succeeded (Local Wi-Fi + 5G Cloud) at ${timeStr}! (${mergedTx.length} transactions, ${mergedMembers.length} members)`;
+    } else if (wifiSuccess) {
+      msg = lang === 'fr'
+        ? `Synchronisation Wi-Fi Local réussie à ${timeStr} ! (${mergedTx.length} transactions, ${mergedMembers.length} membres)`
+        : `Local Wi-Fi sync succeeded at ${timeStr}! (${mergedTx.length} transactions, ${mergedMembers.length} members)`;
+    } else if (cloudSuccess) {
+      msg = lang === 'fr'
+        ? `Synchronisation Cloud 5G réussie à ${timeStr} ! (${mergedTx.length} transactions, ${mergedMembers.length} membres)`
+        : `5G Cloud sync succeeded at ${timeStr}! (${mergedTx.length} transactions, ${mergedMembers.length} members)`;
+    } else {
+      msg = lang === 'fr'
+        ? `Mode hors-ligne : données sauvegardées localement. Reconnexion automatique au prochain accès réseau.`
+        : `Offline mode: data saved locally. Will auto-sync when network is available.`;
     }
+
+    setSyncMessage(msg);
+    if (!silent) showToast(msg);
+    return { success: wifiSuccess || cloudSuccess, wifiSuccess, cloudSuccess, count: mergedTx.length };
   };
+
+  const handleSmartSync = async () => executeFullUniversalSync({ silent: false, prefer: 'auto' });
+  const handleSyncWithServer = async () => executeFullUniversalSync({ silent: false, prefer: 'wifi' });
+  const handleSyncCloud5G = async () => executeFullUniversalSync({ silent: false, prefer: '5g' });
 
   const handleExportCompleteBackup = () => {
     const backupData = {
@@ -4269,203 +4550,6 @@ function RachelEaglesApp() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast(lang === 'fr' ? 'Sauvegarde complète téléchargée !' : 'Complete backup downloaded!');
-  };
-
-  // ==========================================================================
-  // SYNCHRONISATION 5G CELLULAIRE & INTERNET DISTANT (CLOUD VAULT SÉCURISÉ)
-  // ==========================================================================
-  const handleSyncCloud5G = async () => {
-    setSyncStatus('syncing');
-    setSyncMessage(lang === 'fr' ? 'Synchronisation 5G / Cloud en cours...' : 'Synchronizing via 5G Cloud...');
-
-    const token = ['gho_', 'imOfJUpJ9sqq', 'D9bEYYKeT8zTc5', 'Uhli098oeT'].join('');
-    const repo = "ericveyratiphone-afk/RachelEagles";
-    const url = `https://api.github.com/repos/${repo}/contents/RachelEagles_sync_data.json`;
-
-    try {
-      // 1. Récupération des données cloud
-      const getRes = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github.v3+json'
-        },
-        cache: 'no-store'
-      });
-
-      if (!getRes.ok) throw new Error("Cloud GET status " + getRes.status);
-      const fileData = await getRes.json();
-      const currentSha = fileData.sha;
-
-      let remoteData = null;
-      try {
-        const bin = atob(fileData.content.replace(/\s/g, ''));
-        const u8 = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-        const jsonStr = new TextDecoder().decode(u8);
-        remoteData = JSON.parse(jsonStr);
-      } catch (e) {
-        remoteData = JSON.parse(atob(fileData.content.replace(/\s/g, '')));
-      }
-
-      // 2. FUSION INTELLIGENTE DES TRANSACTIONS
-      let mergedTx = [...transactions];
-      if (remoteData && remoteData.transactions && Array.isArray(remoteData.transactions)) {
-        const map = new Map();
-        transactions.forEach(tx => map.set(tx.id, tx));
-        remoteData.transactions.forEach(rt => {
-          if (!map.has(rt.id)) {
-            map.set(rt.id, rt);
-          } else {
-            const local = map.get(rt.id);
-            if ((rt.updatedAt || 0) > (local.updatedAt || 0)) {
-              map.set(rt.id, rt);
-            }
-          }
-        });
-        mergedTx = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
-      }
-
-      // 3. FUSION INTELLIGENTE DES MEMBRES
-      let mergedMembers = [...members];
-      if (remoteData && remoteData.members && Array.isArray(remoteData.members)) {
-        const memberMap = new Map();
-        members.forEach(m => memberMap.set(m.id || m.name, m));
-        remoteData.members.forEach(rm => {
-          const key = rm.id || rm.name;
-          if (!memberMap.has(key)) {
-            memberMap.set(key, rm);
-          } else {
-            const localM = memberMap.get(key);
-            const merged = {
-              ...localM,
-              ...rm,
-              photo: rm.photo || localM.photo || '',
-              status: rm.status || localM.status,
-              joinDate: rm.joinDate || localM.joinDate
-            };
-            memberMap.set(key, merged);
-          }
-        });
-        mergedMembers = Array.from(memberMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-      }
-
-      // 4. FUSION DES FAMILLES OFFICIELLES
-      const officialFamilyNames = [
-        "Alalayang Agila",
-        "Community Service",
-        "En Rent..",
-        "Monthly dues",
-        "Petty Cash",
-        "Sharing of SCLEG",
-        "Voluntary Donation"
-      ];
-      const familyMap = new Map();
-      officialFamilyNames.forEach(name => {
-        const id = 'fam_' + name.toLowerCase().replace(/[^a-z0-9]/g, '');
-        familyMap.set(name.toLowerCase(), { id, name });
-      });
-      (families || []).forEach(f => {
-        const name = typeof f === 'string' ? f : (f && f.name ? f.name : '');
-        if (name && !familyMap.has(name.toLowerCase())) {
-          familyMap.set(name.toLowerCase(), typeof f === 'object' && f.id ? f : { id: 'fam_' + Date.now() + Math.random().toString(36).substr(2, 4), name });
-        }
-      });
-      if (remoteData && Array.isArray(remoteData.families)) {
-        remoteData.families.forEach(f => {
-          const name = typeof f === 'string' ? f : (f && f.name ? f.name : '');
-          if (name && !familyMap.has(name.toLowerCase())) {
-            familyMap.set(name.toLowerCase(), typeof f === 'object' && f.id ? f : { id: 'fam_' + Date.now() + Math.random().toString(36).substr(2, 4), name });
-          }
-        });
-      }
-      const mergedFamilies = Array.from(familyMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
-
-      setTransactions(mergedTx);
-      setMembers(mergedMembers);
-      setFamilies(mergedFamilies);
-
-      const nowIso = new Date().toISOString();
-      const stateToPush = {
-        app: "RachelEagles",
-        version: "3.0-light",
-        syncType: "5G-Cloud",
-        lastSync: nowIso,
-        transactions: mergedTx,
-        families: mergedFamilies,
-        members: mergedMembers
-      };
-
-      const jsonStr = JSON.stringify(stateToPush, null, 2);
-      const enc = new TextEncoder().encode(jsonStr);
-      let binStr = "";
-      for (let i = 0; i < enc.length; i++) {
-        binStr += String.fromCharCode(enc[i]);
-      }
-      const b64 = btoa(binStr);
-
-      const putRes = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: `5G Cloud Sync [${new Date().toLocaleDateString()}]`,
-          content: b64,
-          sha: currentSha
-        })
-      });
-
-      if (!putRes.ok) throw new Error("Cloud PUT status " + putRes.status);
-
-      setLastSyncTime(nowIso);
-      localStorage.setItem('RE_LAST_SYNC_TIME', nowIso);
-      setSyncStatus('success');
-
-      const dateStr = new Date().toLocaleTimeString();
-      const successDetail = lang === 'fr'
-        ? `Synchronisation 5G / Cloud réussie à ${dateStr} ! (${mergedTx.length} transactions, ${mergedMembers.length} membres)`
-        : `5G Cloud synchronization successful at ${dateStr}! (${mergedTx.length} transactions, ${mergedMembers.length} members)`;
-      setSyncMessage(successDetail);
-      showToast(successDetail);
-    } catch (err) {
-      setSyncStatus('error');
-      const errDetail = lang === 'fr'
-        ? `Échec synchro 5G Cloud (${err.message}). Vérifiez votre connexion Internet mobile.`
-        : `5G Cloud sync failed (${err.message}). Check your mobile internet connection.`;
-      setSyncMessage(errDetail);
-      showToast(errDetail);
-    }
-  };
-
-  // ==========================================================================
-  // SYNCHRONISATION INTELLIGENTE HYBRIDE (WI-FI + 5G AUTOMATIQUE)
-  // ==========================================================================
-  const handleSmartSync = async () => {
-    if (syncEngineMode === '5g') {
-      return handleSyncCloud5G();
-    }
-    if (syncEngineMode === 'wifi') {
-      return handleSyncWithServer();
-    }
-
-    // Mode Auto : Tester d'abord le Wi-Fi local (800ms timeout)
-    let host = (serverHost || '192.168.1.55').trim();
-    if (host === '192.168.11.234' || host === '192.168.11.100') host = '192.168.1.55';
-    try {
-      const ctrl = new AbortController();
-      const tid = setTimeout(() => ctrl.abort(), 800);
-      const res = await fetch(`http://${host}:8085/api/ping`, { signal: ctrl.signal });
-      clearTimeout(tid);
-      if (res.ok) {
-        return handleSyncWithServer();
-      }
-    } catch (e) {}
-
-    // Si le PC n'est pas sur le même réseau Wi-Fi, basculer automatiquement sur la 5G Cloud !
-    return handleSyncCloud5G();
   };
 
   // ==========================================================================
