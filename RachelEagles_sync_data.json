@@ -1,7 +1,7 @@
 {
   "app": "RachelEagles",
   "version": "3.0-light",
-  "lastSync": "2026-10-31T10:06:08.070Z",
+  "lastSync": "2026-10-31T10:08:35.121Z",
   "transactions": [
     {
       "id": "tx_cred_1793432795327_117",
@@ -117,7 +117,7 @@
       "amount": 450,
       "refInvoice": "CS-2026-25",
       "remark": "Feeding program supplies",
-      "updatedAt": 1793152591772
+      "updatedAt": 1793354911778
     },
     {
       "id": "tx_108",
@@ -127,7 +127,7 @@
       "amount": 850,
       "reason": "Voluntary Donation",
       "remark": "Fundraising Voluntary Donation",
-      "updatedAt": 1792893391772
+      "updatedAt": 1793095711777
     },
     {
       "id": "tx_107",
@@ -138,7 +138,7 @@
       "amount": 210,
       "refInvoice": "SCLEG-88",
       "remark": "Regional council sharing",
-      "updatedAt": 1792634191772
+      "updatedAt": 1792836511777
     },
     {
       "id": "tx_106",
@@ -149,7 +149,7 @@
       "amount": 185,
       "refInvoice": "AA-5412",
       "remark": "Medical emergency aid for brother eagle",
-      "updatedAt": 1792374991772
+      "updatedAt": 1792577311777
     },
     {
       "id": "tx_105",
@@ -160,7 +160,7 @@
       "amount": 320,
       "refInvoice": "CS-RENT-04",
       "remark": "Community outreach mission",
-      "updatedAt": 1792202191772
+      "updatedAt": 1792404511777
     },
     {
       "id": "tx_104",
@@ -171,7 +171,7 @@
       "amount": 45,
       "refInvoice": "PC-9921",
       "remark": "Office supplies & drinking water",
-      "updatedAt": 1791942991772
+      "updatedAt": 1792145311777
     },
     {
       "id": "tx_103",
@@ -183,7 +183,7 @@
       "person": "Eagle SHARON LLEGADO C.",
       "refInvoice": "RENT-2026-10",
       "remark": "Eagles Nest Central Office Rent",
-      "updatedAt": 1791770191772
+      "updatedAt": 1791972511777
     },
     {
       "id": "tx_102",
@@ -194,7 +194,7 @@
       "reason": "Voluntary Donation",
       "person": "Eagle LEONIE A. ABELLA",
       "remark": "Special Voluntary Donation",
-      "updatedAt": 1791683791772
+      "updatedAt": 1791886111777
     },
     {
       "id": "tx_101",
@@ -205,7 +205,7 @@
       "reason": "Monthly dues",
       "person": "Eagle VILMA ARDINA R.",
       "remark": "October 2026 Monthly Dues",
-      "updatedAt": 1791510991772
+      "updatedAt": 1791713311777
     },
     {
       "id": "tx_cred_1793327825730_177",
