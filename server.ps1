@@ -9,12 +9,17 @@ $stateFile = Join-Path $root "RachelEagles_sync_data.json"
 # Détection de l'adresse IP Wi-Fi / Réseau Local
 $lanIp = "127.0.0.1"
 try {
-    $foundIp = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { 
+    $ips = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { 
         $_.InterfaceAlias -notmatch 'Loopback' -and 
         $_.IPAddress -notmatch '^169\.254' -and 
         $_.IPAddress -notmatch '^127\.' 
-    } | Select-Object -First 1).IPAddress
-    if ($foundIp) { $lanIp = $foundIp }
+    }
+    $wifiIp = ($ips | Where-Object { $_.InterfaceAlias -match 'Wi-Fi|Wireless|WLAN' } | Select-Object -First 1).IPAddress
+    if ($wifiIp) {
+        $lanIp = $wifiIp
+    } elseif ($ips) {
+        $lanIp = ($ips | Select-Object -First 1).IPAddress
+    }
 } catch {}
 
 # Verification si le serveur Rachel Eagles est deja actif

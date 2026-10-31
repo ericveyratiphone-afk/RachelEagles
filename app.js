@@ -2004,11 +2004,13 @@ function RachelEaglesApp() {
 
   const [serverHost, setServerHost] = useState(() => {
     const saved = localStorage.getItem('RE_SERVER_HOST');
-    if (saved) return saved;
-    if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      return window.location.hostname;
+    if (saved && saved !== '192.168.11.234' && saved !== '192.168.11.100') return saved;
+    if (typeof window !== 'undefined' && window.location.hostname) {
+      const h = window.location.hostname;
+      if (h === 'localhost' || h === '127.0.0.1') return '127.0.0.1';
+      if (h.length > 0 && h !== 'about:blank') return h;
     }
-    return '192.168.11.234';
+    return '192.168.1.55';
   });
   const [syncStatus, setSyncStatus] = useState('idle');
   const [syncMessage, setSyncMessage] = useState('');
@@ -2022,19 +2024,24 @@ function RachelEaglesApp() {
 
   // Vérification silencieuse de l'état du serveur PC au chargement initial
   useEffect(() => {
-    const target = serverHost || '192.168.11.234';
+    const target = (serverHost || '192.168.1.55').trim();
     const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 2000);
+    const tid = setTimeout(() => ctrl.abort(), 1800);
     fetch(`http://${target}:8085/api/ping`, { method: 'GET', signal: ctrl.signal })
       .then(r => r.ok ? r.json() : null)
       .then(info => {
         clearTimeout(tid);
         if (info && info.status === 'ok') {
-          setPcServerInfo(info);
+          setPcServerInfo({ ...info, testedHost: target });
+        } else {
+          // Si l'hôte configuré ne répond pas, lancer une détection silencieuse en tâche de fond
+          autoDetectPc(true);
         }
       })
       .catch(() => {
         clearTimeout(tid);
+        // Si l'hôte configuré ne répond pas, lancer une détection silencieuse en tâche de fond
+        autoDetectPc(true);
       });
   }, []);
 
@@ -3936,13 +3943,14 @@ function RachelEaglesApp() {
   // MODULE DE SYNCHRONISATION WI-FI & RÉSEAU LOCAL (PC <-> MOBILE / TABLETTE)
   // ==========================================================================
   const testPcConnection = async (customHost) => {
-    const target = (customHost || serverHost || '192.168.11.234').trim();
+    let target = (customHost || serverHost || '192.168.1.55').trim();
+    if (target === '192.168.11.234' || target === '192.168.11.100') target = '192.168.1.55';
     setIsTestingConnection(true);
     setSyncMessage(lang === 'fr' ? 'Test de liaison avec le PC...' : 'Testing connection to PC...');
 
     try {
       const ctrl = new AbortController();
-      const tid = setTimeout(() => ctrl.abort(), 2500);
+      const tid = setTimeout(() => ctrl.abort(), 2000);
       const t0 = performance.now();
       const res = await fetch(`http://${target}:8085/api/ping`, {
         method: 'GET',
@@ -3956,10 +3964,12 @@ function RachelEaglesApp() {
         const info = await res.json();
         const fullInfo = { ...info, latency, testedHost: target };
         setPcServerInfo(fullInfo);
+        setServerHost(target);
+        localStorage.setItem('RE_SERVER_HOST', target);
         setIsTestingConnection(false);
         const okMsg = lang === 'fr'
-          ? `Liaison PC établie avec succès ! (${info.hostname || 'PC'}, Latence : ${latency}ms)`
-          : `PC connection successful! (${info.hostname || 'PC'}, Latency: ${latency}ms)`;
+          ? `Liaison PC établie avec succès ! (${info.hostname || 'PC'} @ ${target}, Latence : ${latency}ms)`
+          : `PC connection successful! (${info.hostname || 'PC'} @ ${target}, Latency: ${latency}ms)`;
         setSyncMessage(okMsg);
         showToast(okMsg);
         return { success: true, info: fullInfo };
@@ -3978,111 +3988,152 @@ function RachelEaglesApp() {
     return { success: false };
   };
 
-  const autoDetectPc = async () => {
+  const autoDetectPc = async (silent = false) => {
     setIsScanningNetwork(true);
-    setSyncMessage(lang === 'fr' ? 'Recherche automatique du PC sur le réseau Wi-Fi...' : 'Auto-detecting PC on Wi-Fi network...');
+    if (!silent) {
+      setSyncMessage(lang === 'fr' ? 'Recherche automatique du PC sur le réseau Wi-Fi...' : 'Auto-detecting PC on Wi-Fi network...');
+    }
 
+    // 1. PHASE 1 : TEST EN PARALLÈLE DES CANDIDATS PRIORITAIRES (TRÈS RAPIDE < 1s)
     const quickCandidates = [
       serverHost,
-      '192.168.11.234',
-      '192.168.1.215',
-      '192.168.11.100',
-      '10.0.2.2',
+      '192.168.1.55',
+      '127.0.0.1',
       'localhost',
-      '127.0.0.1'
+      '192.168.1.215',
+      '192.168.1.100',
+      '192.168.0.55',
+      '10.0.2.2'
     ].filter(Boolean);
 
-    const tested = new Set();
-    for (const h of quickCandidates) {
-      if (tested.has(h)) continue;
-      tested.add(h);
+    const pingCandidate = async (h, timeoutMs = 900) => {
       try {
         const ctrl = new AbortController();
-        const tid = setTimeout(() => ctrl.abort(), 1200);
+        const tid = setTimeout(() => ctrl.abort(), timeoutMs);
         const res = await fetch(`http://${h}:8085/api/ping`, { signal: ctrl.signal });
         clearTimeout(tid);
         if (res.ok) {
           const info = await res.json();
-          setServerHost(h);
-          localStorage.setItem('RE_SERVER_HOST', h);
-          setPcServerInfo({ ...info, testedHost: h });
-          setIsScanningNetwork(false);
-          const okMsg = lang === 'fr'
-            ? `Serveur PC détecté à l'adresse ${h} (${info.hostname || 'PC'}) !`
-            : `PC server found at ${h} (${info.hostname || 'PC'})!`;
-          setSyncMessage(okMsg);
-          showToast(okMsg);
-          return;
+          if (info && info.app === 'RachelEagles') {
+            return { success: true, host: h, info };
+          }
         }
       } catch (e) {}
+      return { success: false };
+    };
+
+    const quickResults = await Promise.all(quickCandidates.map(h => pingCandidate(h, 900)));
+    const hitQuick = quickResults.find(r => r && r.success);
+    if (hitQuick) {
+      setServerHost(hitQuick.host);
+      localStorage.setItem('RE_SERVER_HOST', hitQuick.host);
+      setPcServerInfo({ ...hitQuick.info, testedHost: hitQuick.host });
+      setIsScanningNetwork(false);
+      const okMsg = lang === 'fr'
+        ? `Serveur PC détecté à l'adresse ${hitQuick.host} (${hitQuick.info.hostname || 'PC'}) !`
+        : `PC server found at ${hitQuick.host} (${hitQuick.info.hostname || 'PC'})!`;
+      setSyncMessage(okMsg);
+      if (!silent) showToast(okMsg);
+      return { success: true, host: hitQuick.host, info: hitQuick.info };
     }
 
-    // Balayage rapide du sous-réseau Wi-Fi local
-    const baseSubnet = (serverHost && serverHost.includes('.'))
-      ? serverHost.substring(0, serverHost.lastIndexOf('.'))
-      : '192.168.11';
+    // 2. PHASE 2 : BALAYAGE MULTI-SOUS-RÉSEAUX EN PARALLÈLE
+    const subnetsToScan = [];
+    if (serverHost && serverHost.includes('.')) {
+      const s = serverHost.substring(0, serverHost.lastIndexOf('.'));
+      if (!subnetsToScan.includes(s) && s !== '192.168.11') subnetsToScan.push(s);
+    }
+    if (!subnetsToScan.includes('192.168.1')) subnetsToScan.push('192.168.1');
+    if (!subnetsToScan.includes('192.168.0')) subnetsToScan.push('192.168.0');
 
-    const batchSize = 10;
-    for (let i = 1; i <= 254; i += batchSize) {
-      const promises = [];
-      for (let j = i; j < i + batchSize && j <= 254; j++) {
-        const ip = `${baseSubnet}.${j}`;
-        if (tested.has(ip)) continue;
-        tested.add(ip);
-        const p = (async () => {
-          try {
-            const ctrl = new AbortController();
-            const tid = setTimeout(() => ctrl.abort(), 650);
-            const r = await fetch(`http://${ip}:8085/api/ping`, { signal: ctrl.signal });
-            clearTimeout(tid);
-            if (r.ok) {
-              const d = await r.json();
-              return { success: true, host: ip, info: d };
-            }
-          } catch (e) {}
-          return { success: false };
-        })();
-        promises.push(p);
-      }
-      const results = await Promise.all(promises);
-      const hit = results.find(r => r && r.success);
-      if (hit) {
-        setServerHost(hit.host);
-        localStorage.setItem('RE_SERVER_HOST', hit.host);
-        setPcServerInfo({ ...hit.info, testedHost: hit.host });
-        setIsScanningNetwork(false);
-        const okMsg = lang === 'fr'
-          ? `PC détecté à l'adresse ${hit.host} (${hit.info.hostname || 'PC'}) !`
-          : `PC found at ${hit.host} (${hit.info.hostname || 'PC'})!`;
-        setSyncMessage(okMsg);
-        showToast(okMsg);
-        return;
+    for (const subnet of subnetsToScan) {
+      const batchSize = 25;
+      for (let i = 2; i <= 254; i += batchSize) {
+        const batchHosts = [];
+        for (let j = i; j < i + batchSize && j <= 254; j++) {
+          batchHosts.push(`${subnet}.${j}`);
+        }
+        const batchResults = await Promise.all(batchHosts.map(ip => pingCandidate(ip, 450)));
+        const hit = batchResults.find(r => r && r.success);
+        if (hit) {
+          setServerHost(hit.host);
+          localStorage.setItem('RE_SERVER_HOST', hit.host);
+          setPcServerInfo({ ...hit.info, testedHost: hit.host });
+          setIsScanningNetwork(false);
+          const okMsg = lang === 'fr'
+            ? `Serveur PC détecté à l'adresse ${hit.host} (${hit.info.hostname || 'PC'}) !`
+            : `PC server found at ${hit.host} (${hit.info.hostname || 'PC'})!`;
+          setSyncMessage(okMsg);
+          if (!silent) showToast(okMsg);
+          return { success: true, host: hit.host, info: hit.info };
+        }
       }
     }
 
     setIsScanningNetwork(false);
     const failMsg = lang === 'fr'
-      ? "Serveur PC introuvable sur le réseau. Vérifiez que Lancer_RachelEagles.bat est ouvert sur le PC."
-      : "PC server not found on Wi-Fi. Ensure Lancer_RachelEagles.bat is running on PC.";
+      ? "Serveur PC introuvable sur le réseau. Vérifiez que le PC est allumé et que Lancer_RachelEagles est lancé."
+      : "PC server not found on Wi-Fi. Ensure PC is running and Lancer_RachelEagles is active.";
     setSyncMessage(failMsg);
-    showToast(failMsg);
+    if (!silent) showToast(failMsg);
+    return { success: false };
   };
 
   const handleSyncWithServer = async () => {
     setSyncStatus('syncing');
     setSyncMessage(lang === 'fr' ? 'Synchronisation en cours avec le PC...' : 'Synchronizing with PC...');
-    const host = (serverHost || '192.168.11.234').trim();
+    let host = (serverHost || '192.168.1.55').trim();
+    if (host === '192.168.11.234' || host === '192.168.11.100') host = '192.168.1.55';
     const port = 8085;
-    const url = `http://${host}:${port}/api/state`;
+    let url = `http://${host}:${port}/api/state`;
 
+    let remoteData = null;
     try {
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 2000);
       const getRes = await fetch(url, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
-        cache: 'no-store'
+        cache: 'no-store',
+        signal: ctrl.signal
       });
+      clearTimeout(tid);
       if (!getRes.ok) throw new Error("Status " + getRes.status);
-      const remoteData = await getRes.json();
+      remoteData = await getRes.json();
+    } catch (e) {
+      // Auto-détection de secours en arrière-plan
+      const hit = await autoDetectPc(true);
+      if (hit && hit.success && hit.host) {
+        host = hit.host;
+        url = `http://${host}:${port}/api/state`;
+        try {
+          const ctrl2 = new AbortController();
+          const tid2 = setTimeout(() => ctrl2.abort(), 2000);
+          const getRes2 = await fetch(url, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store',
+            signal: ctrl2.signal
+          });
+          clearTimeout(tid2);
+          if (getRes2.ok) {
+            remoteData = await getRes2.json();
+          }
+        } catch (e2) {}
+      }
+    }
+
+    if (!remoteData) {
+      setSyncStatus('error');
+      const errDetail = lang === 'fr'
+        ? `Échec de liaison avec le PC (${host}). Vérifiez que Lancer_RachelEagles est lancé sur le PC.`
+        : `Cannot connect to PC (${host}). Ensure Lancer_RachelEagles is running on the PC.`;
+      setSyncMessage(errDetail);
+      showToast(errDetail);
+      return;
+    }
+
+    try {
 
       // 1. FUSION INTELLIGENTE DES TRANSACTIONS
       let mergedTx = [...transactions];
@@ -4401,7 +4452,8 @@ function RachelEaglesApp() {
     }
 
     // Mode Auto : Tester d'abord le Wi-Fi local (800ms timeout)
-    const host = (serverHost || '192.168.11.234').trim();
+    let host = (serverHost || '192.168.1.55').trim();
+    if (host === '192.168.11.234' || host === '192.168.11.100') host = '192.168.1.55';
     try {
       const ctrl = new AbortController();
       const tid = setTimeout(() => ctrl.abort(), 800);
@@ -7031,7 +7083,7 @@ function RachelEaglesApp() {
                           setServerHost(e.target.value);
                           localStorage.setItem('RE_SERVER_HOST', e.target.value);
                         }}
-                        placeholder="192.168.11.234"
+                        placeholder="192.168.1.55"
                         className="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-700 focus:outline-none"
                       />
                       <button
@@ -7045,13 +7097,32 @@ function RachelEaglesApp() {
                         <span>{isTestingConnection ? '...' : t.testConnectionBtn}</span>
                       </button>
                     </div>
+
+                    {pcServerInfo && pcServerInfo.serverIp && pcServerInfo.serverIp !== '127.0.0.1' && (
+                      <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between text-xs mt-2">
+                        <span className="text-blue-900 font-bold">
+                          {lang === 'fr' ? 'IP de ce PC pour la Tablette :' : 'PC IP for Tablet:'} <code className="font-mono bg-white px-1.5 py-0.5 rounded border border-blue-300 text-blue-800">{pcServerInfo.serverIp}</code>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setServerHost(pcServerInfo.serverIp);
+                            localStorage.setItem('RE_SERVER_HOST', pcServerInfo.serverIp);
+                            showToast(lang === 'fr' ? 'IP appliquée !' : 'IP applied!');
+                          }}
+                          className="px-2 py-0.5 bg-blue-700 hover:bg-blue-800 text-white rounded text-[11px] font-bold shadow-xs transition"
+                        >
+                          {lang === 'fr' ? 'Utiliser' : 'Use'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <p className="text-[11px] text-slate-400">
                   {lang === 'fr'
-                    ? "Astuce : Sur le PC, l'adresse exacte est affichée au lancement de Lancer_RachelEagles.bat."
-                    : "Tip: The exact IP is displayed in the console when running Lancer_RachelEagles.bat on the PC."}
+                    ? "Astuce : Sur ce PC, l'adresse Wi-Fi active est 192.168.1.55 (port 8085). Sur votre tablette ou téléphone, appuyez sur 'Détecter automatiquement' ou entrez 192.168.1.55."
+                    : "Tip: On this PC, active Wi-Fi address is 192.168.1.55 (port 8085). On your tablet or phone, tap 'Auto-Discovery' or enter 192.168.1.55."}
                 </p>
               </div>
             </div>
