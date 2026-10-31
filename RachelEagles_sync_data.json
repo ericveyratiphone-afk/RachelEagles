@@ -1,20 +1,8 @@
 {
   "app": "RachelEagles",
   "version": "3.0-light",
-  "lastSync": "2026-10-31T07:45:58.505Z",
+  "lastSync": "2026-10-31T07:45:32.216Z",
   "transactions": [
-    {
-      "id": "tx_deb_1793432753558_545",
-      "type": "debit",
-      "frequency": "daily",
-      "date": "2026-10-31",
-      "family": "Alalayang Agila",
-      "amount": 700,
-      "person": "Eagle LEELANIE J. DE JUAN",
-      "refInvoice": "2255455225",
-      "remark": "test synchro pc to tel",
-      "updatedAt": 1793432753558
-    },
     {
       "id": "tx_deb_1793432638284_529",
       "type": "debit",
