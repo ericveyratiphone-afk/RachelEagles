@@ -1,1 +1,441 @@
-﻿{"app":"RachelEagles","version":"3.0-light","lastSync":"2026-10-31T08:00:00.000Z","transactions":[],"families":[],"members":[]}
+{
+    "transactions":  [
+                         {
+                             "remark":  "October 2026 Monthly Dues",
+                             "id":  "tx_101",
+                             "type":  "credit",
+                             "person":  "Eagle VILMA ARDINA R.",
+                             "date":  "2026-10-01",
+                             "updatedAt":  1791256086485,
+                             "frequency":  "monthly",
+                             "reason":  "Monthly dues",
+                             "amount":  3500
+                         },
+                         {
+                             "remark":  "Special Voluntary Donation",
+                             "id":  "tx_102",
+                             "type":  "credit",
+                             "person":  "Eagle LEONIE A. ABELLA",
+                             "date":  "2026-10-05",
+                             "updatedAt":  1791428886485,
+                             "frequency":  "daily",
+                             "reason":  "Voluntary Donation",
+                             "amount":  1200
+                         },
+                         {
+                             "remark":  "Eagles Nest Central Office Rent",
+                             "updatedAt":  1791515286485,
+                             "id":  "tx_103",
+                             "type":  "debit",
+                             "person":  "Eagle SHARON LLEGADO C.",
+                             "date":  "2026-10-06",
+                             "refInvoice":  "RENT-2026-10",
+                             "frequency":  "monthly",
+                             "family":  "En Rent..",
+                             "amount":  245.5
+                         },
+                         {
+                             "remark":  "Office supplies \u0026 drinking water",
+                             "id":  "tx_104",
+                             "type":  "debit",
+                             "updatedAt":  1791688086485,
+                             "date":  "2026-10-08",
+                             "refInvoice":  "PC-9921",
+                             "frequency":  "daily",
+                             "family":  "Petty Cash",
+                             "amount":  45
+                         },
+                         {
+                             "remark":  "Community outreach mission",
+                             "id":  "tx_105",
+                             "type":  "debit",
+                             "updatedAt":  1791947286485,
+                             "date":  "2026-10-12",
+                             "refInvoice":  "CS-RENT-04",
+                             "frequency":  "daily",
+                             "family":  "Community Service",
+                             "amount":  320
+                         },
+                         {
+                             "remark":  "Medical emergency aid for brother eagle",
+                             "id":  "tx_106",
+                             "type":  "debit",
+                             "updatedAt":  1792120086485,
+                             "date":  "2026-10-15",
+                             "refInvoice":  "AA-5412",
+                             "frequency":  "daily",
+                             "family":  "Alalayang Agila",
+                             "amount":  185
+                         },
+                         {
+                             "remark":  "Regional council sharing",
+                             "id":  "tx_107",
+                             "type":  "debit",
+                             "updatedAt":  1792379286485,
+                             "date":  "2026-10-18",
+                             "refInvoice":  "SCLEG-88",
+                             "frequency":  "daily",
+                             "family":  "Sharing of SCLEG",
+                             "amount":  210
+                         },
+                         {
+                             "frequency":  "daily",
+                             "amount":  850,
+                             "id":  "tx_108",
+                             "type":  "credit",
+                             "remark":  "Fundraising Voluntary Donation",
+                             "reason":  "Voluntary Donation",
+                             "date":  "2026-10-22",
+                             "updatedAt":  1792638486485
+                         },
+                         {
+                             "remark":  "Feeding program supplies",
+                             "id":  "tx_109",
+                             "type":  "debit",
+                             "updatedAt":  1792897686485,
+                             "date":  "2026-10-25",
+                             "refInvoice":  "CS-2026-25",
+                             "frequency":  "daily",
+                             "family":  "Community Service",
+                             "amount":  450
+                         }
+                     ],
+    "version":  "3.0-light",
+    "lastSync":  "2026-10-31T08:28:48.5715275+07:00",
+    "members":  [
+                    {
+                        "id":  "mem_1",
+                        "name":  "Eagle VILMA ARDINA R.",
+                        "no":  1,
+                        "phone":  "092499323",
+                        "joinDate":  "2024-01-15",
+                        "status":  "Active",
+                        "position":  "Group President"
+                    },
+                    {
+                        "id":  "mem_2",
+                        "name":  "Eagle LEONIE A. ABELLA",
+                        "no":  2,
+                        "phone":  "0917123456",
+                        "joinDate":  "2024-01-15",
+                        "status":  "Active",
+                        "position":  "Group Vice President"
+                    },
+                    {
+                        "id":  "mem_3",
+                        "name":  "Eagle SHARON LLEGADO C.",
+                        "no":  3,
+                        "phone":  "0918987654",
+                        "joinDate":  "2024-01-15",
+                        "status":  "Active",
+                        "position":  "Group Secretary"
+                    },
+                    {
+                        "id":  "mem_4",
+                        "name":  "Eagle ROWENA S. BALILI",
+                        "no":  4,
+                        "phone":  "0920555123",
+                        "joinDate":  "2024-01-15",
+                        "status":  "Active",
+                        "position":  "Group Treasurer"
+                    },
+                    {
+                        "id":  "mem_5",
+                        "name":  "Eagle ANITA D. BALONGO",
+                        "no":  5,
+                        "phone":  "0922333444",
+                        "joinDate":  "2024-01-15",
+                        "status":  "Active",
+                        "position":  "Group Auditor"
+                    },
+                    {
+                        "id":  "mem_6",
+                        "name":  "Eagle MARILOU B. ADLAWAN",
+                        "no":  6,
+                        "phone":  "0925111222",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_7",
+                        "name":  "Eagle CARMELITA F. ALBISO",
+                        "no":  7,
+                        "phone":  "0927888999",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_8",
+                        "name":  "Eagle LORENA S. ALICANTE",
+                        "no":  8,
+                        "phone":  "0928777666",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_9",
+                        "name":  "Eagle MARVIE M. ALIGATO",
+                        "no":  9,
+                        "phone":  "0929444555",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_10",
+                        "name":  "Eagle ROWENA V. ALISOSO",
+                        "no":  10,
+                        "phone":  "0930222111",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_11",
+                        "name":  "Eagle ERLINDA C. ALMADEN",
+                        "no":  11,
+                        "phone":  "0931555666",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_12",
+                        "name":  "Eagle LEVY L. ALMIREZ",
+                        "no":  12,
+                        "phone":  "0932777888",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_13",
+                        "name":  "Eagle JOCELYN T. ALVAREZ",
+                        "no":  13,
+                        "phone":  "0933999000",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_14",
+                        "name":  "Eagle LILIA B. ANDICO",
+                        "no":  14,
+                        "phone":  "0934111222",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_15",
+                        "name":  "Eagle ANALYN A. ANTONIO",
+                        "no":  15,
+                        "phone":  "0935333444",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_16",
+                        "name":  "Eagle GINA B. APALE",
+                        "no":  16,
+                        "phone":  "0936555666",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_17",
+                        "name":  "Eagle SUSANA A. AQUINO",
+                        "no":  17,
+                        "phone":  "0937777888",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_18",
+                        "name":  "Eagle ROSALIE B. ARANETA",
+                        "no":  18,
+                        "phone":  "0938999000",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_19",
+                        "name":  "Eagle EVELYN C. ARELLANO",
+                        "no":  19,
+                        "phone":  "0939111222",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_20",
+                        "name":  "Eagle MARY JANE D. ASIS",
+                        "no":  20,
+                        "phone":  "0940333444",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_21",
+                        "name":  "Eagle EMILY M. BALUYOT",
+                        "no":  21,
+                        "phone":  "0941555666",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_22",
+                        "name":  "Eagle CHARITO S. BANZON",
+                        "no":  22,
+                        "phone":  "0942777888",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_23",
+                        "name":  "Eagle MARICEL P. BAUTISTA",
+                        "no":  23,
+                        "phone":  "0943999000",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_24",
+                        "name":  "Eagle GLENDA R. BELTRAN",
+                        "no":  24,
+                        "phone":  "0944111222",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_25",
+                        "name":  "Eagle JENNIFER T. BERMUDEZ",
+                        "no":  25,
+                        "phone":  "0945333444",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_26",
+                        "name":  "Eagle CHONA M. BERNARDO",
+                        "no":  26,
+                        "phone":  "0946555666",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_27",
+                        "name":  "Eagle TERESITA D. CABRERA",
+                        "no":  27,
+                        "phone":  "0947777888",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_28",
+                        "name":  "Eagle REMEDIOS S. CALDERON",
+                        "no":  28,
+                        "phone":  "0948999000",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_29",
+                        "name":  "Eagle ARLENE P. CASTRO",
+                        "no":  29,
+                        "phone":  "0949111222",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_30",
+                        "name":  "Eagle MARIBETH R. CORPUZ",
+                        "no":  30,
+                        "phone":  "0950333444",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_31",
+                        "name":  "Eagle LORNA M. CRUZ",
+                        "no":  31,
+                        "phone":  "0951555666",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_32",
+                        "name":  "Eagle MYRNA B. CUEVAS",
+                        "no":  32,
+                        "phone":  "0952777888",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    },
+                    {
+                        "id":  "mem_33",
+                        "name":  "Eagle FE S. DE GUZMAN",
+                        "no":  33,
+                        "phone":  "0953999000",
+                        "joinDate":  "2024-02-01",
+                        "status":  "Active",
+                        "position":  "Member"
+                    }
+                ],
+    "app":  "RachelEagles",
+    "deletedMemberIds":  [
+
+                         ],
+    "families":  [
+                     {
+                         "id":  "fam_alalayangagila",
+                         "name":  "Alalayang Agila"
+                     },
+                     {
+                         "id":  "fam_communityservice",
+                         "name":  "Community Service"
+                     },
+                     {
+                         "id":  "fam_enrent",
+                         "name":  "En Rent.."
+                     },
+                     {
+                         "id":  "fam_monthlydues",
+                         "name":  "Monthly dues"
+                     },
+                     {
+                         "id":  "fam_pettycash",
+                         "name":  "Petty Cash"
+                     },
+                     {
+                         "id":  "fam_sharingofscleg",
+                         "name":  "Sharing of SCLEG"
+                     },
+                     {
+                         "id":  "fam_voluntarydonation",
+                         "name":  "Voluntary Donation"
+                     }
+                 ],
+    "deletedTxIds":  [
+
+                     ]
+}
