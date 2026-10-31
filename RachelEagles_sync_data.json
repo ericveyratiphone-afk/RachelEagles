@@ -98,6 +98,17 @@
                              "frequency":  "daily",
                              "family":  "Community Service",
                              "amount":  450
+                         },
+                         {
+                             "remark":  "Test Verification Synchro Bidirectionnelle",
+                             "id":  "tx_sync_test_1793410636876",
+                             "type":  "credit",
+                             "person":  "Eagle VILMA ARDINA R.",
+                             "date":  "2026-10-31",
+                             "updatedAt":  1793410636883,
+                             "frequency":  "daily",
+                             "reason":  "Voluntary Donation",
+                             "amount":  500
                          }
                      ],
     "version":  "3.0-light",
