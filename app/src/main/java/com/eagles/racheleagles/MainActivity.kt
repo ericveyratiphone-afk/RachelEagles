@@ -1,4 +1,4 @@
-package com.eagles.racheleagles
+﻿package com.eagles.racheleagles
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -124,7 +124,7 @@ class MainActivity : ComponentActivity() {
             if (url.startsWith("data:application/pdf") || url.endsWith(".pdf", ignoreCase = true) || mimetype == "application/pdf") {
                 if (url.startsWith("data:")) {
                     val base64 = url.substringAfter("base64,")
-                    AndroidBridge(this, webView).savePdfAndShare(base64, "Document_RachelEagles.pdf")
+                    AndroidBridge(this, webView).savePdfAndShare(base64, "Document_SCLEG_Treasury.pdf")
                 } else {
                     openPdfUri(url)
                 }
@@ -415,7 +415,7 @@ class MainActivity : ComponentActivity() {
                     }
                     val cleanBase64 = if (base64Data.contains(",")) base64Data.substringAfter(",") else base64Data
                     val pdfBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
-                    val name = (fileName ?: "RachelEagles_Document.pdf").trim()
+                    val name = (fileName ?: "SCLEG_Treasury_Document.pdf").trim()
                     val safeName = if (name.endsWith(".pdf", ignoreCase = true)) name else "$name.pdf"
 
                     val pdfDir = File(activity.cacheDir, "pdf_exports")

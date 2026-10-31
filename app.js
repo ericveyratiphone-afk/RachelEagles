@@ -1,11 +1,11 @@
 ﻿// ============================================================================
-// RACHEL EAGLES - APPLICATION DE GESTION DE TRÉSORERIE (React 18)
+// SCLEG_TREASURY - APPLICATION DE GESTION DE TRESORERIE (React 18)
 // The Fraternal Order of Eagles / Sargo Cambodia Eagles Group
 // ============================================================================
 
 const { useState, useEffect, useMemo, useRef } = React;
 
-const STORAGE_KEY = 'RACHEL_EAGLES_STATE_V1';
+const STORAGE_KEY = 'SCLEG_TREASURY_STATE_V1';
 
 // Emails administrateurs autorisés pour la réinitialisation de mot de passe
 const ADMIN_EMAILS = ['Afamcherie@gmail.com', 'ericveyrat.iphone@gmail.com'];
@@ -232,7 +232,7 @@ const I18N = {
     modalPersonNameLabel: "Person / Member Name:",
     inputFamilyPlaceholder: "e.g. Venue, Water, Maintenance...",
     inputCategoryPlaceholder: "e.g. Office Bill, Fuel, Van Rental...",
-    inputPersonPlaceholder: "e.g. Kuya Gerry, Ate Rachel, Kuya Mark...",
+    inputPersonPlaceholder: "e.g. Kuya Gerry, Ate Leonie, Kuya Mark...",
     btnAddConfirm: "Add",
     btnAddPerson: "+ New Person",
     colPerson: "Person / Member",
@@ -342,7 +342,7 @@ const I18N = {
     step1Title: "1. Same Wi-Fi Network",
     step1Desc: "Ensure your computer and tablet/phone are connected to the same Wi-Fi box or mobile hotspot.",
     step2Title: "2. Start PC Server",
-    step2Desc: "On your PC, double-click 'RachelEagles' or 'Lancer_RachelEagles.bat' to start the local server.",
+    step2Desc: "On your PC, double-click 'SCLEG_Treasury' or 'Lancer_SCLEG_Treasury.bat' to start the local server.",
     step3Title: "3. Tap Synchronize",
     step3Desc: "Click 'Auto-Detect' or enter PC IP address, then click 'Synchronize Now with PC'.",
     offlineSyncTitle: "Emergency Offline Backup & Restore",
@@ -634,7 +634,7 @@ const I18N = {
     modalPersonNameLabel: "Nom de la personne / membre :",
     inputFamilyPlaceholder: "ex: Salle, Eau, Maintenance...",
     inputCategoryPlaceholder: "ex: Facture bureau, Carburant, Location...",
-    inputPersonPlaceholder: "ex: Kuya Gerry, Ate Rachel, Kuya Mark...",
+    inputPersonPlaceholder: "ex: Kuya Gerry, Ate Leonie, Kuya Mark...",
     btnAddConfirm: "Ajouter",
     btnAddPerson: "+ Nouvelle Personne",
     colPerson: "Personne / Membre",
@@ -745,7 +745,7 @@ const I18N = {
     step1Title: "1. Même Réseau Wi-Fi",
     step1Desc: "Vérifiez que votre PC et votre mobile/tablette sont connectés à la même box Wi-Fi ou partage 4G/5G.",
     step2Title: "2. Lancer le Serveur PC",
-    step2Desc: "Sur votre PC, double-cliquez sur 'RachelEagles' ou 'Lancer_RachelEagles.bat' pour lancer le serveur local.",
+    step2Desc: "Sur votre PC, double-cliquez sur 'SCLEG_Treasury' ou 'Lancer_SCLEG_Treasury.bat' pour lancer le serveur local.",
     step3Title: "3. Appuyer sur Synchroniser",
     step3Desc: "Cliquez sur 'Détecter automatiquement' ou entrez l'adresse IP du PC, puis cliquez sur 'Synchroniser Maintenant'.",
     offlineSyncTitle: "Sauvegarde & Restauration de Secours Hors-ligne",
@@ -1928,9 +1928,26 @@ function BilingualDatePicker({
 // ============================================================================
 // COMPOSANT PRINCIPAL
 // ============================================================================
-function RachelEaglesApp() {
+function SCLEGTreasuryApp() {
   // L'ANGLAIS EST DÉSORMAIS LA LANGUE PRINCIPALE PAR DÉFAUT
   const [lang, setLang] = useState(() => localStorage.getItem('RE_LANG') || 'en');
+
+  // Noms officiels des signataires dynamiques (sans hardcoding ni rÃ©fÃ©rence obsolÃ¨te)
+  const officialTreasurerName = useMemo(() => {
+    if (members && members.length > 0) {
+      const found = members.find(m => (m.position || '').toLowerCase().includes('treasurer'));
+      if (found && found.name) return found.name.replace(/^Eagle\s+/i, '').trim();
+    }
+    return 'Leonie A. Abella';
+  }, [members]);
+
+  const officialPresidentName = useMemo(() => {
+    if (members && members.length > 0) {
+      const found = members.find(m => (m.position || '').toLowerCase().includes('president') && !(m.position || '').toLowerCase().includes('vice'));
+      if (found && found.name) return found.name.replace(/^Eagle\s+/i, '').trim();
+    }
+    return 'Vilma Ardina';
+  }, [members]);
   const t = I18N[lang] || I18N.en;
 
   const toggleLang = () => {
@@ -2945,7 +2962,7 @@ function RachelEaglesApp() {
       return;
     }
 
-    const rawTitle = (printDocumentData && printDocumentData.title) ? printDocumentData.title : 'RachelEagles_Report';
+    const rawTitle = (printDocumentData && printDocumentData.title) ? printDocumentData.title : 'SCLEG_Treasury_Report';
     const cleanTitle = rawTitle.replace(/[^a-zA-Z0-9_\-]/g, '_').replace(/_+/g, '_').slice(0, 45);
     const fileName = `${cleanTitle}_${new Date().toISOString().slice(0, 10)}.pdf`;
 
@@ -4104,7 +4121,7 @@ function RachelEaglesApp() {
 </html>`;
 
     const files = [
-      { name: 'RachelEagles_Data.json', content: JSON.stringify(backupPayload, null, 2) },
+      { name: 'SCLEG_Treasury_Data.json', content: JSON.stringify(backupPayload, null, 2) },
       { name: 'Rapport_Synthese.html', content: miniHtmlReport }
     ];
 
@@ -4114,7 +4131,7 @@ function RachelEaglesApp() {
     const fromStr = zipDateFrom ? zipDateFrom : 'start';
     const toStr = zipDateTo ? zipDateTo : 'end';
     a.href = url;
-    a.download = `RachelEagles_Sauvegarde_${fromStr}_to_${toStr}.zip`;
+    a.download = `SCLEG_Treasury_Sauvegarde_${fromStr}_to_${toStr}.zip`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -4224,7 +4241,7 @@ function RachelEaglesApp() {
         clearTimeout(tid);
         if (res.ok) {
           const info = await res.json();
-          if (info && info.app === 'RachelEagles') {
+          if (info && (info.app === 'SCLEG_Treasury' || info.app === 'RachelEagles')) {
             return { success: true, host: h, info };
           }
         }
@@ -4282,8 +4299,8 @@ function RachelEaglesApp() {
 
     setIsScanningNetwork(false);
     const failMsg = lang === 'fr'
-      ? "Serveur PC introuvable sur le réseau. Vérifiez que le PC est allumé et que Lancer_RachelEagles est lancé."
-      : "PC server not found on Wi-Fi. Ensure PC is running and Lancer_RachelEagles is active.";
+      ? "Serveur PC introuvable sur le réseau. Vérifiez que le PC est allumé et que Lancer_SCLEG_Treasury est lancé."
+      : "PC server not found on Wi-Fi. Ensure PC is running and Lancer_SCLEG_Treasury is active.";
     setSyncMessage(failMsg);
     if (!silent) showToast(failMsg);
     return { success: false };
@@ -4583,7 +4600,7 @@ function RachelEaglesApp() {
 
     // 5. Préparation du payload de synchronisation finale
     const finalPayload = {
-      app: "RachelEagles",
+      app: "SCLEG_Treasury",
       version: "3.0-light",
       lastSync: nowIso,
       transactions: mergedTx,
@@ -4714,7 +4731,7 @@ function RachelEaglesApp() {
 
   const handleExportCompleteBackup = () => {
     const backupData = {
-      app: "RachelEagles",
+      app: "SCLEG_Treasury",
       version: "3.0-light",
       exportedAt: new Date().toISOString(),
       transactions,
@@ -4727,7 +4744,7 @@ function RachelEaglesApp() {
     const a = document.createElement('a');
     a.href = url;
     const dateStr = new Date().toISOString().slice(0, 10);
-    a.download = `RachelEagles_Complete_Backup_${dateStr}.json`;
+    a.download = `SCLEG_Treasury_Complete_Backup_${dateStr}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -6231,8 +6248,8 @@ function RachelEaglesApp() {
                 </h2>
                 <p className="text-xs text-slate-500 mt-1">
                   {lang === 'fr'
-                    ? "Gérez les 7 familles budgétaires officielles de RachelEagles classées par ordre alphabétique."
-                    : "Manage RachelEagles 7 official budgetary families sorted in alphabetical order."}
+                    ? "Gérez les 7 familles budgétaires officielles de SCLEG_Treasury classées par ordre alphabétique."
+                    : "Manage SCLEG_Treasury 7 official budgetary families sorted in alphabetical order."}
                 </p>
               </div>
 
@@ -7883,7 +7900,7 @@ function RachelEaglesApp() {
               {/* Section 2 : Options Comparatives (Volonté de la Trésorière) */}
               <div>
                 <label className="block font-black text-blue-900 dark:text-blue-300 uppercase tracking-wide mb-2 text-[11px]">
-                  2. {lang === 'fr' ? "Analyses & Comparatifs Optionnels (Choix de Rachel)" : "Optional Comparative Analyses (Treasurer Choice)"}
+                  2. {lang === 'fr' ? "Analyses & Comparatifs Optionnels (Choix du TrÃ©sorier)" : "Optional Comparative Analyses (Treasurer Choice)"}
                 </label>
                 <div className="space-y-2">
                   {/* Checkbox Comparatif Mensuel M-3 à M */}
@@ -8124,14 +8141,14 @@ function RachelEaglesApp() {
                       </p>
                     </div>
 
-                    {/* Bas de page Slide 1 : Issuer Rachel Chua, Endorsement / Approved Sharon Llegado */}
+                    {/* Bas de page Slide 1 : Issuer Group Treasurer, Endorsement / Approved Sharon Llegado */}
                     <div style={{ margin: '8px 0' }}>
                       <div style={{ display: 'flex', justifyContent: 'center', gap: '90px', marginBottom: '14px' }}>
                         <div style={{ textAlign: 'center', minWidth: '220px' }}>
                           <p style={{ fontSize: '12px', fontWeight: '800', color: '#64748b', margin: '0 0 3px 0', textTransform: 'uppercase' }}>
                             Issuer
                           </p>
-                          <p style={{ fontSize: '17.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 2px 0' }}>Rachel Chua</p>
+                          <p style={{ fontSize: '17.5px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 2px 0' }}>{officialTreasurerName}</p>
                           <p style={{ fontSize: '13px', fontWeight: '800', color: '#475569', margin: 0 }}>
                             Group Treasurer
                           </p>
@@ -8250,7 +8267,7 @@ function RachelEaglesApp() {
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '8px' }}>
                         <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
-                          Rachel Chua &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
+                          {officialTreasurerName} &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
                         </div>
                         {/* Pagination dynamique */}
                         <div style={{ fontSize: '12.5px', color: '#475569', fontWeight: '900' }}>
@@ -8378,7 +8395,7 @@ function RachelEaglesApp() {
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '8px' }}>
                         <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
-                          Rachel Chua &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
+                          {officialTreasurerName} &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
                         </div>
                         {/* Pagination dynamique */}
                         <div style={{ fontSize: '12.5px', color: '#475569', fontWeight: '900' }}>
@@ -8501,7 +8518,7 @@ function RachelEaglesApp() {
                         {/* Footer */}
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '8px' }}>
-                            <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>Rachel Chua &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span></div>
+                            <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>{officialTreasurerName} &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span></div>
                             <div style={{ fontSize: '12.5px', color: '#475569', fontWeight: '900' }}>Slide {slideIndex} / {totalSlides}</div>
                             <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>Sharon Llegado &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group President</span></div>
                           </div>
@@ -8587,7 +8604,7 @@ function RachelEaglesApp() {
                         {/* Footer */}
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '8px' }}>
-                            <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>Rachel Chua &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span></div>
+                            <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>{officialTreasurerName} &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span></div>
                             <div style={{ fontSize: '12.5px', color: '#475569', fontWeight: '900' }}>Slide {slideIndex} / {totalSlides}</div>
                             <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>Sharon Llegado &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group President</span></div>
                           </div>
@@ -8707,7 +8724,7 @@ function RachelEaglesApp() {
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '8px' }}>
                             <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
-                              Rachel Chua &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
+                              {officialTreasurerName} &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
                             </div>
                             {/* Pagination dynamique */}
                             <div style={{ fontSize: '12.5px', color: '#475569', fontWeight: '900' }}>
@@ -8813,14 +8830,14 @@ function RachelEaglesApp() {
                       <div style={{ background: '#eff6ff', border: '2px dashed #3b82f6', borderRadius: '10px', padding: '12px 18px', marginBottom: '14px', fontSize: '12px', color: '#1e3a8a', lineHeight: '1.6' }}>
                         <strong style={{ fontSize: '12.5px' }}>{lang === 'fr' ? "Résolution soumise à l'Assemblée Générale :" : "Formal Resolution Submitted to Assembly Vote:"}</strong><br />
                         <em>{lang === 'fr' 
-                          ? "« Après audition de la présentation de Rachel Chua (Group Treasurer) et validation de Sharon Llegado (Group President), l'Assemblée Générale donne son quitus plein et entier pour la tenue des comptes de la période et approuve les orientations budgétaires proposées. »" 
-                          : "“Upon review of the treasury presentation delivered by Rachel Chua (Group Treasurer) and endorsed by Sharon Llegado (Group President), the General Assembly fully approves accounts for the period and adopts proposed budget directions.”"}</em>
+                          ? ("\u00AB Apr\u00E8s audition de la pr\u00E9sentation de " + officialTreasurerName + " (Group Treasurer) et validation de " + officialPresidentName + " (Group President), l'Assembl\u00E9e G\u00E9n\u00E9rale donne son quitus plein et entier pour la tenue des comptes de la p\u00E9riode et approuve les orientations budg\u00E9taires propos\u00E9es. \u00BB")
+                          : ("\"Upon review of the treasury presentation delivered by " + officialTreasurerName + " (Group Treasurer) and endorsed by " + officialPresidentName + " (Group President), the General Assembly fully approves accounts for the period and adopts proposed budget directions.\"")}</em>
                       </div>
 
                       {/* Section 4 : Signatures Solennelles */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px', marginBottom: '8px' }}>
                         <div style={{ textAlign: 'center', minWidth: '220px', borderTop: '2px solid #1e3a8a', paddingTop: '8px' }}>
-                          <p style={{ fontSize: '15px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 2px 0' }}>Rachel Chua</p>
+                          <p style={{ fontSize: '15px', fontWeight: '900', color: '#1e3a8a', margin: '0 0 2px 0' }}>{officialTreasurerName}</p>
                           <p style={{ fontSize: '12px', fontWeight: '800', color: '#475569', margin: '0 0 14px 0' }}>Group Treasurer</p>
                           <p style={{ fontSize: '10.5px', color: '#94a3b8', margin: 0, fontWeight: '600' }}>({lang === 'fr' ? "Présenté & Certifié Conforme" : "Presented & Certified Conforming"})</p>
                         </div>
@@ -8842,7 +8859,7 @@ function RachelEaglesApp() {
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1.5px solid #cbd5e1', paddingTop: '8px' }}>
                         <div style={{ fontSize: '12px', fontWeight: '900', color: '#1e3a8a' }}>
-                          Rachel Chua &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
+                          {officialTreasurerName} &bull; <span style={{ color: '#64748b', fontWeight: '700' }}>Group Treasurer</span>
                         </div>
                         {/* Pagination dynamique */}
                         <div style={{ fontSize: '12.5px', color: '#475569', fontWeight: '900' }}>
@@ -9053,7 +9070,7 @@ function RachelEaglesApp() {
               </div>
               <div style={{ display: 'flex', gap: '28px' }}>
                 <div style={{ textAlign: 'center', minWidth: '150px', borderTop: '1.5px solid #1e3a8a', paddingTop: '5px' }}>
-                  <p style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#1e3a8a' }}>Rachel Chua</p>
+                  <p style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#1e3a8a' }}>{officialTreasurerName}</p>
                   <p style={{ fontSize: '9px', fontWeight: 'bold', color: '#475569' }}>Group Treasurer</p>
                   <p style={{ fontSize: '8px', color: '#94a3b8', marginTop: '18px' }}>{t.pdfSignatureLabel}</p>
                 </div>
@@ -11103,8 +11120,8 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
                   </h5>
                   <p className="text-xs text-slate-600">
                     {isFr
-                      ? "Double-cliquez sur l'icône RachelEagles du Bureau. Le serveur démarre en tâche de fond de façon transparente sans fenêtre noire, et l'application s'ouvre dans une fenêtre dédiée sans barre d'URL."
-                      : "Double-click the RachelEagles Desktop icon. The local background daemon launches silently without a console window, opening the app in standalone desktop mode."}
+                      ? "Double-cliquez sur l'icÃ´ne SCLEG_Treasury du Bureau. Le serveur dÃ©marre en tÃ¢che de fond de faÃ§on transparente sans fenÃªtre noire, et l'application s'ouvre dans une fenÃªtre dÃ©diÃ©e sans barre d'URL."
+                      : "Double-click the SCLEG_Treasury Desktop icon. The local background daemon launches silently without a console window, opening the app in standalone desktop mode."}
                   </p>
                 </div>
 
@@ -11170,4 +11187,5 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
 
 // Initialisation React
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<RachelEaglesApp />);
+const RachelEaglesApp = SCLEGTreasuryApp;
+root.render(<SCLEGTreasuryApp />);

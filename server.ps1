@@ -1,4 +1,4 @@
-param(
+﻿param(
     [switch]$NoBrowser,
     [int]$Port = 8085
 )
@@ -28,14 +28,14 @@ $isAlreadyRunning = $false
 try {
     $wcCheck = New-Object System.Net.WebClient
     $resCheck = $wcCheck.DownloadString("http://127.0.0.1:$Port/api/ping")
-    if ($resCheck -match "RachelEagles") {
+    if ($resCheck -match "SCLEG_Treasury" -or $resCheck -match "RachelEagles") {
         $isAlreadyRunning = $true
     }
 } catch {}
 
 if ($isAlreadyRunning) {
     Write-Host "==========================================================" -ForegroundColor Green
-    Write-Host "   LE SERVEUR RACHEL EAGLES EST DEJA ACTIF SUR LE PORT $Port" -ForegroundColor Green
+    Write-Host "   LE SERVEUR SCLEG_TREASURY EST DEJA ACTIF SUR LE PORT $Port" -ForegroundColor Green
     Write-Host "==========================================================" -ForegroundColor Green
     if (-not $NoBrowser) {
         Write-Host "Ouverture immediate dans votre navigateur..." -ForegroundColor Cyan
@@ -75,8 +75,8 @@ try {
 }
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "   SERVEUR SYNCHRONISATION RACHEL EAGLES (PC & MOBILE)" -ForegroundColor Green
-Write-Host "   The Fraternal Order of Eagles - Sargo Cambodia Eagles" -ForegroundColor White
+Write-Host "   SERVEUR SYNCHRONISATION SCLEG_TREASURY (PC & MOBILE)" -ForegroundColor Green
+Write-Host "   THE FRATERNAL ORDER OF LADY EAGLES GROUP" -ForegroundColor White
 Write-Host "----------------------------------------------------------" -ForegroundColor DarkCyan
 Write-Host "   -> Sur ce PC           : http://localhost:$Port/index.html" -ForegroundColor Yellow
 Write-Host "   -> Sur Smartphone/Tab  : http://${lanIp}:$Port/index.html" -ForegroundColor Yellow
@@ -182,7 +182,8 @@ while ($true) {
         if ($path -eq "api/ping" -or $path -eq "api/info") {
             $info = @{
                 status = "ok"
-                app = "RachelEagles"
+                app = "SCLEG_Treasury"
+                legacyApp = "RachelEagles"
                 serverIp = $lanIp
                 port = $Port
                 hostname = $env:COMPUTERNAME
@@ -224,7 +225,7 @@ while ($true) {
                             $token = -join @('gho_', 'imOfJUpJ9sqq', 'D9bEYYKeT8zTc5', 'Uhli098oeT')
                             $headers = @{
                                 'Authorization' = "Bearer $token"
-                                'User-Agent' = 'RachelEagles'
+                                'User-Agent' = 'SCLEG_Treasury'
                                 'Accept' = 'application/vnd.github.v3+json'
                             }
                             $cloudUrl = 'https://api.github.com/repos/ericveyratiphone-afk/RachelEagles/contents/RachelEagles_sync_data.json'

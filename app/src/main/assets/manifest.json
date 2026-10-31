@@ -1,7 +1,7 @@
-{
-  "short_name": "LadyEagles",
-  "name": "TREASURER'S REPORT - THE FRATERNAL ORDER OF LADY EAGLES GROUP - Financial Record",
-  "description": "TREASURER'S REPORT - THE FRATERNAL ORDER OF LADY EAGLES GROUP - Financial Record",
+﻿{
+  "short_name": "SCLEG_Treasury",
+  "name": "SCLEG_Treasury - THE FRATERNAL ORDER OF LADY EAGLES GROUP - Financial Record",
+  "description": "SCLEG_Treasury - THE FRATERNAL ORDER OF LADY EAGLES GROUP - Financial Record",
   "icons": [
     {
       "src": "logo1.png",
