@@ -2072,13 +2072,35 @@ function RachelEaglesApp() {
   });
 
   // Déclencheur de synchronisation automatique en tâche de fond après ajout, modification ou suppression
+  const transactionsRef = useRef(transactions);
+  transactionsRef.current = transactions;
+
+  const membersRef = useRef(members);
+  membersRef.current = members;
+
+  const familiesRef = useRef(families);
+  familiesRef.current = families;
+
+  const deletedTxIdsRef = useRef(deletedTxIds);
+  deletedTxIdsRef.current = deletedTxIds;
+
+  const deletedMemberIdsRef = useRef(deletedMemberIds);
+  deletedMemberIdsRef.current = deletedMemberIds;
+
+  const executeFullUniversalSyncRef = useRef(null);
+  const autoSyncTimerRef = useRef(null);
+
+  // DÃ©clencheur de synchronisation automatique en tÃ¢che de fond aprÃ¨s ajout, modification ou suppression
   const triggerAutoSync = () => {
     if (typeof window !== 'undefined') {
-      setTimeout(() => {
-        if (typeof executeFullUniversalSync === 'function') {
-          executeFullUniversalSync({ silent: true }).catch(() => {});
+      if (autoSyncTimerRef.current) {
+        clearTimeout(autoSyncTimerRef.current);
+      }
+      autoSyncTimerRef.current = setTimeout(() => {
+        if (typeof executeFullUniversalSyncRef.current === 'function') {
+          executeFullUniversalSyncRef.current({ silent: true }).catch(() => {});
         }
-      }, 500);
+      }, 800);
     }
   };
 
@@ -2596,7 +2618,7 @@ function RachelEaglesApp() {
     }
 
     if (debitForm.id) {
-      setTransactions(prev => prev.map(tx => {
+      const updatedTx = (transactionsRef.current || []).map(tx => {
         if (tx.id === debitForm.id) {
           return {
             ...tx,
@@ -2611,7 +2633,10 @@ function RachelEaglesApp() {
           };
         }
         return tx;
-      }));
+      });
+      transactionsRef.current = updatedTx;
+      setTransactions(updatedTx);
+      localStorage.setItem('RE_TRANSACTIONS', JSON.stringify(updatedTx));
       showToast(t.saveSuccess);
     } else {
       const newTx = {
@@ -2626,7 +2651,10 @@ function RachelEaglesApp() {
         remark: debitForm.remark.trim(),
         updatedAt: Date.now()
       };
-      setTransactions(prev => [newTx, ...prev]);
+      const updatedTx = [newTx, ...(transactionsRef.current || [])];
+      transactionsRef.current = updatedTx;
+      setTransactions(updatedTx);
+      localStorage.setItem('RE_TRANSACTIONS', JSON.stringify(updatedTx));
       if ((netBalance - amt) < 0) {
         showToast(t.alertDebitNegativeNotice);
       } else {
@@ -2683,7 +2711,7 @@ function RachelEaglesApp() {
       : creditForm.reason;
 
     if (creditForm.id) {
-      setTransactions(prev => prev.map(tx => {
+      const updatedTx = (transactionsRef.current || []).map(tx => {
         if (tx.id === creditForm.id) {
           return {
             ...tx,
@@ -2697,7 +2725,10 @@ function RachelEaglesApp() {
           };
         }
         return tx;
-      }));
+      });
+      transactionsRef.current = updatedTx;
+      setTransactions(updatedTx);
+      localStorage.setItem('RE_TRANSACTIONS', JSON.stringify(updatedTx));
       showToast(t.saveSuccess);
     } else {
       const newTx = {
@@ -2711,7 +2742,10 @@ function RachelEaglesApp() {
         remark: creditForm.remark.trim(),
         updatedAt: Date.now()
       };
-      setTransactions(prev => [newTx, ...prev]);
+      const updatedTx = [newTx, ...(transactionsRef.current || [])];
+      transactionsRef.current = updatedTx;
+      setTransactions(updatedTx);
+      localStorage.setItem('RE_TRANSACTIONS', JSON.stringify(updatedTx));
       showToast(t.saveSuccess);
     }
 
@@ -2730,10 +2764,14 @@ function RachelEaglesApp() {
 
   const handleDeleteTx = (id) => {
     if (window.confirm(t.deleteConfirm)) {
-      setTransactions(prev => prev.filter(tx => tx.id !== id));
+      const updatedTx = (transactionsRef.current || []).filter(tx => tx.id !== id);
+      transactionsRef.current = updatedTx;
+      setTransactions(updatedTx);
+      localStorage.setItem('RE_TRANSACTIONS', JSON.stringify(updatedTx));
       setDeletedTxIds(prev => {
         const next = new Set(prev);
         next.add(id);
+        deletedTxIdsRef.current = next;
         localStorage.setItem('RE_DELETED_TX_IDS', JSON.stringify(Array.from(next)));
         return next;
       });
@@ -2747,7 +2785,10 @@ function RachelEaglesApp() {
     if (input !== null) {
       const val = parseFloat(input);
       if (!isNaN(val) && val > 0) {
-        setTransactions(prev => prev.map(item => item.id === tx.id ? { ...item, amount: val, updatedAt: Date.now() } : item));
+        const updatedTx = (transactionsRef.current || []).map(item => item.id === tx.id ? { ...item, amount: val, updatedAt: Date.now() } : item);
+        transactionsRef.current = updatedTx;
+        setTransactions(updatedTx);
+        localStorage.setItem('RE_TRANSACTIONS', JSON.stringify(updatedTx));
         showToast(t.saveSuccess);
         triggerAutoSync();
       } else {
@@ -4333,11 +4374,33 @@ function RachelEaglesApp() {
     localStorage.setItem('RE_DELETED_TX_IDS', JSON.stringify(Array.from(currentDeletedTx)));
     localStorage.setItem('RE_DELETED_MEM_IDS', JSON.stringify(Array.from(currentDeletedMem)));
 
-    // A. Fusion des transactions
+    // A. Fusion des transactions (Protection absolue contre la perte de saisie)
     const txMap = new Map();
-    (transactions || []).forEach(tx => {
-      if (!currentDeletedTx.has(tx.id)) txMap.set(tx.id, tx);
+    // 1. Charger depuis le Ref le plus rÃ©cent
+    (transactionsRef.current || []).forEach(tx => {
+      if (tx && tx.id && !currentDeletedTx.has(tx.id)) txMap.set(tx.id, tx);
     });
+    // 2. VÃ©rifier aussi le LocalStorage au cas oÃ¹ une saisie vient d'Ãªtre enregistrÃ©e
+    try {
+      const saved = localStorage.getItem('RE_TRANSACTIONS');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          parsed.forEach(tx => {
+            if (tx && tx.id && !currentDeletedTx.has(tx.id)) {
+              if (!txMap.has(tx.id)) {
+                txMap.set(tx.id, tx);
+              } else {
+                const existing = txMap.get(tx.id);
+                if ((tx.updatedAt || 0) > (existing.updatedAt || 0)) {
+                  txMap.set(tx.id, tx);
+                }
+              }
+            }
+          });
+        }
+      }
+    } catch (e) {}
 
     const mergeTxList = (list) => {
       if (!Array.isArray(list)) return;
@@ -4419,6 +4482,10 @@ function RachelEaglesApp() {
     const mergedFamilies = Array.from(familyMap.values()).sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
 
     // 4. Mise à jour de l'état local et de localStorage
+    transactionsRef.current = mergedTx;
+    membersRef.current = mergedMembers;
+    familiesRef.current = mergedFamilies;
+
     setTransactions(mergedTx);
     setMembers(mergedMembers);
     setFamilies(mergedFamilies);
@@ -4556,6 +4623,7 @@ function RachelEaglesApp() {
     return { success: wifiSuccess || cloudSuccess, wifiSuccess, cloudSuccess, count: mergedTx.length };
   };
 
+  executeFullUniversalSyncRef.current = executeFullUniversalSync;
   const handleSmartSync = async () => executeFullUniversalSync({ silent: false, prefer: 'auto' });
   const handleSyncWithServer = async () => executeFullUniversalSync({ silent: false, prefer: 'wifi' });
   const handleSyncCloud5G = async () => executeFullUniversalSync({ silent: false, prefer: '5g' });
@@ -5183,33 +5251,33 @@ function RachelEaglesApp() {
 
       {/* HEADER OFFICIEL */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-1.5 sm:py-2.5 flex items-center justify-between gap-1.5 sm:gap-4">
           
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {bannerLogosConfig.showLogo1 && (
-                <img src="logo1.png" alt="Philippine Eagles Emblem" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" title="Philippine Eagles Emblem" />
+                <img src="logo1.png" alt="Philippine Eagles Emblem" className="h-8 w-8 sm:h-11 sm:w-11 object-contain shrink-0" title="Philippine Eagles Emblem" />
               )}
               {bannerLogosConfig.showLogo2 && (
-                <img src="logo2.png" alt="Fraternal Order of Eagles Seal" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" title="Fraternal Order of Eagles Seal" />
+                <img src="logo2.png" alt="Fraternal Order of Eagles Seal" className="h-8 w-8 sm:h-11 sm:w-11 object-contain shrink-0" title="Fraternal Order of Eagles Seal" />
               )}
               {bannerLogosConfig.showLogo3 && (
-                <img src="logo3.png" alt="Sargo Cambodia Eagles" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" title="Sargo Cambodia Eagles" />
+                <img src="logo3.png" alt="Sargo Cambodia Eagles" className="h-8 w-8 sm:h-11 sm:w-11 object-contain shrink-0" title="Sargo Cambodia Eagles" />
               )}
             </div>
-            <div className="hidden sm:block leading-tight">
+            <div className="hidden md:block leading-tight">
               <h1 className="text-xs sm:text-sm font-black text-blue-900 tracking-tight uppercase">TREASURER'S REPORT</h1>
               <p className="text-[10px] font-black uppercase text-slate-800 tracking-wider">THE FRATERNAL ORDER OF LADY EAGLES GROUP</p>
               <p className="text-[9px] font-extrabold uppercase text-amber-600 tracking-widest">Financial Record</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
             {/* BOUTON RAPIDE DE SYNCHRONISATION HYBRIDE (WI-FI & 5G) */}
             <button
               onClick={handleSmartSync}
               title={lang === 'fr' ? "Synchronisation Intelligente (Wi-Fi local ou 5G Cloud à distance)" : "Smart Sync (Local Wi-Fi or Remote 5G Cloud)"}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition shadow-xs ${
+              className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-2 transition shadow-xs shrink-0 ${
                 syncStatus === 'syncing' ? 'bg-amber-100 text-amber-800 animate-pulse border border-amber-300' :
                 syncStatus === 'success' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
                 syncStatus === 'error' ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
@@ -5217,13 +5285,13 @@ function RachelEaglesApp() {
             >
               <span className={`w-2 h-2 rounded-full ${pcServerInfo ? 'bg-emerald-500 shadow-sm shadow-emerald-400 animate-pulse' : 'bg-indigo-500'}`}></span>
               <i className={`fa-solid ${syncStatus === 'syncing' ? 'fa-rotate fa-spin text-amber-600' : 'fa-arrows-rotate'}`}></i>
-              <span className="hidden sm:inline">{lang === 'fr' ? 'Synchro Wi-Fi & 5G' : 'Sync Wi-Fi & 5G'}</span>
+              <span className="hidden md:inline">{lang === 'fr' ? 'Synchro Wi-Fi & 5G' : 'Sync Wi-Fi & 5G'}</span>
             </button>
 
             {/* SÉLECTEUR DE LANGUE RAPIDE */}
             <button
               onClick={toggleLang}
-              className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs rounded-md border border-slate-300 flex items-center gap-1"
+              className="px-1.5 py-1 sm:px-2 sm:py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs rounded-md border border-slate-300 flex items-center gap-1 shrink-0"
               title="Toggle English / Français"
             >
               <i className="fa-solid fa-globe text-blue-700"></i>
@@ -5233,20 +5301,20 @@ function RachelEaglesApp() {
             {/* BOUTON D'INFORMATION / MANUEL UTILISATEUR (i) */}
             <button
               onClick={() => setIsUserManualModalOpen(true)}
-              className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs rounded-md border border-amber-300 flex items-center gap-1.5 transition shadow-xs"
+              className="px-1.5 py-1 sm:px-2 sm:py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs rounded-md border border-amber-300 flex items-center gap-1 transition shadow-xs shrink-0"
               title={lang === 'fr' ? "Manuel d'Utilisation & Guide (i)" : "User Manual & Guide (i)"}
             >
               <i className="fa-solid fa-circle-info text-amber-600 text-sm"></i>
               <span className="hidden sm:inline font-black">{lang === 'fr' ? 'INFO' : 'INFO'}</span>
             </button>
 
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+            <div className="flex items-center gap-1 sm:gap-2 pl-1 sm:pl-2 border-l border-slate-200 shrink-0">
               <span className="text-xs text-slate-600 font-semibold hidden lg:inline">
                 {t.roleTreasurer}
               </span>
               <button
                 onClick={handleLogout}
-                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                className="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition shrink-0"
                 title={t.logout}
               >
                 <i className="fa-solid fa-power-off"></i>
@@ -6152,7 +6220,7 @@ function RachelEaglesApp() {
             {/* EN-TÊTE PRINCIPAL */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
                   <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold text-lg">
                     <i className="fa-solid fa-users"></i>
                   </div>
@@ -6167,7 +6235,7 @@ function RachelEaglesApp() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
                 <button
                   type="button"
                   onClick={() => triggerMembersPdfExport()}
@@ -6302,7 +6370,7 @@ function RachelEaglesApp() {
                             {m.no || idx + 1}
                           </td>
                           <td className="p-3 font-extrabold text-slate-900">
-                            <div className="flex items-center gap-2.5">
+                            <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
                               {m.photo ? (
                                 <img
                                   src={m.photo}
