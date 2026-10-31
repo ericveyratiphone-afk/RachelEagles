@@ -1,18 +1,19 @@
 {
   "app": "RachelEagles",
   "version": "3.0-light",
-  "lastSync": "2026-10-31T07:46:46.401Z",
+  "lastSync": "2026-10-31T07:47:26.274Z",
   "transactions": [
     {
-      "id": "tx_cred_1793432795327_117",
-      "type": "credit",
-      "frequency": "monthly",
+      "id": "tx_deb_1793432753558_545",
+      "type": "debit",
+      "frequency": "daily",
       "date": "2026-10-31",
-      "amount": 2500,
-      "reason": "Fundraising Event",
-      "person": "Eagle ANNALIZA S. AUSTRIA",
-      "remark": "",
-      "updatedAt": 1793432795327
+      "family": "Alalayang Agila",
+      "amount": 700,
+      "person": "Eagle LEELANIE J. DE JUAN",
+      "refInvoice": "2255455225",
+      "remark": "test synchro pc to tel",
+      "updatedAt": 1793432753558
     },
     {
       "id": "tx_deb_1793432638284_529",
@@ -27,16 +28,15 @@
       "updatedAt": 1793432638284
     },
     {
-      "id": "tx_deb_1793432753558_545",
-      "type": "debit",
-      "frequency": "daily",
+      "id": "tx_cred_1793432795327_117",
+      "type": "credit",
+      "frequency": "monthly",
       "date": "2026-10-31",
-      "family": "Alalayang Agila",
-      "amount": 700,
-      "person": "Eagle LEELANIE J. DE JUAN",
-      "refInvoice": "2255455225",
-      "remark": "test synchro pc to tel",
-      "updatedAt": 1793432753558
+      "amount": 2500,
+      "reason": "Fundraising Event",
+      "person": "Eagle ANNALIZA S. AUSTRIA",
+      "remark": "",
+      "updatedAt": 1793432795327
     },
     {
       "id": "tx_cred_1793327774129_792",
