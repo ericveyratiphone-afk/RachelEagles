@@ -1536,7 +1536,8 @@ function BilingualDatePicker({
   compact = false
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const isFr = lang === 'fr';
+  const activeLang = lang || (typeof localStorage !== 'undefined' ? (localStorage.getItem('RE_LANG') || 'en') : 'en');
+  const isFr = activeLang === 'fr';
 
   const parseDate = (dStr) => {
     if (dStr) {
@@ -1567,13 +1568,29 @@ function BilingualDatePicker({
     }
   }, [isOpen, value]);
 
+  // Verrouillage du scroll en arriere-plan lorsque la modale calendrier est ouverte
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (isOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
+    };
+  }, [isOpen]);
+
   const monthNamesEn = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
   const monthNamesFr = [
-    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+    "Janvier", "F\u00e9vrier", "Mars", "Avril", "Mai", "Juin",
+    "Juillet", "Ao\u00fbt", "Septembre", "Octobre", "Novembre", "D\u00e9cembre"
   ];
   const monthNames = isFr ? monthNamesFr : monthNamesEn;
 
@@ -1618,7 +1635,7 @@ function BilingualDatePicker({
   }, [viewYear, viewMonth]);
 
   const handlePrevMonth = (e) => {
-    e.stopPropagation();
+    if (e) { e.preventDefault(); e.stopPropagation(); }
     if (viewMonth === 0) {
       setViewMonth(11);
       setViewYear(y => y - 1);
@@ -1628,7 +1645,7 @@ function BilingualDatePicker({
   };
 
   const handleNextMonth = (e) => {
-    e.stopPropagation();
+    if (e) { e.preventDefault(); e.stopPropagation(); }
     if (viewMonth === 11) {
       setViewMonth(0);
       setViewYear(y => y + 1);
@@ -1638,28 +1655,24 @@ function BilingualDatePicker({
   };
 
   const handleClear = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) { e.preventDefault(); e.stopPropagation(); }
     onChange('');
     setIsOpen(false);
   };
 
   const handleCancel = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) { e.preventDefault(); e.stopPropagation(); }
     setIsOpen(false);
   };
 
   const handleSet = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) { e.preventDefault(); e.stopPropagation(); }
     onChange(selectedYMD || todayStr);
     setIsOpen(false);
   };
 
   const handleQuickToday = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) { e.preventDefault(); e.stopPropagation(); }
     setSelectedYMD(todayStr);
     const parsed = parseDate(todayStr);
     setViewYear(parsed.y);
@@ -1667,8 +1680,7 @@ function BilingualDatePicker({
   };
 
   const handleQuickYesterday = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) { e.preventDefault(); e.stopPropagation(); }
     const d = new Date();
     d.setDate(d.getDate() - 1);
     const yStr = formatStr(d.getFullYear(), d.getMonth(), d.getDate());
@@ -1685,211 +1697,230 @@ function BilingualDatePicker({
   const yearOptions = [];
   for (let y = 2020; y <= 2035; y++) yearOptions.push(y);
 
+  const modalNode = isOpen ? (
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/65 backdrop-blur-xs p-3 overflow-y-auto"
+      style={{ zIndex: 99999, position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+      onClick={() => setIsOpen(false)}
+      onTouchEnd={(e) => { if (e.target === e.currentTarget) setIsOpen(false); }}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-[95vw] max-w-sm overflow-hidden my-auto"
+        style={{ maxHeight: '92vh', overflowY: 'auto' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* EN-TETE MODALE */}
+        <div className="bg-gradient-to-r from-blue-900 to-indigo-950 text-white px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <i className="fa-solid fa-calendar-days text-amber-400 text-lg"></i>
+            <div>
+              <h4 className="font-black text-sm tracking-wide">
+                {isFr ? "Choisir une Date" : "Select Date"}
+              </h4>
+              <p className="text-[10px] text-blue-200">
+                {selectedYMD ? formatDisplayDate(selectedYMD) : (isFr ? "Aucune date sÃ©lectionnÃ©e" : "No date selected")}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition text-base font-bold"
+          >
+            &times;
+          </button>
+        </div>
+
+        {/* NAVIGATION MOIS / ANNEE */}
+        <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={handlePrevMonth}
+            className="w-9 h-9 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 active:scale-95 flex items-center justify-center transition shadow-xs"
+            title={isFr ? "Mois prÃ©cÃ©dent" : "Previous month"}
+          >
+            <i className="fa-solid fa-chevron-left text-xs"></i>
+          </button>
+
+          <div className="flex items-center gap-1.5 flex-1 justify-center">
+            <select
+              value={viewMonth}
+              onChange={(e) => setViewMonth(parseInt(e.target.value, 10))}
+              className="bg-white border border-slate-200 text-slate-800 font-bold text-xs rounded-lg px-2 py-1.5 focus:outline-none cursor-pointer"
+            >
+              {monthNames.map((mName, mIdx) => (
+                <option key={mIdx} value={mIdx}>{mName}</option>
+              ))}
+            </select>
+
+            <select
+              value={viewYear}
+              onChange={(e) => setViewYear(parseInt(e.target.value, 10))}
+              className="bg-white border border-slate-200 text-slate-800 font-bold text-xs rounded-lg px-2 py-1.5 focus:outline-none cursor-pointer"
+            >
+              {yearOptions.map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleNextMonth}
+            className="w-9 h-9 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 active:scale-95 flex items-center justify-center transition shadow-xs"
+            title={isFr ? "Mois suivant" : "Next month"}
+          >
+            <i className="fa-solid fa-chevron-right text-xs"></i>
+          </button>
+        </div>
+
+        {/* RACCOURCIS RAPIDES : AUJOURD'HUI / HIER */}
+        <div className="px-3 pt-2.5 pb-1 flex items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleQuickToday}
+              className="px-2.5 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 active:scale-95 font-bold text-[11px] border border-blue-200 transition"
+            >
+              <i className="fa-solid fa-bullseye mr-1"></i>
+              {isFr ? "Aujourd'hui" : "Today"}
+            </button>
+            <button
+              type="button"
+              onClick={handleQuickYesterday}
+              className="px-2.5 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 active:scale-95 font-bold text-[11px] border border-slate-200 transition"
+            >
+              <i className="fa-solid fa-arrow-rotate-left mr-1"></i>
+              {isFr ? "Hier" : "Yesterday"}
+            </button>
+          </div>
+          <span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            {selectedYMD || "----/--/--"}
+          </span>
+        </div>
+
+        {/* GRILLE DES JOURS */}
+        <div className="p-3">
+          <div className="grid grid-cols-7 gap-1 text-center mb-1">
+            {daysShort.map((dName, idx) => (
+              <div key={idx} className="text-[11px] font-black uppercase text-slate-500 py-1">
+                {dName}
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 text-center">
+            {daysGrid.map((cell, idx) => {
+              const isSelected = selectedYMD === cell.ymd;
+              const isToday = todayStr === cell.ymd;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    if (selectedYMD === cell.ymd) {
+                      onChange(cell.ymd);
+                      setIsOpen(false);
+                    } else {
+                      setSelectedYMD(cell.ymd);
+                    }
+                  }}
+                  className={`h-9 w-full rounded-lg text-xs font-bold transition flex items-center justify-center relative active:scale-90 ${
+                    isSelected
+                      ? (accentColor === 'red' ? 'bg-red-600 text-white shadow-sm ring-2 ring-red-400 font-black' : (accentColor === 'green' ? 'bg-green-600 text-white shadow-sm ring-2 ring-green-400 font-black' : 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-400 font-black'))
+                      : (cell.isCurrentMonth
+                          ? (isToday ? 'bg-amber-100 text-amber-900 font-black border border-amber-300' : 'text-slate-700 hover:bg-slate-100')
+                          : 'text-slate-300 hover:bg-slate-50')
+                  }`}
+                >
+                  {cell.day}
+                  {isToday && !isSelected && (
+                    <span className="absolute bottom-1 w-1 h-1 rounded-full bg-amber-600"></span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* LES 3 BOUTONS DEMANDES : EFFACER, ANNULER, DEFINIR */}
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={handleClear}
+            className="px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 active:scale-95 text-red-700 border border-red-200 text-xs font-black transition flex items-center gap-1.5"
+            title={isFr ? "Effacer la date" : "Clear date"}
+          >
+            <i className="fa-solid fa-trash-can text-[11px]"></i>
+            <span>{isFr ? "Effacer" : "Clear"}</span>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-700 text-xs font-bold transition flex items-center gap-1.5"
+            >
+              <i className="fa-solid fa-xmark text-[11px]"></i>
+              <span>{isFr ? "Annuler" : "Cancel"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSet}
+              className={`px-4 py-2 rounded-xl ${setBtnColor} active:scale-95 text-xs font-black shadow-sm transition flex items-center gap-1.5`}
+            >
+              <i className="fa-solid fa-check text-[11px]"></i>
+              <span>{isFr ? "D\u00e9finir" : "Set"}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div className={`relative ${compact ? 'inline-block' : 'w-full'}`}>
       <div
-        onClick={() => !disabled && setIsOpen(true)}
-        className={`flex items-center justify-between cursor-pointer bg-slate-50 border border-slate-300 rounded-lg transition hover:border-slate-400 select-none ${
+        role="button"
+        tabIndex={0}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!disabled) setIsOpen(true);
+        }}
+        onTouchEnd={(e) => {
+          if (!disabled) {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen(true);
+          }
+        }}
+        className={`w-full flex items-center justify-between cursor-pointer bg-slate-50 border border-slate-300 rounded-lg transition hover:border-slate-400 select-none active:scale-[0.99] active:bg-slate-100 ${
           compact ? 'px-2 py-1 text-xs' : 'px-3 py-2 text-sm'
         } ${className}`}
         title={isFr ? "Cliquez pour ouvrir le calendrier" : "Click to open calendar"}
       >
-        <div className="flex items-center gap-2 overflow-hidden">
+        <div className="flex items-center gap-2 overflow-hidden pointer-events-none">
           <i className={`fa-solid fa-calendar-day ${accentColor === 'red' ? 'text-red-600' : accentColor === 'green' ? 'text-green-600' : 'text-blue-600'}`}></i>
-          <span className={`font-mono font-medium ${value ? 'text-slate-800' : 'text-slate-400'}`}>
+          <span className={`font-mono font-medium ${value ? 'text-slate-800 font-bold' : 'text-slate-400'}`}>
             {value ? formatDisplayDate(value) : (isFr ? "JJ/MM/AAAA" : placeholder)}
           </span>
         </div>
-        <button
-          type="button"
-          tabIndex={-1}
-          className="text-slate-400 hover:text-slate-600 ml-1.5 focus:outline-none"
-        >
-          <i className="fa-solid fa-calendar-days"></i>
-        </button>
+        <div className="text-slate-400 hover:text-slate-600 ml-1.5 pointer-events-none">
+          <i className="fa-solid fa-calendar-days text-base"></i>
+        </div>
       </div>
 
       <input
-        type="text"
+        type="hidden"
         value={value || ''}
         required={required}
-        onChange={(e) => onChange(e.target.value)}
-        className="sr-only"
-        tabIndex={-1}
-        aria-hidden="true"
       />
 
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-3 overflow-y-auto"
-          onClick={() => setIsOpen(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* EN-TÊTE MODALE */}
-            <div className="bg-gradient-to-r from-blue-900 to-indigo-950 text-white px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <i className="fa-solid fa-calendar-days text-amber-400 text-lg"></i>
-                <div>
-                  <h4 className="font-black text-sm tracking-wide">
-                    {isFr ? "Choisir une Date" : "Select Date"}
-                  </h4>
-                  <p className="text-[10px] text-blue-200">
-                    {selectedYMD ? formatDisplayDate(selectedYMD) : (isFr ? "Aucune date sélectionnée" : "No date selected")}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition text-sm font-bold"
-              >
-                &times;
-              </button>
-            </div>
-
-            {/* NAVIGATION MOIS / ANNÉE */}
-            <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
-              <button
-                type="button"
-                onClick={handlePrevMonth}
-                className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 flex items-center justify-center transition shadow-xs"
-                title={isFr ? "Mois précédent" : "Previous month"}
-              >
-                <i className="fa-solid fa-chevron-left text-xs"></i>
-              </button>
-
-              <div className="flex items-center gap-1.5 flex-1 justify-center">
-                <select
-                  value={viewMonth}
-                  onChange={(e) => setViewMonth(parseInt(e.target.value, 10))}
-                  className="bg-white border border-slate-200 text-slate-800 font-bold text-xs rounded-lg px-2 py-1.5 focus:outline-none"
-                >
-                  {monthNames.map((mName, mIdx) => (
-                    <option key={mIdx} value={mIdx}>{mName}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={viewYear}
-                  onChange={(e) => setViewYear(parseInt(e.target.value, 10))}
-                  className="bg-white border border-slate-200 text-slate-800 font-bold text-xs rounded-lg px-2 py-1.5 focus:outline-none"
-                >
-                  {yearOptions.map(y => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleNextMonth}
-                className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 flex items-center justify-center transition shadow-xs"
-                title={isFr ? "Mois suivant" : "Next month"}
-              >
-                <i className="fa-solid fa-chevron-right text-xs"></i>
-              </button>
-            </div>
-
-            {/* RACCOURCIS RAPIDES : AUJOURD'HUI / HIER */}
-            <div className="px-3 pt-2.5 pb-1 flex items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={handleQuickToday}
-                  className="px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-[11px] border border-blue-200 transition"
-                >
-                  <i className="fa-solid fa-bullseye mr-1"></i>
-                  {isFr ? "Aujourd'hui" : "Today"}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleQuickYesterday}
-                  className="px-2 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold text-[11px] border border-slate-200 transition"
-                >
-                  <i className="fa-solid fa-arrow-rotate-left mr-1"></i>
-                  {isFr ? "Hier" : "Yesterday"}
-                </button>
-              </div>
-              <span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                {selectedYMD || "----/--/--"}
-              </span>
-            </div>
-
-            {/* GRILLE DES JOURS */}
-            <div className="p-3">
-              <div className="grid grid-cols-7 gap-1 text-center mb-1">
-                {daysShort.map((dName, idx) => (
-                  <div key={idx} className="text-[11px] font-black uppercase text-slate-500 py-1">
-                    {dName}
-                  </div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-7 gap-1 text-center">
-                {daysGrid.map((cell, idx) => {
-                  const isSelected = selectedYMD === cell.ymd;
-                  const isToday = todayStr === cell.ymd;
-                  return (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setSelectedYMD(cell.ymd)}
-                      className={`h-9 w-full rounded-lg text-xs font-bold transition flex items-center justify-center relative ${
-                        isSelected
-                          ? (accentColor === 'red' ? 'bg-red-600 text-white shadow-sm ring-2 ring-red-400' : (accentColor === 'green' ? 'bg-green-600 text-white shadow-sm ring-2 ring-green-400' : 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-400'))
-                          : (cell.isCurrentMonth
-                              ? (isToday ? 'bg-amber-100 text-amber-900 font-black border border-amber-300' : 'text-slate-700 hover:bg-slate-100')
-                              : 'text-slate-300 hover:bg-slate-50')
-                      }`}
-                    >
-                      {cell.day}
-                      {isToday && !isSelected && (
-                        <span className="absolute bottom-1 w-1 h-1 rounded-full bg-amber-600"></span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* LES 3 BOUTONS DEMANDÉS : EFFACER, ANNULER, DÉFINIR */}
-            <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
-              <button
-                type="button"
-                onClick={handleClear}
-                className="px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-black transition flex items-center gap-1.5"
-                title={isFr ? "Effacer la date" : "Clear date"}
-              >
-                <i className="fa-solid fa-trash-can text-[11px]"></i>
-                <span>{isFr ? "Effacer" : "Clear"}</span>
-              </button>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold transition flex items-center gap-1.5"
-                >
-                  <i className="fa-solid fa-xmark text-[11px]"></i>
-                  <span>{isFr ? "Annuler" : "Cancel"}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSet}
-                  className={`px-4 py-2 rounded-xl ${setBtnColor} text-xs font-black shadow-sm transition flex items-center gap-1.5`}
-                >
-                  <i className="fa-solid fa-check text-[11px]"></i>
-                  <span>{isFr ? "Définir" : "Set"}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {isOpen && typeof document !== 'undefined'
+        ? (ReactDOM.createPortal ? ReactDOM.createPortal(modalNode, document.body) : modalNode)
+        : null}
     </div>
   );
 }
