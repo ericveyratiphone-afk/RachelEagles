@@ -1,7 +1,7 @@
 {
   "app": "RachelEagles",
   "version": "3.0-light",
-  "lastSync": "2026-10-31T10:09:34.639Z",
+  "lastSync": "2026-10-31T10:11:18.179Z",
   "transactions": [
     {
       "id": "tx_109",
@@ -12,7 +12,7 @@
       "amount": 450,
       "refInvoice": "CS-2026-25",
       "remark": "Feeding program supplies",
-      "updatedAt": 1793354970501
+      "updatedAt": 1793355074308
     },
     {
       "id": "tx_108",
@@ -22,7 +22,7 @@
       "amount": 850,
       "reason": "Voluntary Donation",
       "remark": "Fundraising Voluntary Donation",
-      "updatedAt": 1793095770501
+      "updatedAt": 1793095874308
     },
     {
       "id": "tx_107",
@@ -33,7 +33,7 @@
       "amount": 210,
       "refInvoice": "SCLEG-88",
       "remark": "Regional council sharing",
-      "updatedAt": 1792836570501
+      "updatedAt": 1792836674308
     },
     {
       "id": "tx_106",
@@ -44,7 +44,7 @@
       "amount": 185,
       "refInvoice": "AA-5412",
       "remark": "Medical emergency aid for brother eagle",
-      "updatedAt": 1792577370501
+      "updatedAt": 1792577474308
     },
     {
       "id": "tx_105",
@@ -55,7 +55,7 @@
       "amount": 320,
       "refInvoice": "CS-RENT-04",
       "remark": "Community outreach mission",
-      "updatedAt": 1792404570501
+      "updatedAt": 1792404674308
     },
     {
       "id": "tx_104",
@@ -66,7 +66,7 @@
       "amount": 45,
       "refInvoice": "PC-9921",
       "remark": "Office supplies & drinking water",
-      "updatedAt": 1792145370501
+      "updatedAt": 1792145474308
     },
     {
       "id": "tx_103",
@@ -78,7 +78,7 @@
       "person": "Eagle SHARON LLEGADO C.",
       "refInvoice": "RENT-2026-10",
       "remark": "Eagles Nest Central Office Rent",
-      "updatedAt": 1791972570501
+      "updatedAt": 1791972674308
     },
     {
       "id": "tx_102",
@@ -89,7 +89,7 @@
       "reason": "Voluntary Donation",
       "person": "Eagle LEONIE A. ABELLA",
       "remark": "Special Voluntary Donation",
-      "updatedAt": 1791886170501
+      "updatedAt": 1791886274308
     },
     {
       "id": "tx_101",
@@ -100,7 +100,7 @@
       "reason": "Monthly dues",
       "person": "Eagle VILMA ARDINA R.",
       "remark": "October 2026 Monthly Dues",
-      "updatedAt": 1791713370501
+      "updatedAt": 1791713474308
     }
   ],
   "families": [
@@ -147,7 +147,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_9",
@@ -158,7 +159,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_32",
@@ -169,7 +171,8 @@
       "address": "St. 12 House #66 Borey Piphup Thamey 1, Veng Sreng, Phnom Penh, Cambodia",
       "work": "GARMENT INDUSTRY (QUALITY ASSURANCE)",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_18",
@@ -180,7 +183,8 @@
       "address": "St. 07 No. 01 Borey New World Porsenchey, Phnom Penh, Cambodia",
       "work": "GARMENT INDUSTRY (QUALITY ENGINEER)",
       "emergencyContact": "GERARDO ADINIT / ELEUTERIA AUSTRIA",
-      "emergencyPhone": "(855) 15907394"
+      "emergencyPhone": "(855) 15907394",
+      "photo": ""
     },
     {
       "id": "mem_28",
@@ -191,7 +195,8 @@
       "address": "St. 11, No.66 Borey 1, Veng Sreng Phnom Penh Cambodia",
       "work": "BUSINESS (OFFICE CLERK/ADMIN ASST)",
       "emergencyContact": "NEILJUN C. EGPIT",
-      "emergencyPhone": "(855) 87849259"
+      "emergencyPhone": "(855) 87849259",
+      "photo": ""
     },
     {
       "id": "mem_23",
@@ -202,7 +207,8 @@
       "address": "St.04, Room.03 Borey 1 Phipop Themey Sangkat Choam Chao 1, Khan Porsenchey Phnom Penh",
       "work": "GARMENT INDUSTRY (MERCHANDISER)",
       "emergencyContact": "ANDREW B. LOREMIA",
-      "emergencyPhone": "(855) 963146914"
+      "emergencyPhone": "(855) 963146914",
+      "photo": ""
     },
     {
       "id": "mem_25",
@@ -213,7 +219,8 @@
       "address": "House No #9 Street 19 Room C1 Chaom Chao Khan Porsenchey Phnom Penh",
       "work": "GARMENT INDUSTRY (QUALITY ASSURANCE)",
       "emergencyContact": "SARAH MAE OLIVARES",
-      "emergencyPhone": "(639) 9771316571"
+      "emergencyPhone": "(639) 9771316571",
+      "photo": ""
     },
     {
       "id": "mem_12",
@@ -224,7 +231,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_29",
@@ -235,7 +243,8 @@
       "address": "Borey SonTony # 16 Concrete Road 1, Trapeang Thleung 4 Village Sangkat Choam Chao 1, Khan Porsenchey Phnom Penh",
       "work": "GARMENT INDUSTRY (QUALITY ASSURANCE)",
       "emergencyContact": "MONICA RIMORIN",
-      "emergencyPhone": "(639) 9169040027"
+      "emergencyPhone": "(639) 9169040027",
+      "photo": ""
     },
     {
       "id": "mem_20",
@@ -246,7 +255,8 @@
       "address": "77K STREET 9 BOREY HONGLAY, VENG SRENG, CHAUM CHAO, PHNOM PENH, CAMBODIA",
       "work": "EDUCATION (TEACHER)",
       "emergencyContact": "HELEN DELA CRUZ",
-      "emergencyPhone": "(855) 85264243"
+      "emergencyPhone": "(855) 85264243",
+      "photo": ""
     },
     {
       "id": "mem_5",
@@ -257,7 +267,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_31",
@@ -268,7 +279,8 @@
       "address": "St. Trung Morn Steung Meanchey 1 Meanchey, Phnom Penh Cambodia",
       "work": "GARMENT INDUSTRY (QUALITY ASSURANCE)",
       "emergencyContact": "COSME EVANGELISTA",
-      "emergencyPhone": "(639) 9096244657"
+      "emergencyPhone": "(639) 9096244657",
+      "photo": ""
     },
     {
       "id": "mem_27",
@@ -279,7 +291,8 @@
       "address": "St.22 Borey 1 Phipop Themey Sangkat Choam Chao 1, Khan Porsenchey Phnom Penh",
       "work": "GARMENT INDUSTRY (QUALITY ASSURANCE)",
       "emergencyContact": "DARRYL P. VELASCO",
-      "emergencyPhone": "(639) 9055230422"
+      "emergencyPhone": "(639) 9055230422",
+      "photo": ""
     },
     {
       "id": "mem_26",
@@ -290,7 +303,8 @@
       "address": "St. 18, House No. 30 Borey Piphup Thamey 1, Veng Sreng , Phnom Penh, Cambodia",
       "work": "GARMENT INDUSTRY (QUALITY ASSURANCE)",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_7",
@@ -301,7 +315,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_4",
@@ -312,7 +327,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_21",
@@ -323,7 +339,8 @@
       "address": "St. 11, #66 Borey 1, Veng Sreng Phnom Penh Cambodia",
       "work": "BUSINESS (BRANCH MANAGER)",
       "emergencyContact": "JOSEPH CARIN JR",
-      "emergencyPhone": "(855) 87849245"
+      "emergencyPhone": "(855) 87849245",
+      "photo": ""
     },
     {
       "id": "mem_14",
@@ -334,7 +351,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_33",
@@ -345,7 +363,8 @@
       "address": "St. 19 House 138 Borey Piphup Thamey 2, Veng Sreng, Phnom Penh, Cambodia",
       "work": "GARMENT INDUSTRY (COSTING STAFF)",
       "emergencyContact": "GILBERTH T. PINEDA / ERICA MAE PINEDA",
-      "emergencyPhone": "(855) 11 583 297 / (639) 9274731596"
+      "emergencyPhone": "(855) 11 583 297 / (639) 9274731596",
+      "photo": ""
     },
     {
       "id": "mem_13",
@@ -356,7 +375,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_17",
@@ -367,7 +387,8 @@
       "address": "St. 16, #66 Borey 1, Veng Sreng Phnom Penh Cambodia",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_30",
@@ -378,7 +399,8 @@
       "address": "House 42 Street 42 Borey Piphop Thmey 2 Veng Sreng Road Sangkat Choam Chao Phnom Penh City Cambodia",
       "work": "GARMENT INDUSTRY (QUALITY ASSURANCE)",
       "emergencyContact": "ENGELBERT ESCULTURA",
-      "emergencyPhone": "(855) 963583154"
+      "emergencyPhone": "(855) 963583154",
+      "photo": ""
     },
     {
       "id": "mem_16",
@@ -389,7 +411,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_3",
@@ -400,7 +423,8 @@
       "address": "House 22 Street 28 Borey Piphop Thmey 2 Veng Sreng Road Sangkat Choam Chao Phnom Penh",
       "work": "GARMENT INDUSTRY (QA of FAM BRAND)",
       "emergencyContact": "IRENEO PENAREDONDO / SHANLI PENAREDONDO",
-      "emergencyPhone": "(855) 972621935"
+      "emergencyPhone": "(855) 972621935",
+      "photo": ""
     },
     {
       "id": "mem_10",
@@ -411,7 +435,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_22",
@@ -422,7 +447,8 @@
       "address": "St. 18, House No. 30 Borey Piphup Thamey 1, Veng Sreng , Phnom Penh, Cambodia",
       "work": "GARMENT INDUSTRY (QUALITY ASSURANCE)",
       "emergencyContact": "SAMUEL J. FUERTE",
-      "emergencyPhone": "(639) 17561275"
+      "emergencyPhone": "(639) 17561275",
+      "photo": ""
     },
     {
       "id": "mem_24",
@@ -433,7 +459,8 @@
       "address": "St.04, Room.08 Borey 1 Phipop Themey Sangkat Choam Chao 1, Khan Porsenchey Phnom Penh",
       "work": "GARMENT INDUSTRY (QUALITY ASSURANCE)",
       "emergencyContact": "ALEJANDRO B. CRISINI JR",
-      "emergencyPhone": "(855) 969678216"
+      "emergencyPhone": "(855) 969678216",
+      "photo": ""
     },
     {
       "id": "mem_8",
@@ -444,7 +471,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_6",
@@ -455,7 +483,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_19",
@@ -466,7 +495,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_11",
@@ -477,7 +507,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_2",
@@ -488,7 +519,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     },
     {
       "id": "mem_1",
@@ -499,7 +531,8 @@
       "address": "",
       "work": "",
       "emergencyContact": "",
-      "emergencyPhone": ""
+      "emergencyPhone": "",
+      "photo": ""
     }
   ],
   "deletedTxIds": [],
