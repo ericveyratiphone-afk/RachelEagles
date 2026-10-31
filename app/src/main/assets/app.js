@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // RACHEL EAGLES - APPLICATION DE GESTION DE TRÉSORERIE (React 18)
 // The Fraternal Order of Eagles / Sargo Cambodia Eagles Group
 // ============================================================================
@@ -2430,13 +2430,13 @@ function RachelEaglesApp() {
       }
     });
 
-    setTimeout(() => {
-      if (window.AndroidNative && typeof window.AndroidNative.printPdf === 'function') {
+        setPdfPreviewOpen(true);
+
+    if (window.AndroidNative && typeof window.AndroidNative.printPdf === 'function') {
+      setTimeout(() => {
         window.AndroidNative.printPdf(title);
-      } else {
-        window.print();
-      }
-    }, 300);
+      }, 500);
+    }
   };
 
   const handleOpenAddMember = (origin = 'manage') => {
@@ -2913,10 +2913,95 @@ function RachelEaglesApp() {
 
   const filteredJournalTransactions = filteredStatsTransactions;
 
-  // ==========================================================================
-  // MOTEUR D'IMPRESSION & EXPORT PDF OFFICIEL
+    // ==========================================================================
+  // MOTEUR D'IMPRESSION & EXPORT PDF OFFICIEL UNIVERSEL (MOBILE, TABLETTE, PC)
   // ==========================================================================
   const [printDocumentData, setPrintDocumentData] = useState(null);
+  const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  const handleClosePdfPreview = () => {
+    setPdfPreviewOpen(false);
+    setPrintDocumentData(null);
+    setIsGeneratingPdf(false);
+  };
+
+  const handleExecuteSystemPrint = () => {
+    const docTitle = (printDocumentData && printDocumentData.title) ? printDocumentData.title : "Treasurers_Report_Document";
+    if (window.AndroidNative && typeof window.AndroidNative.printPdf === 'function') {
+      window.AndroidNative.printPdf(docTitle);
+    } else {
+      window.print();
+    }
+  };
+
+  const handleDirectPdfDownload = () => {
+    if (isGeneratingPdf) return;
+    setIsGeneratingPdf(true);
+
+    const printElem = document.getElementById('print-section');
+    if (!printElem) {
+      setIsGeneratingPdf(false);
+      return;
+    }
+
+    const rawTitle = (printDocumentData && printDocumentData.title) ? printDocumentData.title : 'RachelEagles_Report';
+    const cleanTitle = rawTitle.replace(/[^a-zA-Z0-9_\-]/g, '_').replace(/_+/g, '_').slice(0, 45);
+    const fileName = `${cleanTitle}_${new Date().toISOString().slice(0, 10)}.pdf`;
+
+    const opt = {
+      margin: [5, 5, 5, 5],
+      filename: fileName,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    if (typeof window.html2pdf === 'function') {
+      if (window.AndroidNative && typeof window.AndroidNative.savePdfAndShare === 'function') {
+        window.html2pdf().set(opt).from(printElem).outputPdf('datauristring').then((pdfDataUri) => {
+          setIsGeneratingPdf(false);
+          window.AndroidNative.savePdfAndShare(pdfDataUri, fileName);
+        }).catch((err) => {
+          console.error('html2pdf APK error:', err);
+          setIsGeneratingPdf(false);
+          if (typeof window.AndroidNative.printPdf === 'function') {
+            window.AndroidNative.printPdf(rawTitle);
+          }
+        });
+      } else {
+        window.html2pdf().set(opt).from(printElem).save().then(() => {
+          setIsGeneratingPdf(false);
+        }).catch((err) => {
+          console.error('html2pdf browser error:', err);
+          setIsGeneratingPdf(false);
+          window.print();
+        });
+      }
+    } else {
+      setIsGeneratingPdf(false);
+      handleExecuteSystemPrint();
+    }
+  };
+
+  const handleSharePdf = () => {
+    const docTitle = (printDocumentData && printDocumentData.title) ? printDocumentData.title : "TREASURER'S REPORT";
+    const docSubtitle = (printDocumentData && printDocumentData.subtitle) ? printDocumentData.subtitle : "";
+    const shareText = `${docTitle}\n${docSubtitle}\nTHE FRATERNAL ORDER OF LADY EAGLES GROUP`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: docTitle,
+        text: shareText,
+        url: window.location.href
+      }).catch(() => {});
+    } else if (window.AndroidNative && typeof window.AndroidNative.shareText === 'function') {
+      window.AndroidNative.shareText(docTitle, shareText);
+    } else {
+      handleShare('whatsapp', shareText);
+    }
+  };
+
   const [showAssemblyModal, setShowAssemblyModal] = useState(false);
   const [assemblyScope, setAssemblyScope] = useState('current_month');
   const [assemblySelectedMonth, setAssemblySelectedMonth] = useState('');
@@ -2939,14 +3024,13 @@ function RachelEaglesApp() {
       totalDebits: transactionsList.filter(tx => tx.type === 'debit').reduce((s, tx) => s + (Number(tx.amount) || 0), 0),
       chartImageUri: chartCanvasId && document.getElementById(chartCanvasId) ? document.getElementById(chartCanvasId).toDataURL('image/png') : null
     });
+    setPdfPreviewOpen(true);
 
-    setTimeout(() => {
-      if (window.AndroidNative && typeof window.AndroidNative.printPdf === 'function') {
+    if (window.AndroidNative && typeof window.AndroidNative.printPdf === 'function') {
+      setTimeout(() => {
         window.AndroidNative.printPdf(title);
-      } else {
-        window.print();
-      }
-    }, 300);
+      }, 500);
+    }
   };
 
   const handleShare = (channel, summaryText) => {
@@ -3866,13 +3950,13 @@ function RachelEaglesApp() {
       yearlyCompKPIs
     });
 
-    setTimeout(() => {
-      if (window.AndroidNative && typeof window.AndroidNative.printPdf === 'function') {
+    setPdfPreviewOpen(true);
+
+    if (window.AndroidNative && typeof window.AndroidNative.printPdf === 'function') {
+      setTimeout(() => {
         window.AndroidNative.printPdf(lang === 'fr' ? 'Rapport_Assemblee_Mensuelle' : 'Monthly_Assembly_Report');
-      } else {
-        window.print();
-      }
-    }, 350);
+      }, 500);
+    }
   };
 
 
@@ -7895,10 +7979,85 @@ function RachelEaglesApp() {
       )}
 
 
-      {/* SECTION OFFICIELLE POUR L'EXPORTATION & IMPRESSION PDF */}
-      {printDocumentData && (
-        <div id="print-section">
-          <div className="print-watermark"></div>
+            {/* SECTION OFFICIELLE POUR L'EXPORTATION & IMPRESSION PDF UNIVERSELLE */}
+      {pdfPreviewOpen && printDocumentData && (
+        <div className="pdf-preview-backdrop">
+          {/* BARRE D'OUTILS DE LA MODALE PDF */}
+          <div className="pdf-preview-toolbar">
+            <div className="flex items-center gap-2 text-white min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-400/40 flex items-center justify-center font-bold shrink-0">
+                <i className="fa-solid fa-file-pdf"></i>
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-xs sm:text-sm font-black truncate text-white">
+                  {printDocumentData.title}
+                </h2>
+                <p className="text-[10px] text-blue-200 truncate hidden sm:block">
+                  {printDocumentData.subtitle || (lang === 'fr' ? "AperÃ§u officiel avant impression et tÃ©lÃ©chargement PDF" : "Official preview before print & PDF download")}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* BOUTON TELECHARGER LE FICHIER PDF */}
+              <button
+                type="button"
+                onClick={handleDirectPdfDownload}
+                disabled={isGeneratingPdf}
+                className="px-2.5 sm:px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black rounded-lg text-xs flex items-center gap-1.5 shadow-md transition disabled:opacity-50 cursor-pointer"
+                title={lang === 'fr' ? "TÃ©lÃ©charger le fichier PDF (.pdf)" : "Download PDF file (.pdf)"}
+              >
+                {isGeneratingPdf ? (
+                  <>
+                    <i className="fa-solid fa-spinner fa-spin"></i>
+                    <span className="hidden xs:inline">{lang === 'fr' ? "GÃ©nÃ©ration..." : "Generating..."}</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="fa-solid fa-file-arrow-down"></i>
+                    <span className="hidden xs:inline">{lang === 'fr' ? "TÃ©lÃ©charger PDF" : "Download PDF"}</span>
+                  </>
+                )}
+              </button>
+
+              {/* BOUTON IMPRIMER / ENREGISTRER EN PDF */}
+              <button
+                type="button"
+                onClick={handleExecuteSystemPrint}
+                className="px-2.5 sm:px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-lg text-xs flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                title={lang === 'fr' ? "Imprimer / Enregistrer en PDF (SystÃ¨me)" : "Print / Save as PDF (System)"}
+              >
+                <i className="fa-solid fa-print"></i>
+                <span className="hidden sm:inline">{lang === 'fr' ? "Imprimer / PDF" : "Print / PDF"}</span>
+              </button>
+
+              {/* BOUTON PARTAGER */}
+              <button
+                type="button"
+                onClick={handleSharePdf}
+                className="px-2 sm:px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-blue-200 hover:text-white font-bold rounded-lg text-xs flex items-center gap-1 transition cursor-pointer"
+                title={lang === 'fr' ? "Partager" : "Share"}
+              >
+                <i className="fa-solid fa-share-nodes"></i>
+              </button>
+
+              {/* BOUTON FERMER */}
+              <button
+                type="button"
+                onClick={handleClosePdfPreview}
+                className="w-8 h-8 rounded-lg bg-red-600 hover:bg-red-700 text-white flex items-center justify-center font-bold text-sm transition cursor-pointer shadow-sm"
+                title={lang === 'fr' ? "Fermer l'aperÃ§u" : "Close preview"}
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+
+          {/* ZONE DE VISUALISATION A4 DU DOCUMENT */}
+          <div className="pdf-preview-viewport">
+            <div className="pdf-preview-sheet">
+              <div id="print-section">
+                <div className="print-watermark"></div>
 
           {printDocumentData.type === 'assembly_report' ? (
             /* ===============================================================
@@ -8914,8 +9073,12 @@ function RachelEaglesApp() {
         )}
             </div>
           )}
+            </div>
+          </div>
         </div>
-      )}
+      </div>
+    )}
+
     </div>
   );
 }
@@ -10616,7 +10779,11 @@ function StatView6Component({ transactions, families, formatUSD, triggerOfficial
 function UserManualModalComponent({ lang, setLang, onClose }) {
   const [activeTab, setActiveTab] = useState('overview');
 
-  const downloadFile = (filename) => {
+    const downloadFile = (filename) => {
+    if (window.AndroidNative && typeof window.AndroidNative.openPdfFile === 'function') {
+      window.AndroidNative.openPdfFile(filename);
+      return;
+    }
     const link = document.createElement('a');
     link.href = filename;
     link.download = filename;
@@ -10626,12 +10793,8 @@ function UserManualModalComponent({ lang, setLang, onClose }) {
   };
 
   const exportManualPdf = () => {
-    if (window.AndroidNative && typeof window.AndroidNative.printPdf === 'function') {
-      const manualUrl = isFr ? 'export_manual_pdf.html?lang=fr&print=true' : 'export_manual_pdf.html?lang=en&print=true';
-      window.location.href = manualUrl;
-    } else {
-      window.open(`export_manual_pdf.html?lang=${lang}&print=true`, '_blank');
-    }
+    const filename = isFr ? 'GUIDE_SYNCHRONISATION_ET_UTILISATION_FR.pdf' : 'SYNCHRONIZATION_AND_USER_GUIDE_EN.pdf';
+    downloadFile(filename);
   };
 
   const isFr = lang === 'fr';
