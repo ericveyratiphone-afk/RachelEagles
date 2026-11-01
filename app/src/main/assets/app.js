@@ -267,6 +267,15 @@ const I18N = {
     category: "Category",
     amount: "Amount (USD)",
     refInvoice: "Invoice / Reference # (optional)",
+    invoicePhotoLabel: "Invoice / Receipt Photo (optional)",
+    btnTakePhoto: "Take Photo",
+    btnChoosePhoto: "Choose Image",
+    photoAttached: "Receipt attached",
+    viewReceipt: "View Receipt",
+    deletePhoto: "Delete photo",
+    receiptViewerTitle: "Expense Invoice & Receipt",
+    downloadPhoto: "Download Image",
+    certifiedReceiptNotice: "Certified digital receipt SCLEG_Treasury",
     placeholderInvoice: "e.g., INV-2026-004 or REF-88",
     reasonCredit: "Reason for credit",
     customReasonLabel: "Specify custom reason:",
@@ -2600,6 +2609,78 @@ function SCLEGTreasuryApp() {
   // ==========================================================================
   // ÉTAT FORMULAIRE DÉBIT (Champs 100% vierges au démarrage)
   // ==========================================================================
+  // Ã‰tat modale de visualisation de la photo de facture
+  const [receiptViewerData, setReceiptViewerData] = useState(null);
+
+  // Fonction d'optimisation / compression automatique de la photo de facture (max 1200px, JPEG 0.78)
+  const compressReceiptImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const rawData = e.target.result;
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1200;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w / h > 1) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const compressed = canvas.toDataURL('image/jpeg', 0.78);
+          resolve(compressed);
+        };
+        img.onerror = () => resolve(rawData);
+        img.src = rawData;
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleReceiptPhotoUpload = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      showToast(lang === 'fr' ? "Optimisation de la photo..." : "Optimizing photo...");
+      const compressedDataUrl = await compressReceiptImage(file);
+      if (compressedDataUrl) {
+        setDebitForm(prev => ({
+          ...prev,
+          receiptImage: compressedDataUrl
+        }));
+        showToast(lang === 'fr' ? "Photo de facture attachÃ©e avec succÃ¨s !" : "Invoice photo attached!");
+      }
+    } catch (err) {
+      console.error("Error processing receipt photo:", err);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveReceiptPhoto = () => {
+    setDebitForm(prev => ({ ...prev, receiptImage: '' }));
+  };
+
+  const handleOpenReceiptViewer = (tx) => {
+    if (!tx || !tx.receiptImage) return;
+    setReceiptViewerData(tx);
+  };
+
+  const handleCloseReceiptViewer = () => {
+    setReceiptViewerData(null);
+  };
+
   const [debitForm, setDebitForm] = useState({
     id: null,
     frequency: 'daily',
@@ -2608,6 +2689,7 @@ function SCLEGTreasuryApp() {
     amount: '',
     person: '',
     refInvoice: '',
+    receiptImage: '',
     remark: ''
   });
 
@@ -2645,6 +2727,7 @@ function SCLEGTreasuryApp() {
             amount: amt,
             person: debitForm.person ? debitForm.person.trim() : '',
             refInvoice: debitForm.refInvoice.trim(),
+            receiptImage: debitForm.receiptImage || '',
             remark: debitForm.remark.trim(),
             updatedAt: Date.now()
           };
@@ -2665,6 +2748,7 @@ function SCLEGTreasuryApp() {
         amount: amt,
         person: debitForm.person ? debitForm.person.trim() : '',
         refInvoice: debitForm.refInvoice.trim(),
+        receiptImage: debitForm.receiptImage || '',
         remark: debitForm.remark.trim(),
         updatedAt: Date.now()
       };
@@ -2687,6 +2771,7 @@ function SCLEGTreasuryApp() {
       amount: '',
       person: '',
       refInvoice: '',
+      receiptImage: '',
       remark: ''
     });
     triggerAutoSync();
@@ -5696,7 +5781,22 @@ function SCLEGTreasuryApp() {
                             </div>
                           )}
                         </td>
-                        <td className="text-slate-500 text-xs whitespace-nowrap">{tx.refInvoice || '-'}</td>
+                        <td className="text-xs whitespace-nowrap">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-600">{tx.refInvoice || '-'}</span>
+                            {tx.receiptImage && (
+                              <button
+                                type="button"
+                                onClick={() => handleOpenReceiptViewer(tx)}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 border border-amber-400/50 font-bold text-[10.5px] transition cursor-pointer"
+                                title={lang === 'fr' ? "Voir le justificatif de dÃ©pense" : "View receipt photo"}
+                              >
+                                <i className="fa-solid fa-receipt text-amber-600"></i>
+                                <span>ðŸ“·</span>
+                              </button>
+                            )}
+                          </div>
+                        </td>
                         <td className="text-slate-500 text-xs italic">{tx.remark || '-'}</td>
                         <td className={`text-right font-black whitespace-nowrap ${tx.type === 'credit' ? 'text-green-700' : 'text-red-600'}`}>
                           {formatUSD(tx.amount)}
@@ -5852,6 +5952,100 @@ function SCLEGTreasuryApp() {
                   </div>
                 </div>
 
+                {/* PRISE DE PHOTO / IMPORT JUSTIFICATIF OU FACTURE */}
+                <div className="bg-gradient-to-r from-red-50/60 to-amber-50/40 p-3.5 rounded-xl border border-red-200/80">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold uppercase text-red-900 flex items-center gap-1.5">
+                      <i className="fa-solid fa-camera text-red-600 text-sm"></i>
+                      <span>{t.invoicePhotoLabel || (lang === 'fr' ? "Photo du Justificatif / Facture (Optionnel)" : "Invoice / Receipt Photo (Optional)")}</span>
+                    </label>
+                    {debitForm.receiptImage && (
+                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <i className="fa-solid fa-circle-check"></i>
+                        <span>{t.photoAttached || (lang === 'fr' ? "Justificatif attach\u00E9" : "Photo attached")}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {!debitForm.receiptImage ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {/* Bouton Appareil Photo direct (Smartphone / Tablette) */}
+                      <label className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white font-bold rounded-xl text-xs shadow-sm transition cursor-pointer">
+                        <i className="fa-solid fa-camera text-sm"></i>
+                        <span>{t.btnTakePhoto || (lang === 'fr' ? "Prendre une photo" : "Take Photo")}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handleReceiptPhotoUpload}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {/* Bouton Galerie / Fichiers (PC, Tablette, Mobile) */}
+                      <label className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-bold rounded-xl text-xs border border-slate-300 hover:border-slate-400 shadow-2xs transition cursor-pointer">
+                        <i className="fa-regular fa-image text-sm text-red-600"></i>
+                        <span>{t.btnChoosePhoto || (lang === 'fr' ? "Choisir une image" : "Choose Image")}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleReceiptPhotoUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                      {/* Vignette cliquable */}
+                      <div
+                        onClick={() => handleOpenReceiptViewer({ ...debitForm, receiptImage: debitForm.receiptImage })}
+                        className="relative group cursor-pointer w-14 h-12 rounded-lg border border-slate-300 overflow-hidden shrink-0 bg-slate-900 shadow-xs"
+                        title={lang === 'fr' ? "Cliquer pour agrandir la photo" : "Click to enlarge photo"}
+                      >
+                        <img
+                          src={debitForm.receiptImage}
+                          alt="Aper\u00E7u facture"
+                          className="w-full h-full object-cover group-hover:scale-110 transition duration-200"
+                        />
+                        <div className="absolute inset-0 bg-black/25 group-hover:bg-black/10 flex items-center justify-center">
+                          <i className="fa-solid fa-magnifying-glass-plus text-white text-xs drop-shadow"></i>
+                        </div>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-slate-800 truncate">
+                          {debitForm.refInvoice ? debitForm.refInvoice : (lang === 'fr' ? "Facture / Justificatif" : "Receipt Photo")}
+                        </p>
+                        <p className="text-[10px] text-slate-500 font-medium">
+                          {lang === 'fr' ? "Format compress\u00E9 optimis\u00E9" : "Optimized compressed photo"}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenReceiptViewer({ ...debitForm, receiptImage: debitForm.receiptImage })}
+                          className="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold rounded-lg border border-blue-200 transition flex items-center gap-1"
+                          title={lang === 'fr' ? "Voir en grand" : "View large"}
+                        >
+                          <i className="fa-solid fa-expand"></i>
+                          <span className="hidden sm:inline">{lang === 'fr' ? "Voir" : "View"}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleRemoveReceiptPhoto}
+                          className="px-2.5 py-1.5 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-bold rounded-lg border border-red-200 transition flex items-center gap-1"
+                          title={lang === 'fr' ? "Supprimer la photo" : "Delete photo"}
+                        >
+                          <i className="fa-solid fa-trash-can"></i>
+                          <span className="hidden sm:inline">{lang === 'fr' ? "Retirer" : "Remove"}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">{t.remark}</label>
                   <input
@@ -5882,6 +6076,7 @@ function SCLEGTreasuryApp() {
                       amount: '',
                       person: '',
                       refInvoice: '',
+                      receiptImage: '',
                       remark: ''
                     })}
                     className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition"
@@ -5937,7 +6132,22 @@ function SCLEGTreasuryApp() {
                             <span className="text-slate-400">-</span>
                           )}
                         </td>
-                        <td className="text-xs text-slate-500 whitespace-nowrap">{tx.refInvoice || '-'}</td>
+                        <td className="text-xs whitespace-nowrap">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-600">{tx.refInvoice || '-'}</span>
+                            {tx.receiptImage && (
+                              <button
+                                type="button"
+                                onClick={() => handleOpenReceiptViewer(tx)}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 border border-amber-400/50 font-bold text-[10.5px] transition cursor-pointer shadow-2xs"
+                                title={lang === 'fr' ? "Voir la photo de la facture / justificatif" : "View invoice / receipt photo"}
+                              >
+                                <i className="fa-solid fa-receipt text-amber-600"></i>
+                                <span>{lang === 'fr' ? "Facture ðŸ“·" : "Receipt ðŸ“·"}</span>
+                              </button>
+                            )}
+                          </div>
+                        </td>
                         <td className="text-xs text-slate-500 italic">{tx.remark || '-'}</td>
                         <td className="text-right font-black text-red-600 whitespace-nowrap">{formatUSD(tx.amount)}</td>
                         <td className="text-center whitespace-nowrap">
@@ -5951,6 +6161,7 @@ function SCLEGTreasuryApp() {
                                 amount: tx.amount,
                                 person: tx.person || '',
                                 refInvoice: tx.refInvoice || '',
+                                receiptImage: tx.receiptImage || '',
                                 remark: tx.remark || ''
                               });
                               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -7039,7 +7250,22 @@ function SCLEGTreasuryApp() {
                                 <span className="text-slate-300 italic text-xs">-</span>
                               )}
                             </td>
-                            <td className="text-xs text-slate-500 whitespace-nowrap">{tx.refInvoice || '-'}</td>
+                            <td className="text-xs whitespace-nowrap">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-600">{tx.refInvoice || '-'}</span>
+                            {tx.receiptImage && (
+                              <button
+                                type="button"
+                                onClick={() => handleOpenReceiptViewer(tx)}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 border border-amber-400/50 font-bold text-[10.5px] transition cursor-pointer shadow-2xs"
+                                title={lang === 'fr' ? "Voir la photo de la facture / justificatif" : "View invoice / receipt photo"}
+                              >
+                                <i className="fa-solid fa-receipt text-amber-600"></i>
+                                <span>{lang === 'fr' ? "Facture ðŸ“·" : "Receipt ðŸ“·"}</span>
+                              </button>
+                            )}
+                          </div>
+                        </td>
                             <td className="text-xs text-slate-500 italic">{tx.remark || '-'}</td>
                             <td className={`text-right font-black whitespace-nowrap ${tx.type === 'credit' ? 'text-green-700' : 'text-red-600'}`}>
                               {tx.type === 'credit' ? '+ ' : '- '}
@@ -9091,6 +9317,130 @@ function SCLEGTreasuryApp() {
             </div>
           )}
             </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* ==================================================================== */}
+    {/* MODALE OFFICIELLE DE VISUALISATION DE LA FACTURE / JUSTIFICATIF PHOTO */}
+    {/* ==================================================================== */}
+    {receiptViewerData && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-sm fade-in">
+        <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full flex flex-col overflow-hidden max-h-[92vh] animate-scale-up">
+          {/* En-tete */}
+          <div className="p-4 bg-gradient-to-r from-red-700 via-rose-800 to-red-900 text-white flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-amber-300 text-lg shrink-0 border border-white/20">
+                <i className="fa-solid fa-receipt"></i>
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-sm sm:text-base leading-tight truncate text-white">
+                  {lang === 'fr' ? "Justificatif de D\u00E9pense / Facture" : "Expense Invoice / Receipt"}
+                </h3>
+                <p className="text-[11px] text-amber-200 truncate">
+                  {receiptViewerData.refInvoice
+                    ? (lang === 'fr' ? `N\u00B0 R\u00E9f: ${receiptViewerData.refInvoice}` : `Ref #: ${receiptViewerData.refInvoice}`)
+                    : (lang === 'fr' ? "Pi\u00E8ce comptable justificative" : "Official accounting document")}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleCloseReceiptViewer}
+              className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer"
+              title={lang === 'fr' ? "Fermer" : "Close"}
+            >
+              <i className="fa-solid fa-xmark text-base"></i>
+            </button>
+          </div>
+
+          {/* Bandeau Recapitulatif de la Depense */}
+          <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-3">
+              <div>
+                <span className="text-slate-400 text-[10px] uppercase font-bold block">{lang === 'fr' ? "Date" : "Date"}</span>
+                <span className="font-bold text-slate-800">{formatDisplayDate(receiptViewerData.date)}</span>
+              </div>
+              <div className="border-l border-slate-200 pl-3">
+                <span className="text-slate-400 text-[10px] uppercase font-bold block">{lang === 'fr' ? "Famille" : "Family"}</span>
+                <span className="font-bold text-slate-800">{formatItemLabel(receiptViewerData.family, lang)}</span>
+              </div>
+              {receiptViewerData.person && (
+                <div className="border-l border-slate-200 pl-3 hidden sm:block">
+                  <span className="text-slate-400 text-[10px] uppercase font-bold block">{lang === 'fr' ? "B\u00E9n\u00E9ficiaire" : "Person"}</span>
+                  <span className="font-semibold text-slate-700 truncate max-w-[120px] inline-block">{receiptViewerData.person}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="text-right">
+              <span className="text-slate-400 text-[10px] uppercase font-bold block">{lang === 'fr' ? "Montant D\u00E9caiss\u00E9" : "Expense Amount"}</span>
+              <span className="text-base font-black text-red-700">{formatUSD(receiptViewerData.amount)}</span>
+            </div>
+          </div>
+
+          {receiptViewerData.remark && (
+            <div className="px-4 py-1.5 bg-amber-50/60 border-b border-amber-100/80 text-[11px] text-amber-900 flex items-center gap-1.5">
+              <i className="fa-solid fa-note-sticky text-amber-600"></i>
+              <span className="italic">{receiptViewerData.remark}</span>
+            </div>
+          )}
+
+          {/* Zone Image */}
+          <div className="flex-1 overflow-auto p-4 bg-slate-900 flex items-center justify-center min-h-[260px] max-h-[58vh]">
+            <img
+              src={receiptViewerData.receiptImage}
+              alt="Justificatif de d\u00E9pense"
+              className="max-h-full max-w-full object-contain rounded-lg shadow-2xl border border-slate-700"
+            />
+          </div>
+
+          {/* Pied de Modale avec Actions */}
+          <div className="p-3 bg-white border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const fileName = `Facture_${(receiptViewerData.refInvoice || receiptViewerData.id || 'SCLEG').toString().replace(/[^a-zA-Z0-9_-]/g, '_')}.jpg`;
+                  if (window.AndroidNative && typeof window.AndroidNative.saveImageAndShare === 'function') {
+                    window.AndroidNative.saveImageAndShare(receiptViewerData.receiptImage, fileName);
+                  } else {
+                    const a = document.createElement('a');
+                    a.href = receiptViewerData.receiptImage;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                  }
+                }}
+                className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+              >
+                <i className="fa-solid fa-download"></i>
+                <span>{lang === 'fr' ? "T\u00E9l\u00E9charger / Partager" : "Download / Share"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const w = window.open('');
+                  w.document.write(`<html><head><title>Facture - ${receiptViewerData.refInvoice || ''}</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;background:#111;height:100vh;"><img src="${receiptViewerData.receiptImage}" style="max-height:98vh;max-width:98vw;object-fit:contain;"/><script>window.onload=function(){window.print();}</script></body></html>`);
+                  w.document.close();
+                }}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <i className="fa-solid fa-print"></i>
+                <span>{lang === 'fr' ? "Imprimer" : "Print"}</span>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCloseReceiptViewer}
+              className="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg text-xs transition cursor-pointer"
+            >
+              {lang === 'fr' ? "Fermer" : "Close"}
+            </button>
           </div>
         </div>
       </div>

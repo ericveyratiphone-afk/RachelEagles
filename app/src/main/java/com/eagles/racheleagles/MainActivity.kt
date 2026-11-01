@@ -128,6 +128,12 @@ class MainActivity : ComponentActivity() {
                 } else {
                     openPdfUri(url)
                 }
+            } else if (url.startsWith("data:image/") || (mimetype != null && mimetype.startsWith("image/"))) {
+                if (url.startsWith("data:")) {
+                    val base64 = url.substringAfter("base64,")
+                    val ext = if (url.startsWith("data:image/png")) ".png" else ".jpg"
+                    AndroidBridge(this, webView).saveImageAndShare(base64, "Facture_SCLEG$ext")
+                }
             }
         }
 
@@ -345,6 +351,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    fun openOrShareReceiptFile(file: File, title: String) {
+        try {
+            val uri = FileProvider.getUriForFile(this, "$packageName.provider", file)
+            val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "image/*")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "image/*"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_SUBJECT, title)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            val chooser = Intent.createChooser(viewIntent, title).apply {
+                putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(shareIntent))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(chooser)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Erreur ouverture justificatif: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
     fun openOrSharePdfFile(file: File, title: String) {
         try {
             val uri: Uri = FileProvider.getUriForFile(
@@ -427,6 +460,32 @@ class MainActivity : ComponentActivity() {
                 } catch (e: Exception) {
                     e.printStackTrace()
                     Toast.makeText(activity, "Erreur génération PDF: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun saveImageAndShare(base64Data: String?, fileName: String?) {
+            activity.runOnUiThread {
+                try {
+                    if (base64Data.isNullOrBlank()) {
+                        Toast.makeText(activity, "Donnees image invalides", Toast.LENGTH_SHORT).show()
+                        return@runOnUiThread
+                    }
+                    val cleanBase64 = if (base64Data.contains(",")) base64Data.substringAfter(",") else base64Data
+                    val imageBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
+                    val name = (fileName ?: "Facture_SCLEG.jpg").trim()
+                    val safeName = if (name.endsWith(".jpg", ignoreCase = true) || name.endsWith(".jpeg", ignoreCase = true) || name.endsWith(".png", ignoreCase = true)) name else "$name.jpg"
+
+                    val imgDir = File(activity.cacheDir, "receipt_exports")
+                    if (!imgDir.exists()) imgDir.mkdirs()
+                    val imgFile = File(imgDir, safeName)
+                    FileOutputStream(imgFile).use { it.write(imageBytes) }
+
+                    activity.openOrShareReceiptFile(imgFile, safeName)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(activity, "Erreur enregistrement justificatif: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }

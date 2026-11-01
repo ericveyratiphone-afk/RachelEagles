@@ -6,3 +6,6 @@ local.properties
 .kotlin/
 .idea/
 *.tmp
+
+legacy_archive/
+scratch/
