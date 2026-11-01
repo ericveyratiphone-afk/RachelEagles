@@ -29,7 +29,16 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import android.Manifest
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
+import android.provider.MediaStore
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -41,24 +50,231 @@ class MainActivity : ComponentActivity() {
         private set
 
     private var fileUploadCallback: ValueCallback<Array<Uri>>? = null
+    private var currentPhotoPath: String? = null
+    private var currentPhotoUri: Uri? = null
+
+    // Launcher pour demander la permission CAMERA au runtime
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            launchCameraCaptureInternal()
+        } else {
+            Toast.makeText(this, "Permission Appareil Photo requise pour photographier la facture", Toast.LENGTH_LONG).show()
+            fileUploadCallback?.onReceiveValue(null)
+            fileUploadCallback = null
+        }
+    }
+
+    // Launcher pour la capture directe de l'appareil photo
+    private val cameraCaptureLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val photoPath = currentPhotoPath
+            val photoUri = currentPhotoUri
+            if (fileUploadCallback != null && photoUri != null) {
+                fileUploadCallback?.onReceiveValue(arrayOf(photoUri))
+                fileUploadCallback = null
+            }
+            if (photoPath != null) {
+                processAndSendImage(photoPath)
+            }
+        } else {
+            fileUploadCallback?.onReceiveValue(null)
+            fileUploadCallback = null
+        }
+    }
+
+    // Launcher pour le sélecteur de galerie d'images
+    private val galleryPickerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val uri = result.data?.data
+            if (fileUploadCallback != null && uri != null) {
+                fileUploadCallback?.onReceiveValue(arrayOf(uri))
+                fileUploadCallback = null
+            }
+            if (uri != null) {
+                processAndSendUri(uri)
+            }
+        } else {
+            fileUploadCallback?.onReceiveValue(null)
+            fileUploadCallback = null
+        }
+    }
+
+    // Launcher combiné générique utilisé par onShowFileChooser
     private val filePickerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             val intent = result.data
+            val photoFile = currentPhotoPath?.let { File(it) }
+            val wasCameraCapture = photoFile != null && photoFile.exists() && photoFile.length() > 0
+
             val dataUris: Array<Uri>? = when {
                 intent?.data != null -> arrayOf(intent.data!!)
                 intent?.clipData != null -> {
                     val clip = intent.clipData!!
                     Array(clip.itemCount) { idx -> clip.getItemAt(idx).uri }
                 }
+                wasCameraCapture && currentPhotoUri != null -> arrayOf(currentPhotoUri!!)
                 else -> null
             }
             fileUploadCallback?.onReceiveValue(dataUris)
+
+            if (wasCameraCapture && currentPhotoPath != null) {
+                processAndSendImage(currentPhotoPath!!)
+            } else if (intent?.data != null) {
+                processAndSendUri(intent.data!!)
+            }
         } else {
             fileUploadCallback?.onReceiveValue(null)
         }
         fileUploadCallback = null
+    }
+
+    private fun createTempReceiptImageFile(): File {
+        val storageDir = File(cacheDir, "receipt_photos").apply { if (!exists()) mkdirs() }
+        return File.createTempFile("receipt_${System.currentTimeMillis()}_", ".jpg", storageDir).apply {
+            currentPhotoPath = absolutePath
+        }
+    }
+
+    fun checkAndLaunchCamera() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            launchCameraCaptureInternal()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun launchCameraCaptureInternal() {
+        try {
+            val photoFile = createTempReceiptImageFile()
+            val photoUri = FileProvider.getUriForFile(this, "$packageName.provider", photoFile)
+            currentPhotoUri = photoUri
+
+            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+                putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+                addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            cameraCaptureLauncher.launch(cameraIntent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Erreur ouverture appareil photo: ${e.message}", Toast.LENGTH_LONG).show()
+            fileUploadCallback?.onReceiveValue(null)
+            fileUploadCallback = null
+        }
+    }
+
+    fun launchGalleryPicker() {
+        try {
+            val pickIntent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "image/*"
+                addCategory(Intent.CATEGORY_OPENABLE)
+            }
+            galleryPickerLauncher.launch(Intent.createChooser(pickIntent, "Choisir une image de justificatif"))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Erreur ouverture galerie: ${e.message}", Toast.LENGTH_LONG).show()
+            fileUploadCallback?.onReceiveValue(null)
+            fileUploadCallback = null
+        }
+    }
+
+    private fun processAndSendImage(filePath: String) {
+        Thread {
+            try {
+                val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeFile(filePath, boundsOptions)
+
+                val maxDim = 1200
+                var sampleSize = 1
+                while (boundsOptions.outWidth / sampleSize > maxDim * 2 || boundsOptions.outHeight / sampleSize > maxDim * 2) {
+                    sampleSize *= 2
+                }
+
+                val loadOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+                val originalBitmap = BitmapFactory.decodeFile(filePath, loadOptions) ?: return@Thread
+
+                val exif = try { ExifInterface(filePath) } catch (e: Exception) { null }
+                val orientation = exif?.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL) ?: ExifInterface.ORIENTATION_NORMAL
+
+                val matrix = Matrix()
+                when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+                    ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+                    ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+                }
+
+                val w = originalBitmap.width
+                val h = originalBitmap.height
+                val scale = if (w > maxDim || h > maxDim) {
+                    maxDim.toFloat() / Math.max(w, h).toFloat()
+                } else 1.0f
+
+                matrix.postScale(scale, scale)
+                val scaledBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, w, h, matrix, true)
+
+                val baos = ByteArrayOutputStream()
+                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 78, baos)
+                val base64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP)
+
+                if (scaledBitmap != originalBitmap) scaledBitmap.recycle()
+                originalBitmap.recycle()
+
+                val dataUrl = "data:image/jpeg;base64,$base64"
+                sendReceiptPhotoToWeb(dataUrl)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }.start()
+    }
+
+    private fun processAndSendUri(uri: Uri) {
+        Thread {
+            try {
+                val inputStream = contentResolver.openInputStream(uri) ?: return@Thread
+                val originalBitmap = BitmapFactory.decodeStream(inputStream)
+                inputStream.close()
+                if (originalBitmap == null) return@Thread
+
+                val maxDim = 1200
+                val w = originalBitmap.width
+                val h = originalBitmap.height
+                val scale = if (w > maxDim || h > maxDim) {
+                    maxDim.toFloat() / Math.max(w, h).toFloat()
+                } else 1.0f
+
+                val matrix = Matrix().apply { postScale(scale, scale) }
+                val scaledBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, w, h, matrix, true)
+
+                val baos = ByteArrayOutputStream()
+                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 78, baos)
+                val base64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP)
+
+                if (scaledBitmap != originalBitmap) scaledBitmap.recycle()
+                originalBitmap.recycle()
+
+                val dataUrl = "data:image/jpeg;base64,$base64"
+                sendReceiptPhotoToWeb(dataUrl)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }.start()
+    }
+
+    private fun sendReceiptPhotoToWeb(dataUrl: String) {
+        runOnUiThread {
+            webView.evaluateJavascript(
+                "if (typeof window.onReceiptPhotoCaptured === 'function') { window.onReceiptPhotoCaptured('$dataUrl'); }",
+                null
+            )
+        }
     }
 
     override fun attachBaseContext(newBase: Context) {
@@ -224,16 +440,48 @@ class MainActivity : ComponentActivity() {
             ): Boolean {
                 fileUploadCallback?.onReceiveValue(null)
                 fileUploadCallback = filePathCallback
+
+                val isCapture = fileChooserParams?.isCaptureEnabled == true
+                if (isCapture) {
+                    checkAndLaunchCamera()
+                    return true
+                }
+
                 try {
-                    val intent = fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply {
+                    val pickIntent = Intent(Intent.ACTION_GET_CONTENT).apply {
                         type = "image/*"
                         addCategory(Intent.CATEGORY_OPENABLE)
                     }
-                    filePickerLauncher.launch(intent)
+
+                    val photoFile = createTempReceiptImageFile()
+                    val photoUri = FileProvider.getUriForFile(this@MainActivity, "$packageName.provider", photoFile)
+                    currentPhotoUri = photoUri
+
+                    val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+                        putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+                        addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+
+                    val chooser = Intent.createChooser(pickIntent, "Sélectionner ou photographier une facture").apply {
+                        putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(captureIntent))
+                    }
+                    filePickerLauncher.launch(chooser)
                     return true
                 } catch (e: Exception) {
-                    fileUploadCallback = null
-                    return false
+                    e.printStackTrace()
+                    try {
+                        val simpleIntent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                            type = "image/*"
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                        }
+                        filePickerLauncher.launch(simpleIntent)
+                        return true
+                    } catch (ex: Exception) {
+                        fileUploadCallback?.onReceiveValue(null)
+                        fileUploadCallback = null
+                        return false
+                    }
                 }
             }
         }
@@ -593,6 +841,20 @@ class MainActivity : ComponentActivity() {
                 val shareIntent = Intent.createChooser(sendIntent, title ?: "Partager via")
                 shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 activity.startActivity(shareIntent)
+            }
+        }
+
+        @JavascriptInterface
+        fun takeReceiptPhoto() {
+            activity.runOnUiThread {
+                activity.checkAndLaunchCamera()
+            }
+        }
+
+        @JavascriptInterface
+        fun chooseReceiptPhoto() {
+            activity.runOnUiThread {
+                activity.launchGalleryPicker()
             }
         }
 

@@ -2681,6 +2681,39 @@ function SCLEGTreasuryApp() {
     setReceiptViewerData(null);
   };
 
+  const handleTakePhotoClick = () => {
+    if (window.AndroidNative && typeof window.AndroidNative.takeReceiptPhoto === 'function') {
+      window.AndroidNative.takeReceiptPhoto();
+    } else {
+      const input = document.getElementById('receipt-camera-input');
+      if (input) input.click();
+    }
+  };
+
+  const handleChoosePhotoClick = () => {
+    if (window.AndroidNative && typeof window.AndroidNative.chooseReceiptPhoto === 'function') {
+      window.AndroidNative.chooseReceiptPhoto();
+    } else {
+      const input = document.getElementById('receipt-file-input');
+      if (input) input.click();
+    }
+  };
+
+  useEffect(() => {
+    window.onReceiptPhotoCaptured = (base64Data) => {
+      if (base64Data) {
+        setDebitForm(prev => ({
+          ...prev,
+          receiptImage: base64Data
+        }));
+        showToast(lang === 'fr' ? "Photo de facture attachée avec succès !" : "Invoice photo attached!");
+      }
+    };
+    return () => {
+      delete window.onReceiptPhotoCaptured;
+    };
+  }, [lang]);
+
   const [debitForm, setDebitForm] = useState({
     id: null,
     frequency: 'daily',
@@ -5970,29 +6003,41 @@ function SCLEGTreasuryApp() {
                   {!debitForm.receiptImage ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       {/* Bouton Appareil Photo direct (Smartphone / Tablette) */}
-                      <label className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white font-bold rounded-xl text-xs shadow-sm transition cursor-pointer">
+                      <button
+                        type="button"
+                        onClick={handleTakePhotoClick}
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white font-bold rounded-xl text-xs shadow-sm transition cursor-pointer"
+                      >
                         <i className="fa-solid fa-camera text-sm"></i>
                         <span>{t.btnTakePhoto || (lang === 'fr' ? "Prendre une photo" : "Take Photo")}</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          capture="environment"
-                          onChange={handleReceiptPhotoUpload}
-                          className="hidden"
-                        />
-                      </label>
+                      </button>
 
                       {/* Bouton Galerie / Fichiers (PC, Tablette, Mobile) */}
-                      <label className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-bold rounded-xl text-xs border border-slate-300 hover:border-slate-400 shadow-2xs transition cursor-pointer">
+                      <button
+                        type="button"
+                        onClick={handleChoosePhotoClick}
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-bold rounded-xl text-xs border border-slate-300 hover:border-slate-400 shadow-2xs transition cursor-pointer"
+                      >
                         <i className="fa-regular fa-image text-sm text-red-600"></i>
                         <span>{t.btnChoosePhoto || (lang === 'fr' ? "Choisir une image" : "Choose Image")}</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleReceiptPhotoUpload}
-                          className="hidden"
-                        />
-                      </label>
+                      </button>
+
+                      {/* Inputs masqués pour fallback web / desktop */}
+                      <input
+                        id="receipt-camera-input"
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleReceiptPhotoUpload}
+                        className="hidden"
+                      />
+                      <input
+                        id="receipt-file-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleReceiptPhotoUpload}
+                        className="hidden"
+                      />
                     </div>
                   ) : (
                     <div className="flex items-center gap-3 p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
